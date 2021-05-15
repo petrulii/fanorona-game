@@ -3,7 +3,7 @@ package Modele;
 import java.util.ArrayList;
 
 /**
- * Classe principale de modele de jeu qui characterise l'aire de jeu.
+ * Classe principale de modele de jeu qui characterise l'aire de jeu. Elle a un grille de jeu 5 sur 9.
  * @author Petrulionyte Ieva, Yu Ran
  * @version 1.0
  */
@@ -13,11 +13,11 @@ public class AireJeu {
 	// 0 - case vide, 1 - case blanc, 2 - case noir.
 	public int[][] grille;
 	/**
-	* liste pour enregistrer les coups
+	* Liste pour enregistrer les coups.
 	*/
 	ArrayList<Coup> coups;
 	/**
-	* liste pour se souvenir des coups annules en cours d'annulation
+	* Liste pour se souvenir des coups annules en cours d'annulation.
 	*/
 	ArrayList<Coup> coups_annules;
 
@@ -39,18 +39,20 @@ public class AireJeu {
 			}
 		}
 		for (int j = 0; j < NB_COLONNES; j++) {
-			if (j%2 == 1) {
+			if (j%2 == 1 && j < NB_COLONNES/2) {
 				grille[NB_LIGNES/2][j] = 1;
 			} else {
 				grille[NB_LIGNES/2][j] = 2;
 			}
 		}
+		grille[NB_LIGNES/2][6] = 1;
+		grille[NB_LIGNES/2][8] = 1;
 		// La position au centre est vide.
 		grille[NB_LIGNES/2][NB_COLONNES/2] = 0;
 	}
 
 	/**
-	 * Execution d'un coup
+	 * Execution d'un coup.
 	 * @param coup : le coup a jouer
 	 */
 	public void joueCoup(Coup coup) {
@@ -59,32 +61,153 @@ public class AireJeu {
 		// On verifie si le coup est valide.
 		if (coupValide(coup)) {
 			coups.add(coup);
-			joueCoup(coup);
+			Position debut = coup.getDebut();
+			Position fin = coup.getFin();
+			int direction_l = fin.getLigne()-debut.getLigne();
+			int direction_c = fin.getColonne()-debut.getColonne();
+			int couleur = grille[debut.getLigne()][debut.getColonne()];
+			grille[debut.getLigne()][debut.getColonne()] = 0;
+			grille[fin.getLigne()][fin.getColonne()] = couleur;
+			// Regler la capture des pions.
+			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+			// Si aspiration est vrai.
+			if ( coup.getAspiration() ) {
+				grille[capture_devant.getLigne()][capture_devant.getColonne()] = 0;
+			} else {
+				if 		(grille[capture_devant.getLigne()][capture_devant.getColonne()] != couleur &&
+						grille[capture_devant.getLigne()][capture_devant.getColonne()] != 0) {
+							grille[capture_devant.getLigne()][capture_devant.getColonne()] = 0;
+				} else {
+					if (grille[capture_derriere.getLigne()][capture_derriere.getColonne()] != couleur &&
+						grille[capture_devant.getLigne()][capture_devant.getColonne()] != 0) {
+							grille[capture_derriere.getLigne()][capture_derriere.getColonne()] = 0;
+					}
+				}
+			}
 		}
 	}
 	
 	/**
-	 * Verifier si le coups peut etre jouer
-	 * @param l : le coup a jouer
+	 * Verifier si le coups peut etre jouer.
+	 * @param coup : le coup a jouer
 	 * @return vrai si le coup est valide, faux sinon
 	 */
-	private boolean coupValide(Coup coup) {
-		// LES CHOSES A VERIFIER POUR QUE LE COUP SOIT VALIDE :
-		// Le debut et la fin ne depasse pas la grille.
-		// Le debut et la fin sont distincts.
-		// Le debut et adjacent a la fin.
-		// Si aspiration est vrai, alors il y a la possibilite de capturer celui devant.
-		// Si aspiration est faux, alors il y a la possibilite de capturer celui derriere.
+	public boolean coupValide(Coup coup) {
+		Position debut = coup.getDebut();
+		Position fin = coup.getFin();
+		int direction_l = fin.getLigne()-debut.getLigne();
+		int direction_c = fin.getColonne()-debut.getColonne();
+		// Si la position debut ou fin n'est pas sur la grille.
+		if ( !positionEstSurGrille(debut) || !positionEstSurGrille(fin) ) {
+			return false;
+		}
+		// Si la position debut et fin ne sont pas distincts.
+		if ( debut.equals(fin) ) {
+			return false;
+		}
+		// Si la position fin n'est pas adjacente vide a la position debut.
+		if ( !sontPositionsAdjacents(debut, fin) ) {
+			return false;
+		}
+		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+		// Si aspiration est vrai.
+		if ( coup.getAspiration() ) {
+			// S'il n'est pas possible de capturer celui devant.
+			if (grille[capture_devant.getLigne()][capture_devant.getColonne()] == grille[debut.getLigne()][debut.getColonne()] ||
+				grille[capture_devant.getLigne()][capture_devant.getColonne()] == 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Renvoie vrai si la position est sur la grille, faux sinon.
+	 * @param position : la position a verifier
+	 * @return vrai si la position est sur la grille de jeu, faux sinon
+	 */
+	public boolean positionEstSurGrille(Position position) {
+		int ligne = position.getLigne();
+		int colonne = position.getColonne();
+		if (ligne < 0 || ligne > NB_LIGNES || colonne < 0 || colonne > NB_COLONNES) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+	/**
+	 * Verifie si le coup est adjacent vide sur la grille de jeu.
+	 * @param coup : le coup a jouer
+	 * @return vrai si le coup est adjacent vide sur la grille de jeu, faux sinon
+	 */
+	private boolean sontPositionsAdjacents(Position debut, Position fin) {
+		ArrayList<Position> positions_adjacents = positionsAdjacents(debut);
+		// Cherche la position fin dans la liste des positions adjacents a la position debut.
+		for (int i = 0; i < positions_adjacents.size(); i++) {
+			Position pos = positions_adjacents.get(i);
+			if (pos.equals(fin)) {
+				return true;
+			}
+		}
 		return false;
 	}
 	
-	private boolean sontCoupsAdjacents(Coup fin, Coup debut) {
-		ArrayList<Coup> coups_adjacents = coupsAdjacents(debut);
-		return coups_adjacents.contains(fin);
-	}
-	
-	private ArrayList<Coup> coupsAdjacents(Coup coup) {
-		return null;
+	/**
+	 * Renvoie la liste des coups adjacents vides sur la grille de jeu.
+	 * @param coup : le coup
+	 * @return liste des coups adjacents vides sur la grille de jeu
+	 */
+	private ArrayList<Position> positionsAdjacents(Position p) {
+		ArrayList<Position> positions = new ArrayList<Position>();
+		// Case en bas.
+		if ( ((p.getLigne()+1 >= 0) && (p.getLigne()+1 <= NB_LIGNES))) {
+			if (grille[p.getLigne()+1][p.getColonne()] == 0)
+				positions.add(new Position(p.getLigne()+1, p.getColonne()));
+			// Si on verifie une case avec 8 voisins, autrement dit les deux ligne et colonne impairs ou pairs.
+			if (p.getColonne()%2==1 && p.getLigne()%2==1 || p.getColonne()%2==0 && p.getLigne()%2==0) {
+				// Case en bas a droite.
+				if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 <= NB_COLONNES)) {
+					if (grille[p.getLigne()+1][p.getColonne()+1] == 0)
+						positions.add(new Position(p.getLigne()+1, p.getColonne()+1));
+				}
+				// Case en bas a gauche.
+				if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 <= NB_COLONNES)) {
+					if (grille[p.getLigne()+1][p.getColonne()-1] == 0)
+						positions.add(new Position(p.getLigne()+1, p.getColonne()-1));
+				}
+			}
+		}
+		// Case en haut.
+		if ( ((p.getLigne()-1 >= 0) && (p.getLigne()-1 <= NB_LIGNES))) {
+			if (grille[p.getLigne()-1][p.getColonne()] == 0)
+				positions.add(new Position(p.getLigne()-1, p.getColonne()));
+			// Si on verifie une case avec 8 voisins, autrement dit les deux ligne et colonne impairs ou pairs.
+			if (p.getColonne()%2==1 && p.getLigne()%2==1 || p.getColonne()%2==0 && p.getLigne()%2==0) {
+				// Case en haut a droite.
+				if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 <= NB_COLONNES)) {
+					if (grille[p.getLigne()-1][p.getColonne()+1] == 0)
+						positions.add(new Position(p.getLigne()-1, p.getColonne()+1));
+				}
+				// Case en haut a gauche.
+				if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 <= NB_COLONNES)) {
+					if (grille[p.getLigne()-1][p.getColonne()-1] == 0)
+						positions.add(new Position(p.getLigne()-1, p.getColonne()-1));
+				}
+			}
+		}
+		// Case a droite.
+		if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 <= NB_COLONNES)) {
+			if (grille[p.getLigne()][p.getColonne()+1] == 0)
+				positions.add(new Position(p.getLigne(), p.getColonne()+1));
+		}
+		// Case a gauche.
+		if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 <= NB_COLONNES)) {
+			if (grille[p.getLigne()][p.getColonne()-1] == 0)
+				positions.add(new Position(p.getLigne(), p.getColonne()-1));
+		}
+		return positions;
 	}
 	
 	/**
@@ -109,18 +232,18 @@ public class AireJeu {
 	}
 	
 	/**
-	 * Renvoie la grille de jeu
+	 * Renvoie la grille de jeu.
 	 * @return grille de jeu
 	 */
 	public int[][] getGrille() { return grille; }
 	
 	/**
-	 * Renvoie le nombre de lignes dans la grille de jeu
+	 * Renvoie le nombre de lignes dans la grille de jeu.
 	 * @return le nombre de lignes
 	 */
 	public int getNbLignes() { return NB_LIGNES; }
 	/**
-	 * Renvoie le nombre de colonnes dans la grille de jeu
+	 * Renvoie le nombre de colonnes dans la grille de jeu.
 	 * @return le nombre de colonnes
 	 */
 	public int getNbColonnes() { return NB_COLONNES; }
@@ -196,15 +319,15 @@ public class AireJeu {
 	 * Lit un liste des coups dans un fichier
 	 * @param nom_fichier : fichier qui contien un liste des coups
 	 */
-	public ArrayList<Coup> chargeHistoriqueCoups(String nom_fichier) {
+/*	public ArrayList<Coup> chargeHistoriqueCoups(String nom_fichier) {
 		return HistoriqueCoups.importer(nom_fichier);
-	}
+	}*/
 	
 	/**
 	 * Ecrit la liste des coups dans un fichier
 	 */
-	public void sauvegarderHistoriqueCoups() {
+/*	public void sauvegarderHistoriqueCoups() {
 		HistoriqueCoups.exporter(coups);
-	}
+	}*/
 
 }

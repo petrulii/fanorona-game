@@ -8,6 +8,9 @@ package Modele;
 public class Coup {
 	Position debut;
 	Position fin;
+	/**
+	 * Aspiration vaut vrai seulement quand l'utilisateur a le choix et il choisit l'aspiration.
+	 */
 	boolean aspiration = false;
 
 	public Coup(Position debut, Position fin) {
@@ -43,6 +46,12 @@ public class Coup {
 	 * @return la postion fin
 	 */
 	public Position getFin() { return fin; }
+	
+	/**
+	 * Renvoie le boolean aspiration de coup.
+	 * @return le boolean aspiration
+	 */
+	public boolean getAspiration() { return aspiration; }
 	
 	/**
 	 * Affichage d'un coup
