@@ -14,13 +14,12 @@ public class AireGraphique extends JComponent {
 		Image img = null;
 		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("Images" + File.separator + nom + ".png");
 		try {
-			// Chargement d'une image utilisable dans Swing
+			// Chargement d'une image utilisable dans Swing.
 			img = ImageIO.read(in);
 		} catch (Exception e) {
 			System.out.println("J'arrive pas a construire les images." + "Images" + File.separator + nom + ".png");
 			System.exit(1);
 		}
-		//System.out.println("Construceur aire ici.");
 		return img;
 	}
 
@@ -36,15 +35,14 @@ public class AireGraphique extends JComponent {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		// Graphics 2D est le vrai type de l'objet passé en paramètre
-		// Le cast permet d'avoir acces a un peu plus de primitives de dessin
+		// Graphics 2D est le vrai type de l'objet passé en paramètre.
 		Graphics2D drawable = (Graphics2D) g;
 
-		// On reccupere quelques infos provenant de la partie JComponent
+		// On reccupere quelques infos provenant de la partie JComponent.
 		int width_case = getCaseWidth();
 		int height_case = getCaseHeight();
 
-		// On efface tout
+		// On efface tout.
 		drawable.clearRect(0, 0, getWidth(), getHeight());
 		
 		int[][] grille = aire.getGrille();
