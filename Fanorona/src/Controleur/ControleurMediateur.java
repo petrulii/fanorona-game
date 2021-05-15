@@ -17,6 +17,7 @@ public class ControleurMediateur {
 	public ControleurMediateur(AireJeu a, AireGraphique a_graphique) {
 		aire_jeu = a;
 		aire_graphique = a_graphique;
+		// Si debut est null alors on est au debut de creation d'un coup.
 		debut = null;
 	}
 
