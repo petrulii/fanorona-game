@@ -63,17 +63,27 @@ public class AireJeu {
 			coups.add(coup);
 			Position debut = coup.getDebut();
 			Position fin = coup.getFin();
+			// Direction dans la ligne.
 			int direction_l = fin.getLigne()-debut.getLigne();
+			// Direction dans la colonne.
 			int direction_c = fin.getColonne()-debut.getColonne();
+			// Couleur de pion dans la case de debut de coup.
 			int couleur = grille[debut.getLigne()][debut.getColonne()];
+			// La case de debut devient vide.
 			grille[debut.getLigne()][debut.getColonne()] = 0;
+			// Deplace le pion dans la case de fin.
 			grille[fin.getLigne()][fin.getColonne()] = couleur;
-			// Regler la capture des pions.
+			// Gere la capture des pions.
 			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
 			// Si aspiration est vrai.
 			if ( coup.getAspiration() ) {
-				grille[capture_devant.getLigne()][capture_devant.getColonne()] = 0;
+				for (int l=capture_devant.getLigne(); l<NB_LIGNES; l++) {
+					for (int c=capture_devant.getColonne(); l<NB_COLONNES; c++) {
+						grille[capture_devant.getLigne()][capture_devant.getColonne()] = 0;
+						capture_devant = new Position((capture_devant.getLigne()+direction_l), (capture_devant.getColonne()+direction_c));
+					}
+				}
 			} else {
 				if 		(grille[capture_devant.getLigne()][capture_devant.getColonne()] != couleur &&
 						grille[capture_devant.getLigne()][capture_devant.getColonne()] != 0) {
@@ -159,7 +169,7 @@ public class AireJeu {
 	 * @param coup : le coup
 	 * @return liste des coups adjacents vides sur la grille de jeu
 	 */
-	private ArrayList<Position> positionsAdjacents(Position p) {
+	private ArrayList<Position> positionsAdjacents(Position p) {		// Factoriser ca (boucle).
 		ArrayList<Position> positions = new ArrayList<Position>();
 		// Case en bas.
 		if ( ((p.getLigne()+1 >= 0) && (p.getLigne()+1 <= NB_LIGNES))) {

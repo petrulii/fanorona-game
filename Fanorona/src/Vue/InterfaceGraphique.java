@@ -20,7 +20,7 @@ public class InterfaceGraphique implements Runnable {
 		
 		AireGraphique aire_graphique = new AireGraphique(aire_jeu);
 		frame.add(aire_graphique);
-				
+
 		ControleurMediateur control = new ControleurMediateur(aire_jeu, aire_graphique);
 		aire_graphique.setFocusable(true);
 		aire_graphique.addMouseListener(new EcouteurSourisAire(control));
@@ -28,7 +28,7 @@ public class InterfaceGraphique implements Runnable {
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(X, Y);
-		frame.setResizable(false);
+		frame.setResizable(true);
 		frame.setVisible(true);
 	}
 
