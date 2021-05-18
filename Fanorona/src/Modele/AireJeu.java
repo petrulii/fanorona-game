@@ -69,17 +69,15 @@ public class AireJeu {
 			int direction_c = fin.getColonne()-debut.getColonne();
 			// Couleur de pion dans la case de debut de coup.
 			int couleur = grille[debut.getLigne()][debut.getColonne()];
-			// La case de debut devient vide.
-			grille[debut.getLigne()][debut.getColonne()] = 0;
-			// Deplace le pion dans la case de fin.
-			grille[fin.getLigne()][fin.getColonne()] = couleur;
 			// Gere la capture des pions.
 			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
 			// Si le joueur a le choix d'aspiration ou de percusion.
 			if (joueurDoitChoisir(coup)) {
+				System.out.println("Coup 1 : "+coup);
 				// Si le joueur a choisi de faire l'aspiration.
 				if ( coup.getAspiration() ) {
+					System.out.println("Coup 3 : "+coup);
 					captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c);
 				// Sinon, le joueur joue la percusion.
 				} else {
@@ -87,15 +85,22 @@ public class AireJeu {
 				}
 			// Si le joueur n'a pas de choix, alors on verifie les deux possibilites et effectue la seule possible.
 			} else {
+				System.out.println("Coup 2 : "+coup);
 				// Si capture devant est possible.
 				if (estAdversaire(couleur, capture_devant)) {
+					System.out.println("Coup 4 : "+coup);
 					captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c);
 				}
 				// Si capture derriere est possible.
 				if (estAdversaire(couleur, capture_derriere)) {
+					System.out.println("Coup 5 : "+coup);
 					captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c);
 				}
 			}
+			// La case de debut devient vide.
+			grille[debut.getLigne()][debut.getColonne()] = 0;
+			// Deplace le pion dans la case de fin.
+			grille[fin.getLigne()][fin.getColonne()] = couleur;
 		}
 	}
 	
@@ -155,6 +160,10 @@ public class AireJeu {
 			// Positions possibles de capture des pions.
 			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+			System.out.println("Devant : "+capture_devant);
+			System.out.println("Derriere : "+capture_derriere);
+			System.out.println("Adver devant : "+estAdversaire(couleur, capture_devant));
+			System.out.println("Adver derriere : "+estAdversaire(couleur, capture_derriere));
 			return (estAdversaire(couleur, capture_devant) && estAdversaire(couleur, capture_derriere));
 		} else {
 			return false;

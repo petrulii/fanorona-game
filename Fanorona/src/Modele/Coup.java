@@ -1,22 +1,23 @@
 package Modele;
 
 /**
- * Un coup est une position de debut et une position fin d'un pion, aussi le choix entre aspiration et percussion.
+ * Un coup est une position de debut et une position fin d'un pion, aussi le numero de joueur et son choix entre aspiration et percussion.
  * @author Petrulionyte Ieva, Yu Ran
  * @version 1.0
  */
 public class Coup {
 	Position debut;
 	Position fin;
-	int blanc;
+	int joueur;
 	/**
 	 * Aspiration vaut vrai seulement quand l'utilisateur a le choix et il choisit l'aspiration.
 	 */
 	boolean aspiration = false;
 
-	public Coup(Position debut, Position fin) {
+	public Coup(Position debut, Position fin, int joueur) {
 		this.debut = debut;
 		this.fin = fin;
+		this.joueur = joueur;
 	}
 
 	public boolean equals(Coup coup) {
@@ -24,7 +25,7 @@ public class Coup {
 		if (this == coup) {
 			return true;
 		// Les attributs des coups sont egals.
-		} else if (debut.equals(coup.getDebut()) && fin.equals(coup.getFin())) {
+		} else if (debut.equals(coup.getDebut()) && fin.equals(coup.getFin()) && joueur==coup.getJoueur()) {
 			return true;
 		}
 		return false;
@@ -53,6 +54,12 @@ public class Coup {
 	 * @return le boolean aspiration
 	 */
 	public boolean getAspiration() { return aspiration; }
+
+	/**
+	 * Renvoie l'entier joueur de coup.
+	 * @return l'entier joueur
+	 */
+	private int getJoueur() { return joueur; }
 	
 	/**
 	 * Affichage d'un coup

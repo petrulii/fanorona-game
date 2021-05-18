@@ -13,10 +13,15 @@ public class ControleurMediateur {
 	AireJeu aire_jeu;
 	AireGraphique aire_graphique;
 	Position debut;
+	int joueur;
+	/**
+	* Joueur actuel.
+	*/
 
 	public ControleurMediateur(AireJeu a, AireGraphique a_graphique) {
 		aire_jeu = a;
 		aire_graphique = a_graphique;
+		joueur = 1;
 		// Si debut est null alors on est au debut de creation d'un coup.
 		debut = null;
 	}
@@ -38,18 +43,24 @@ public class ControleurMediateur {
 				} else {
 					Position fin = new Position(ligne, colonne);
 					System.out.println("La destination choisi est sur la case "+fin+".");
-					Coup coup = new Coup(debut, fin);
+					Coup coup = new Coup(debut, fin, joueur);
 					debut = null;
 					if (!aire_jeu.coupValide(coup)) {
 						System.out.println("Le coup n'est pas valide, rejoue!");
 					} else {
+						// Si le joueur a le choix d'aspiration ou de percusion.
+						if (aire_jeu.joueurDoitChoisir(coup)) {
+							System.out.println("Joueur "+joueur+" doit choisir entre aspiration et percusion.");
+						}
 						aire_jeu.joueCoup(coup);
-						System.out.println("Joueur viens de jouer.");
+						System.out.println("Joueur "+joueur+" viens de jouer.");
 						aire_graphique.repaint();
 						if (aire_jeu.gameOver()) {
 							System.out.println("Game Over!");
 							System.exit(0);
 						}
+						// Changement de joueur.
+						if (joueur == 1) { joueur = 2; } else { joueur = 1; }
 					}
 				}
 				break;
