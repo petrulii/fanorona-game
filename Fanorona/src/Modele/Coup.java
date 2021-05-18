@@ -8,6 +8,7 @@ package Modele;
 public class Coup {
 	Position debut;
 	Position fin;
+	int blanc;
 	/**
 	 * Aspiration vaut vrai seulement quand l'utilisateur a le choix et il choisit l'aspiration.
 	 */

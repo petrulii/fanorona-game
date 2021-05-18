@@ -76,23 +76,24 @@ public class AireJeu {
 			// Gere la capture des pions.
 			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
-			// Si aspiration est vrai.
-			if ( coup.getAspiration() ) {
-				for (int l=capture_devant.getLigne(); l<NB_LIGNES; l++) {
-					for (int c=capture_devant.getColonne(); l<NB_COLONNES; c++) {
-						grille[capture_devant.getLigne()][capture_devant.getColonne()] = 0;
-						capture_devant = new Position((capture_devant.getLigne()+direction_l), (capture_devant.getColonne()+direction_c));
-					}
-				}
-			} else {
-				if 		(grille[capture_devant.getLigne()][capture_devant.getColonne()] != couleur &&
-						grille[capture_devant.getLigne()][capture_devant.getColonne()] != 0) {
-							grille[capture_devant.getLigne()][capture_devant.getColonne()] = 0;
+			// Si le joueur a le choix d'aspiration ou de percusion.
+			if (joueurDoitChoisir(coup)) {
+				// Si le joueur a choisi de faire l'aspiration.
+				if ( coup.getAspiration() ) {
+					captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c);
+				// Sinon, le joueur joue la percusion.
 				} else {
-					if (grille[capture_derriere.getLigne()][capture_derriere.getColonne()] != couleur &&
-						grille[capture_devant.getLigne()][capture_devant.getColonne()] != 0) {
-							grille[capture_derriere.getLigne()][capture_derriere.getColonne()] = 0;
-					}
+					captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c);
+				}
+			// Si le joueur n'a pas de choix, alors on verifie les deux possibilites et effectue la seule possible.
+			} else {
+				// Si capture devant est possible.
+				if (estAdversaire(couleur, capture_devant)) {
+					captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c);
+				}
+				// Si capture derriere est possible.
+				if (estAdversaire(couleur, capture_derriere)) {
+					captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c);
 				}
 			}
 		}
@@ -120,6 +121,10 @@ public class AireJeu {
 		if ( !sontPositionsAdjacents(debut, fin) ) {
 			return false;
 		}
+		
+		// Si le jouer joue la meme direction comme son coup precedent. return false
+		// Si le jouer essaie de revenir vers la meme position dans la suite de coups. return false
+		
 		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 		// Si aspiration est vrai.
 		if ( coup.getAspiration() ) {
@@ -130,6 +135,31 @@ public class AireJeu {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Renvoie vrai si le joueur a le choix d'aspiration ou de percusion, faux sinon.
+	 * @param le coup a verifier pour la possibilite de choix entre l'aspiration et la percusion
+	 * @return vrai si le joueur a le choix, faux sinon
+	 */
+	public boolean joueurDoitChoisir(Coup coup) {
+		if (coupValide(coup)) {
+			Position debut = coup.getDebut();
+			Position fin = coup.getFin();
+			// Direction dans la ligne.
+			int direction_l = fin.getLigne()-debut.getLigne();
+			// Direction dans la colonne.
+			int direction_c = fin.getColonne()-debut.getColonne();
+			// Couleur de pion dans la case de debut de coup.
+			int couleur = grille[debut.getLigne()][debut.getColonne()];
+			// Positions possibles de capture des pions.
+			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+			return (estAdversaire(couleur, capture_devant) && estAdversaire(couleur, capture_derriere));
+		} else {
+			return false;
+		}
+			
 	}
 
 	/**
@@ -241,6 +271,44 @@ public class AireJeu {
 		return !(noir && blanc);
 	}
 	
+	/**
+	 * Renvoie vrai si la case a verifier est l'adversaire de couleur donne, faux sinon.
+	 * @param couleur de joueur
+	 * @param case a verifier
+	 * @return vrai si la case l'adversaire, faux sinon
+	 */
+	public boolean estAdversaire(int couleur_joueur, Position case_a_verifier) {
+		if (grille[case_a_verifier.getLigne()][case_a_verifier.getColonne()] != couleur_joueur &&
+			grille[case_a_verifier.getLigne()][case_a_verifier.getColonne()] != 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
+	 * Capture les pions d'adversaire associes a la capture d'un coup.
+	 * @param case de premier pion a capturer
+	 * @param couleur de joueur
+	 * @param direction ligne de capture des pions
+	 * @param direction colonne de capture des pions
+	 */
+	public void captureLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c) {
+		Position position;
+		int l = depart.getLigne();
+		int c = depart.getColonne();
+		while ((l>=0 && l<NB_LIGNES) && (c>=0 && c<NB_COLONNES)) {
+			position = new Position(l, c);
+			if (estAdversaire(couleur, position)) {
+				grille[l][c] = 0;
+			} else {
+				return;
+			}
+			c = c + direction_c;
+			l = l + direction_l;
+		}
+	}
+
 	/**
 	 * Renvoie la grille de jeu.
 	 * @return grille de jeu
