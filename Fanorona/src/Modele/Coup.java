@@ -59,12 +59,12 @@ public class Coup {
 	 * Renvoie l'entier joueur de coup.
 	 * @return l'entier joueur
 	 */
-	private int getJoueur() { return joueur; }
+	public int getJoueur() { return joueur; }
 	
 	/**
 	 * Affichage d'un coup
 	 * @return une chaine de caracteres decrivant le coup.
 	 */
-	public String toString() { return "Debut: "+debut+", fin: "+fin+" , aspiration: "+aspiration+"."; }
+	public String toString() { return "Debut: "+debut+", fin: "+fin+" , aspiration: "+aspiration+" , joueur: "+joueur+"."; }
 	
 }

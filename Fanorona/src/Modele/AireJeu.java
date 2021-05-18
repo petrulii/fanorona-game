@@ -10,6 +10,8 @@ import java.util.ArrayList;
 public class AireJeu {
 	final int NB_LIGNES = 5;
 	final int NB_COLONNES = 9;
+	final int BLANC = 1;
+	final int NOIR = 2;
 	// 0 - case vide, 1 - case blanc, 2 - case noir.
 	public int[][] grille;
 	/**
@@ -60,50 +62,55 @@ public class AireJeu {
 		if (!coups_annules.isEmpty()) { coups_annules = new ArrayList<Coup>(); }
 		// On verifie si le coup est valide.
 		if (coupValide(coup)) {
-			coups.add(coup);
-			Position debut = coup.getDebut();
-			Position fin = coup.getFin();
-			// Direction dans la ligne.
-			int direction_l = fin.getLigne()-debut.getLigne();
-			// Direction dans la colonne.
-			int direction_c = fin.getColonne()-debut.getColonne();
-			// Couleur de pion dans la case de debut de coup.
-			int couleur = grille[debut.getLigne()][debut.getColonne()];
-			// Gere la capture des pions.
-			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
-			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
-			// Si le joueur a le choix d'aspiration ou de percusion.
-			if (joueurDoitChoisir(coup)) {
-				System.out.println("Coup 1 : "+coup);
-				// Si le joueur a choisi de faire l'aspiration.
-				if ( coup.getAspiration() ) {
-					System.out.println("Coup 3 : "+coup);
-					captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c);
-				// Sinon, le joueur joue la percusion.
-				} else {
-					captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c);
-				}
-			// Si le joueur n'a pas de choix, alors on verifie les deux possibilites et effectue la seule possible.
-			} else {
-				System.out.println("Coup 2 : "+coup);
-				// Si capture devant est possible.
-				if (estAdversaire(couleur, capture_devant)) {
-					System.out.println("Coup 4 : "+coup);
-					captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c);
-				}
-				// Si capture derriere est possible.
-				if (estAdversaire(couleur, capture_derriere)) {
-					System.out.println("Coup 5 : "+coup);
-					captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c);
-				}
-			}
+			// Gere la capture des pions d'adversaire.
+			effectueCapture(coup);
 			// La case de debut devient vide.
+			Position debut = coup.getDebut();
 			grille[debut.getLigne()][debut.getColonne()] = 0;
+			Position fin = coup.getFin();
 			// Deplace le pion dans la case de fin.
-			grille[fin.getLigne()][fin.getColonne()] = couleur;
+			grille[fin.getLigne()][fin.getColonne()] = coup.getJoueur();
+			coups.add(coup);
 		}
 	}
 	
+	/**
+	 * Execution d'un capture associe au coup.
+	 * @param coup : le coup a jouer
+	 */
+	private void effectueCapture(Coup coup) {
+		Position debut = coup.getDebut();
+		Position fin = coup.getFin();
+		// Direction dans la ligne.
+		int direction_l = fin.getLigne()-debut.getLigne();
+		// Direction dans la colonne.
+		int direction_c = fin.getColonne()-debut.getColonne();
+		// Couleur de pion dans la case de debut de coup.
+		int couleur = grille[debut.getLigne()][debut.getColonne()];
+		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+		Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+		// Si le joueur a le choix d'aspiration ou de percusion.
+		if (joueurDoitChoisir(coup)) {
+			// Si le joueur a choisi de faire l'aspiration.
+			if ( coup.getAspiration() ) {
+				captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c, 1);
+			// Sinon, le joueur joue la percusion.
+			} else {
+				captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c, -1);
+			}
+		// Si le joueur n'a pas de choix, alors on verifie les deux possibilites et effectue la seule possible.
+		} else {
+			// Si capture devant est possible.
+			if (estAdversaire(couleur, capture_devant)) {
+				captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c, 1);
+			}
+			// Si capture derriere est possible.
+			if (estAdversaire(couleur, capture_derriere)) {
+				captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c, -1);
+			}
+		}
+	}
+
 	/**
 	 * Verifier si le coups peut etre jouer.
 	 * @param coup : le coup a jouer
@@ -114,21 +121,37 @@ public class AireJeu {
 		Position fin = coup.getFin();
 		int direction_l = fin.getLigne()-debut.getLigne();
 		int direction_c = fin.getColonne()-debut.getColonne();
+		// Si la couleur que le joueur veux joueur ne correspond pas au couleur de pion.
+		if (grille[debut.getLigne()][debut.getColonne()] != coup.getJoueur()) {
+			System.out.println("La couleur que le joueur veux joueur ne correspond pas au couleur de pion.");
+			return false;
+		}
 		// Si la position debut ou fin n'est pas sur la grille.
 		if ( !positionEstSurGrille(debut) || !positionEstSurGrille(fin) ) {
+			System.out.println("La position debut ou fin n'est pas sur la grille.");
 			return false;
 		}
 		// Si la position debut et fin ne sont pas distincts.
 		if ( debut.equals(fin) ) {
+			System.out.println("La position debut et fin ne sont pas distincts.");
 			return false;
 		}
 		// Si la position fin n'est pas adjacente vide a la position debut.
 		if ( !sontPositionsAdjacents(debut, fin) ) {
+			System.out.println("La position fin n'est pas adjacente vide a la position debut.");
 			return false;
 		}
 		
-		// Si le jouer joue la meme direction comme son coup precedent. return false
-		// Si le jouer essaie de revenir vers la meme position dans la suite de coups. return false
+		// Si le joueur jeue la meme direction comme son coup precedent.
+		if ( coups.size()>1 && memeDirectionSuiteCoups(coup) ) {
+			System.out.println("La direction de coup n'est pas compatible avec le coup precedent.");
+			return false;
+		}
+		
+		// Si le jouer essaie de revenir vers la meme position dans la suite de coups
+		if ( coups.size()>0 && memePositionDansSuiteCoups(coup) ) {
+			return false;
+		}
 		
 		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 		// Si aspiration est vrai.
@@ -140,6 +163,44 @@ public class AireJeu {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Verifie si le joueur n'essaie pas de revenir vers la meme position dans sa suite des coups.
+	 * @param le coup a jouer
+	 * @return vrai si le joueur essaie de revenir vers la meme position, faux sinon
+	 */
+	private boolean memePositionDansSuiteCoups(Coup coup) {
+		int i = coups.size()-1;
+		while (i >= 0 && (coups.get(i)).getJoueur() == coup.joueur) {
+			System.out.println("coup i : "+coups.get(i)+", i : "+1+", coup : "+coup);
+			if ((coups.get(i)).getFin() != coup.getFin() && (coups.get(i)).getDebut() != coup.getFin()) {
+				return true;
+			}
+			i--;
+		}
+		return false;
+	}
+
+	/**
+	 * Verifie si le coup n'est pas dans de meme joueur et dans le meme direction comme le coup precedent.
+	 * @param coup : le coup a jouer
+	 * @return vrai si le coup est de meme joueur et dans le meme direction, faux sinon
+	 */
+	private boolean memeDirectionSuiteCoups(Coup coup) {
+		Coup dernier_coup = coups.get(coups.size()-1);
+		Position debut_der_coup = dernier_coup.getDebut();
+		Position fin_der_coup = dernier_coup.getFin();
+		int joueur_der_coup = dernier_coup.getJoueur();
+		// Direction de coup actuel.
+		Position dir = (coup.getFin()).soustraire(coup.getDebut());
+		// Direction de dernier coup.
+		Position dir_der = fin_der_coup.soustraire(debut_der_coup);
+		// Si c'est le meme joueur et le coup a la meme direction comme le coup precedent.
+		if ( coup.getJoueur() == joueur_der_coup && (dir.equals(dir_der))) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -160,10 +221,6 @@ public class AireJeu {
 			// Positions possibles de capture des pions.
 			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
-			System.out.println("Devant : "+capture_devant);
-			System.out.println("Derriere : "+capture_derriere);
-			System.out.println("Adver devant : "+estAdversaire(couleur, capture_devant));
-			System.out.println("Adver derriere : "+estAdversaire(couleur, capture_derriere));
 			return (estAdversaire(couleur, capture_devant) && estAdversaire(couleur, capture_derriere));
 		} else {
 			return false;
@@ -211,48 +268,48 @@ public class AireJeu {
 	private ArrayList<Position> positionsAdjacents(Position p) {		// Factoriser ca (boucle).
 		ArrayList<Position> positions = new ArrayList<Position>();
 		// Case en bas.
-		if ( ((p.getLigne()+1 >= 0) && (p.getLigne()+1 <= NB_LIGNES))) {
+		if ( ((p.getLigne()+1 >= 0) && (p.getLigne()+1 < NB_LIGNES))) {
 			if (grille[p.getLigne()+1][p.getColonne()] == 0)
 				positions.add(new Position(p.getLigne()+1, p.getColonne()));
 			// Si on verifie une case avec 8 voisins, autrement dit les deux ligne et colonne impairs ou pairs.
 			if (p.getColonne()%2==1 && p.getLigne()%2==1 || p.getColonne()%2==0 && p.getLigne()%2==0) {
 				// Case en bas a droite.
-				if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 <= NB_COLONNES)) {
+				if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 < NB_COLONNES)) {
 					if (grille[p.getLigne()+1][p.getColonne()+1] == 0)
 						positions.add(new Position(p.getLigne()+1, p.getColonne()+1));
 				}
 				// Case en bas a gauche.
-				if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 <= NB_COLONNES)) {
+				if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 < NB_COLONNES)) {
 					if (grille[p.getLigne()+1][p.getColonne()-1] == 0)
 						positions.add(new Position(p.getLigne()+1, p.getColonne()-1));
 				}
 			}
 		}
 		// Case en haut.
-		if ( ((p.getLigne()-1 >= 0) && (p.getLigne()-1 <= NB_LIGNES))) {
+		if ( ((p.getLigne()-1 >= 0) && (p.getLigne()-1 < NB_LIGNES))) {
 			if (grille[p.getLigne()-1][p.getColonne()] == 0)
 				positions.add(new Position(p.getLigne()-1, p.getColonne()));
 			// Si on verifie une case avec 8 voisins, autrement dit les deux ligne et colonne impairs ou pairs.
 			if (p.getColonne()%2==1 && p.getLigne()%2==1 || p.getColonne()%2==0 && p.getLigne()%2==0) {
 				// Case en haut a droite.
-				if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 <= NB_COLONNES)) {
+				if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 < NB_COLONNES)) {
 					if (grille[p.getLigne()-1][p.getColonne()+1] == 0)
 						positions.add(new Position(p.getLigne()-1, p.getColonne()+1));
 				}
 				// Case en haut a gauche.
-				if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 <= NB_COLONNES)) {
+				if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 < NB_COLONNES)) {
 					if (grille[p.getLigne()-1][p.getColonne()-1] == 0)
 						positions.add(new Position(p.getLigne()-1, p.getColonne()-1));
 				}
 			}
 		}
 		// Case a droite.
-		if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 <= NB_COLONNES)) {
+		if ((p.getColonne()+1 >= 0) && (p.getColonne()+1 < NB_COLONNES)) {
 			if (grille[p.getLigne()][p.getColonne()+1] == 0)
 				positions.add(new Position(p.getLigne(), p.getColonne()+1));
 		}
 		// Case a gauche.
-		if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 <= NB_COLONNES)) {
+		if ((p.getColonne()-1 >= 0) && (p.getColonne()-1 < NB_COLONNES)) {
 			if (grille[p.getLigne()][p.getColonne()-1] == 0)
 				positions.add(new Position(p.getLigne(), p.getColonne()-1));
 		}
@@ -287,6 +344,12 @@ public class AireJeu {
 	 * @return vrai si la case l'adversaire, faux sinon
 	 */
 	public boolean estAdversaire(int couleur_joueur, Position case_a_verifier) {
+		if (case_a_verifier.getLigne() < 0 || case_a_verifier.getLigne() >= NB_LIGNES) {
+			return false;
+		}
+		if (case_a_verifier.getColonne() < 0 || case_a_verifier.getColonne() >= NB_COLONNES) {
+			return false;
+		}
 		if (grille[case_a_verifier.getLigne()][case_a_verifier.getColonne()] != couleur_joueur &&
 			grille[case_a_verifier.getLigne()][case_a_verifier.getColonne()] != 0) {
 			return true;
@@ -301,20 +364,22 @@ public class AireJeu {
 	 * @param couleur de joueur
 	 * @param direction ligne de capture des pions
 	 * @param direction colonne de capture des pions
+	 * @param choix entre aspiration (1) et percusion (-1)
 	 */
-	public void captureLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c) {
+	public void captureLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c, int choix) {
 		Position position;
 		int l = depart.getLigne();
 		int c = depart.getColonne();
-		while ((l>=0 && l<NB_LIGNES) && (c>=0 && c<NB_COLONNES)) {
+		while ((l >= 0 && l < NB_LIGNES) && (c >= 0 && c < NB_COLONNES)) {
+			System.out.println("direction c : "+direction_c+", direction l : "+direction_l+", l : "+l+", c : "+c);
 			position = new Position(l, c);
 			if (estAdversaire(couleur, position)) {
 				grille[l][c] = 0;
 			} else {
 				return;
 			}
-			c = c + direction_c;
-			l = l + direction_l;
+			c = c + direction_c * choix;
+			l = l + direction_l * choix;
 		}
 	}
 

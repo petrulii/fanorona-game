@@ -24,6 +24,10 @@ public class Position {
 		}
 		return false;
 	}
+
+	public Position soustraire(Position p) {
+		return new Position(ligne-p.getLigne(), colonne-p.getColonne());
+	}
 	
 	/**
 	 * Renvoie la coordonne ligne de la position

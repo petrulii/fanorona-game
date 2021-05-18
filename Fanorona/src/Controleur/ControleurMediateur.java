@@ -13,6 +13,7 @@ public class ControleurMediateur {
 	AireJeu aire_jeu;
 	AireGraphique aire_graphique;
 	Position debut;
+	// 1 - joueur blanc, 2 - joueur noir.
 	int joueur;
 	/**
 	* Joueur actuel.
@@ -46,6 +47,7 @@ public class ControleurMediateur {
 					Coup coup = new Coup(debut, fin, joueur);
 					debut = null;
 					if (!aire_jeu.coupValide(coup)) {
+						coup.getJoueur();
 						System.out.println("Le coup n'est pas valide, rejoue!");
 					} else {
 						// Si le joueur a le choix d'aspiration ou de percusion.
