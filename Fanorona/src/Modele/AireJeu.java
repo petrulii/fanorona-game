@@ -54,31 +54,38 @@ public class AireJeu {
 	}
 
 	/**
-	 * Execution d'un coup.
+	 * Creation et execution d'un coup a utiliser pour le controleur, on suppose que le coup est valide.
 	 * @param coup : le coup a jouer
 	 */
 	public void joueCoup(Coup coup) {
 		// Si le joueur etait en train d'annuler les coups et recommence a jouer.
 		if (!coups_annules.isEmpty()) { coups_annules = new ArrayList<Coup>(); }
-		// On verifie si le coup est valide.
-		if (coupValide(coup)) {
-			// Gere la capture des pions d'adversaire.
-			effectueCapture(coup);
-			// La case de debut devient vide.
-			Position debut = coup.getDebut();
-			grille[debut.getLigne()][debut.getColonne()] = 0;
-			Position fin = coup.getFin();
-			// Deplace le pion dans la case de fin.
-			grille[fin.getLigne()][fin.getColonne()] = coup.getJoueur();
-			coups.add(coup);
-		}
+		executeCoup(coup);
+	}
+
+	/**
+	 * Execution d'un coup, on suppose qu'il est valide.
+	 * @param coup : le coup a jouer
+	 */
+	public void executeCoup(Coup coup) {
+		// Gere la capture des pions d'adversaire.
+		coup.setPionsCaptures(effectueCapture(coup));
+		// La case de debut devient vide.
+		Position debut = coup.getDebut();
+		grille[debut.getLigne()][debut.getColonne()] = 0;
+		Position fin = coup.getFin();
+		// Deplace le pion dans la case de fin.
+		grille[fin.getLigne()][fin.getColonne()] = coup.getJoueur();
+		coups.add(coup);
 	}
 	
 	/**
 	 * Execution d'un capture associe au coup.
-	 * @param coup : le coup a jouer
+	 * @param le coup a jouer
+	 * @return les pions captures pendant ce coup
 	 */
-	private void effectueCapture(Coup coup) {
+	public ArrayList<Position> effectueCapture(Coup coup) {
+		ArrayList<Position> pions = new ArrayList<Position>();
 		Position debut = coup.getDebut();
 		Position fin = coup.getFin();
 		// Direction dans la ligne.
@@ -93,22 +100,23 @@ public class AireJeu {
 		if (joueurDoitChoisir(coup)) {
 			// Si le joueur a choisi de faire l'aspiration.
 			if ( coup.getAspiration() ) {
-				captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c, 1);
+				pions.addAll(captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c, 1));
 			// Sinon, le joueur joue la percusion.
 			} else {
-				captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c, -1);
+				pions.addAll(captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c, -1));
 			}
 		// Si le joueur n'a pas de choix, alors on verifie les deux possibilites et effectue la seule possible.
 		} else {
 			// Si capture devant est possible.
 			if (estAdversaire(couleur, capture_devant)) {
-				captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c, 1);
+				pions.addAll(captureLigneAdversaire(capture_devant, couleur, direction_l, direction_c, 1));
 			}
 			// Si capture derriere est possible.
 			if (estAdversaire(couleur, capture_derriere)) {
-				captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c, -1);
+				pions.addAll(captureLigneAdversaire(capture_derriere, couleur, direction_l, direction_c, -1));
 			}
 		}
+		return pions;
 	}
 
 	/**
@@ -205,27 +213,22 @@ public class AireJeu {
 
 	/**
 	 * Renvoie vrai si le joueur a le choix d'aspiration ou de percusion, faux sinon.
-	 * @param le coup a verifier pour la possibilite de choix entre l'aspiration et la percusion
+	 * @param un coup valide a verifier pour la possibilite de choix entre l'aspiration et la percusion
 	 * @return vrai si le joueur a le choix, faux sinon
 	 */
 	public boolean joueurDoitChoisir(Coup coup) {
-		if (coupValide(coup)) {
-			Position debut = coup.getDebut();
-			Position fin = coup.getFin();
-			// Direction dans la ligne.
-			int direction_l = fin.getLigne()-debut.getLigne();
-			// Direction dans la colonne.
-			int direction_c = fin.getColonne()-debut.getColonne();
-			// Couleur de pion dans la case de debut de coup.
-			int couleur = grille[debut.getLigne()][debut.getColonne()];
-			// Positions possibles de capture des pions.
-			Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
-			Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
-			return (estAdversaire(couleur, capture_devant) && estAdversaire(couleur, capture_derriere));
-		} else {
-			return false;
-		}
-			
+		Position debut = coup.getDebut();
+		Position fin = coup.getFin();
+		// Direction dans la ligne.
+		int direction_l = fin.getLigne()-debut.getLigne();
+		// Direction dans la colonne.
+		int direction_c = fin.getColonne()-debut.getColonne();
+		// Couleur de pion dans la case de debut de coup.
+		int couleur = grille[debut.getLigne()][debut.getColonne()];
+		// Positions possibles de capture des pions.
+		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+		Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+		return (estAdversaire(couleur, capture_devant) && estAdversaire(couleur, capture_derriere));
 	}
 
 	/**
@@ -236,11 +239,7 @@ public class AireJeu {
 	public boolean positionEstSurGrille(Position position) {
 		int ligne = position.getLigne();
 		int colonne = position.getColonne();
-		if (ligne < 0 || ligne > NB_LIGNES || colonne < 0 || colonne > NB_COLONNES) {
-			return false;
-		} else {
-			return true;
-		}
+		return !(ligne < 0 || ligne > NB_LIGNES || colonne < 0 || colonne > NB_COLONNES);
 	}
 	
 	/**
@@ -365,22 +364,27 @@ public class AireJeu {
 	 * @param direction ligne de capture des pions
 	 * @param direction colonne de capture des pions
 	 * @param choix entre aspiration (1) et percusion (-1)
+	 * @return les pions d'adversaire capturees
 	 */
-	public void captureLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c, int choix) {
+	public ArrayList<Position> captureLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c, int choix) {
 		Position position;
+		ArrayList<Position> pions = new ArrayList<Position>();
 		int l = depart.getLigne();
 		int c = depart.getColonne();
 		while ((l >= 0 && l < NB_LIGNES) && (c >= 0 && c < NB_COLONNES)) {
-			System.out.println("direction c : "+direction_c+", direction l : "+direction_l+", l : "+l+", c : "+c);
+			//System.out.println("direction c : "+direction_c+", direction l : "+direction_l+", l : "+l+", c : "+c);
 			position = new Position(l, c);
 			if (estAdversaire(couleur, position)) {
+				pions.add(position);
+				//System.out.println("Ajout dans pions : "+position);
 				grille[l][c] = 0;
 			} else {
-				return;
+				break;
 			}
 			c = c + direction_c * choix;
 			l = l + direction_l * choix;
 		}
+		return pions;
 	}
 
 	/**
@@ -399,11 +403,6 @@ public class AireJeu {
 	 * @return le nombre de colonnes
 	 */
 	public int getNbColonnes() { return NB_COLONNES; }
-	
-	
-	/* ********************************************* */
-	/* ANNULER ET REFAIRE UN COUP, A FAIRE PLUS TARD */
-	/* ********************************************* */
 	
 	/**
 	 * Dit si l'annulation d'un coup est possible coups annules
@@ -426,10 +425,24 @@ public class AireJeu {
 	 */
 	public void annulerCoup() {
 		if (annulationCoupPossible()) {
+			// On recupere le dernier coup dans la liste des coups de jeu.
 			Coup coup = coups.remove((coups.size() - 1));
+			System.out.println("Coup a annuler: "+coup);
+			// La case de fin devient vide.
+			Position fin = coup.getFin();
+			grille[fin.getLigne()][fin.getColonne()] = 0;
+			// Deplace le pion dans la case de debut.
+			Position debut = coup.getDebut();
+			grille[debut.getLigne()][debut.getColonne()] = coup.getJoueur();
+			// Annulation des captures.
+			int couleur_pion;
+			if (coup.getJoueur() == 1) { couleur_pion = 2; } else { couleur_pion = 1; }
+			for (Position p : coup.getPions()) {
+				grille[p.getLigne()][p.getColonne()] = couleur_pion;
+			}
 			coups_annules.add(coup);
-			//System.out.println("Coup annule: "+coup);
-			// Ici il faut changer la grille pour que ca correspond a l'annulation d'un coup.
+			afficheCoups();
+			afficheCoupsAnnules();
 		}
 	}
 	
@@ -439,32 +452,11 @@ public class AireJeu {
 	public void refaireCoup() {
 		if (refaireCoupPossible()) {
 			Coup coup = coups_annules.remove((coups_annules.size() - 1));
-			coups.add(coup);
-			//System.out.println("Coup refait: "+coup);
-			joueCoup(coup);
+			System.out.println("Coup refait: "+coup);
+			executeCoup(coup);
+			afficheCoups();
+			afficheCoupsAnnules();
 		}
-	}
-	
-	/**
-	 * Affiche les coups
-	 */
-	public void afficheCoups() {
-		System.out.print("( ");
-		for(Coup c : coups) {
-			System.out.print(c.toString() + " ");
-		}
-		System.out.println(")");
-	}
-	
-	/**
-	 * Affiche les coups annules
-	 */
-	public void afficheCoupsAnnules() {
-		System.out.print("( ");
-		for(Coup c : coups_annules) {
-			System.out.print(c.toString() + " ");
-		}
-		System.out.println(")");
 	}
 	
 	/**
@@ -481,5 +473,27 @@ public class AireJeu {
 /*	public void sauvegarderHistoriqueCoups() {
 		HistoriqueCoups.exporter(coups);
 	}*/
+	
+	/**
+	 * Affiche les coups
+	 */
+	public void afficheCoups() {
+		System.out.print("Coups de jeu : ( ");
+		for(Coup c : coups) {
+			System.out.print(c.toString() + " ");
+		}
+		System.out.println(")");
+	}
+	
+	/**
+	 * Affiche les coups annules
+	 */
+	public void afficheCoupsAnnules() {
+		System.out.print("Coups annules : ( ");
+		for(Coup c : coups_annules) {
+			System.out.print(c.toString() + " ");
+		}
+		System.out.println(")");
+	}
 
 }

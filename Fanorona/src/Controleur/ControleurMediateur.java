@@ -56,6 +56,7 @@ public class ControleurMediateur {
 						}
 						aire_jeu.joueCoup(coup);
 						System.out.println("Joueur "+joueur+" viens de jouer.");
+						System.out.println("Son coup : "+coup);
 						aire_graphique.repaint();
 						if (aire_jeu.gameOver()) {
 							System.out.println("Game Over!");
@@ -76,6 +77,30 @@ public class ControleurMediateur {
 	 * @param l'instruction a effectuer
      */
     public void instructionClavier(String instruction) {
+		switch (instruction) {
+			case "Annuler":
+				if (aire_jeu.annulationCoupPossible()) {
+					aire_jeu.annulerCoup();
+					// Changement de joueur.
+					if (joueur == 1) { joueur = 2; } else { joueur = 1; }
+					aire_graphique.repaint();
+				}
+				break;
+			case "Refaire":
+				if (aire_jeu.refaireCoupPossible()) {
+					aire_jeu.refaireCoup();
+					if (aire_jeu.gameOver()) {
+						System.out.println("Game Over!");
+						System.exit(0);
+					}
+					// Changement de joueur.
+					if (joueur == 1) { joueur = 2; } else { joueur = 1; }
+					aire_graphique.repaint();
+				}
+				break;
+			default:
+				System.out.println("Le controleur ne connait pas cette instruction souris.");
+		}
 	}
     
 }
