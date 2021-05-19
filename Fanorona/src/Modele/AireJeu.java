@@ -470,9 +470,9 @@ public class AireJeu {
 	/**
 	 * Ecrit la liste des coups dans un fichier
 	 */
-/*	public void sauvegarderHistoriqueCoups() {
+	public void sauvegarderHistoriqueCoups() {
 		HistoriqueCoups.exporter(coups);
-	}*/
+	}
 	
 	/**
 	 * Affiche les coups

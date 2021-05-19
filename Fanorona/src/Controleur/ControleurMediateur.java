@@ -6,7 +6,7 @@ import Vue.AireGraphique;
 
 /**
  * La classe principale de controleur qui recoit les notifications de la vue et decide qoui faire.
- * @author Petrulionyte Ieva
+ * @author Petrulionyte Ieva, Yu Ran
  * @version 1.0
  */
 public class ControleurMediateur {
@@ -97,6 +97,10 @@ public class ControleurMediateur {
 					if (joueur == 1) { joueur = 2; } else { joueur = 1; }
 					aire_graphique.repaint();
 				}
+				break;
+			case "Exporter":
+				aire_jeu.sauvegarderHistoriqueCoups();
+				System.out.println("Demande export d'hisorique.");
 				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction souris.");

@@ -20,10 +20,10 @@ public class EcouteurClavier extends KeyAdapter {
 			case KeyEvent.VK_R:
 				control.instructionClavier("Refaire");
 				break;
-			/*case KeyEvent.VK_E:
+			case KeyEvent.VK_E:
 				control.instructionClavier("Exporter");
 				break;
-			case KeyEvent.VK_I:
+			/*case KeyEvent.VK_I:
 				control.instructionClavier("Activer IA");
 				break;*/
 		}

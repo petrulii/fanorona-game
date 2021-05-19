@@ -13,29 +13,36 @@ public class HistoriqueCoups {
     
     /**
      * Prend une liste des coups et l'ecrit dans un fichier
-     * @param coups : la liste des coups
-     * @return le dernier coup  
+     * @param la liste des coups
+     * @throws IOException
      */
-    /*public static void exporter(ArrayList<Coup> coups) {
+    public static void exporter(ArrayList<Coup> coups) {
     	try {
     		Random r = new Random();
-    		File file = new File("res"+File.separator+"Historiques"+File.separator+"historique"+r.nextInt()+".txt");
+    		String nom_fichier = "res"+File.separator+"Historiques"+File.separator+"historique"+r.nextInt()+".txt";
+    		File file = new File(nom_fichier);
             BufferedWriter f = new BufferedWriter(new FileWriter(file));
-            if(coups.size() == 0) {
+            if(coups.isEmpty()) {
             	System.out.println("Liste des coups est vide");
             }else {
             	//Parcourir la liste
-            	for(Coup c:coups) {
-                	f.write(c.getLigne() + " " + c.getColonne()+ "\r\n");
+            	for(Coup c : coups) {
+            		String s;
+            		s = "Debut: "+c.getDebut()+", fin: "+c.getFin()+" , aspiration: "+c.getAspiration()+" , joueur: "+c.getJoueur();
+            		s = s + ", pions captures: [ ";
+            		for (Position p : c.getPions()) {
+            			s = s+p+" ";
+            		}
+            		s = s+"].";
+                	f.write(s+"\n");
                 }
             }
-            
             f.close();
+			System.out.println("L'hisorique a ete exporte.");
         } catch (IOException e) {
-        	System.out.println("Erreur de creer un fichier." + "les_coups.txt");
-			
+        	System.out.println("Impossible de creer le fichier d'historique d'un jeu.");
         }
-    }*/
+    }
     
     /**
      * Prend un nom de fichier et lit un liste de coups dans ce fichier
