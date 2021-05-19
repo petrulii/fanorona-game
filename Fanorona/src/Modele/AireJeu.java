@@ -161,6 +161,11 @@ public class AireJeu {
 			return false;
 		}
 		
+		// S'il existe des coups avec des captures mais ce coup n'effectue pas de captures.
+		if ( !possibleCapturer(coup) && jouerPeutCapturer(coup.getJoueur())) {
+			return false;
+		}
+		
 		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 		// Si aspiration est vrai.
 		if ( coup.getAspiration() ) {
@@ -171,6 +176,61 @@ public class AireJeu {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Renvoie vrai si le coup fait une capture.
+	 * @param le coup a jouer
+	 * @return vrai si le coup fait une capture, faux sinon
+	 */
+	private boolean possibleCapturer(Coup coup) {
+		Position debut = coup.getDebut();
+		Position fin = coup.getFin();
+		// Direction dans la ligne.
+		int direction_l = fin.getLigne()-debut.getLigne();
+		// Direction dans la colonne.
+		int direction_c = fin.getColonne()-debut.getColonne();
+		// Couleur de pion dans la case de debut de coup.
+		int couleur = coup.getJoueur();
+		int couleur_adversaire;
+		if (couleur == 1) { couleur_adversaire = 2; } else { couleur_adversaire = 1; }
+		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+		Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+		boolean resultat = false;
+		if (positionEstSurGrille(capture_devant)) {
+			resultat = resultat || grille[capture_devant.getLigne()][capture_devant.getColonne()]==couleur_adversaire;
+		} else if (positionEstSurGrille(capture_derriere)) {
+			resultat = resultat ||grille[capture_derriere.getLigne()][capture_derriere.getColonne()]==couleur_adversaire;
+		}
+		return resultat;
+	}
+
+	/**
+	 * Renvoie vrai si dans la grille il y a des coups de ce joueur avec des captures possibles.
+	 * @param le numero de joueur
+	 * @return vrai si dans la grille il y a des coups de ce joueur avec des captures possibles, faux sinon
+	 */
+	private boolean jouerPeutCapturer(int joueur) {
+		int joueur_adversaire;
+		if (joueur == 1) { joueur_adversaire = 2; } else { joueur_adversaire = 1; }
+		Position debut;
+		Coup coup;
+		// Verifier si dans la grille il y a des coups de ce joueur avec des captures possibles.for (int i = 0; i < NB_LIGNES; i++) {
+		for (int l = 0; l < NB_LIGNES; l++) {
+			for (int c = 0; c < NB_COLONNES; c++) {
+				if (grille[l][c] == joueur_adversaire) {
+					debut = new Position(l, c);
+					ArrayList<Position> voisins = positionsAdjacents(debut);
+					for (Position fin : voisins) {
+						coup = new Coup(debut, fin, joueur);
+						if (possibleCapturer(coup)) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -239,7 +299,7 @@ public class AireJeu {
 	public boolean positionEstSurGrille(Position position) {
 		int ligne = position.getLigne();
 		int colonne = position.getColonne();
-		return !(ligne < 0 || ligne > NB_LIGNES || colonne < 0 || colonne > NB_COLONNES);
+		return (ligne >= 0 && ligne < NB_LIGNES && colonne >= 0 && colonne < NB_COLONNES);
 	}
 	
 	/**

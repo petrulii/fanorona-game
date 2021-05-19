@@ -13,11 +13,15 @@ public class ControleurMediateur {
 	AireJeu aire_jeu;
 	AireGraphique aire_graphique;
 	Position debut;
-	// 1 - joueur blanc, 2 - joueur noir.
+	/**
+	* Joueur actuel, 1 - joueur blanc, 2 - joueur noir.
+	*/
 	int joueur;
 	/**
-	* Joueur actuel.
+	* Activation IA, 0 - desactiver, 1 - IA joue premier joueur, 2 - IA joue deuxieme joueur.
 	*/
+	int active_IA;
+	AleatoireIA ia;
 
 	public ControleurMediateur(AireJeu a, AireGraphique a_graphique) {
 		aire_jeu = a;
@@ -25,6 +29,7 @@ public class ControleurMediateur {
 		joueur = 1;
 		// Si debut est null alors on est au debut de creation d'un coup.
 		debut = null;
+		active_IA = 0;
 	}
 
     /**
@@ -64,6 +69,14 @@ public class ControleurMediateur {
 						}
 						// Changement de joueur.
 						if (joueur == 1) { joueur = 2; } else { joueur = 1; }
+						if (ia != null && active_IA == joueur) {					// on lance le coup d'IA
+							Coup coup_ia = ia.donneCoup();
+							// Si le joueur a le choix d'aspiration ou de percusion.
+							if (aire_jeu.joueurDoitChoisir(coup_ia)) {
+								coup.setAspiration(ia.faitChoixAspiration());
+							}
+							CoupLentIA l = new CoupLentIA(this, coup_ia);
+						}
 					}
 				}
 				break;
@@ -102,9 +115,32 @@ public class ControleurMediateur {
 				aire_jeu.sauvegarderHistoriqueCoups();
 				System.out.println("Demande export d'hisorique.");
 				break;
+			case "Activer IA":		// Active le joueur IA.
+				ia = new AleatoireIA(aire_jeu, joueur);
+				active_IA = joueur;
+				Coup coup_ia = ia.donneCoup();
+				joueIA(coup_ia);
+				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction souris.");
 		}
+	}
+
+    /**
+     * Prend le coup d'IA et l'effectue, on suppose que le coup IA est valide.
+	 * @param le coup d'IA a effectuer
+     */
+    public void joueIA(Coup coup) {
+    	aire_jeu.joueCoup(coup);
+		System.out.println("Joueur IA "+joueur+" viens de jouer.");
+		System.out.println("Son coup : "+coup);
+		aire_graphique.repaint();
+		if (aire_jeu.gameOver()) {
+			System.out.println("Game Over!");
+			System.exit(0);
+		}
+		// Changement de joueur.
+		if (joueur == 1) { joueur = 2; } else { joueur = 1; }
 	}
     
 }

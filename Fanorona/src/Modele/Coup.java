@@ -87,8 +87,10 @@ public class Coup {
 	public String toString() {
 		String s = new String();
 		s = "Debut: "+debut+", fin: "+fin+" , aspiration: "+aspiration+" , joueur: "+joueur+", pions captures: [ ";
-		for (Position p : pions_captures) {
-			s = s+p.toString()+" ";
+		if (pions_captures != null) {
+			for (Position p : pions_captures) {
+					s = s+p.toString()+" ";
+				}
 		}
 		s = s+"].";
 		return s;
