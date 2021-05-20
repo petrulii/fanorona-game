@@ -36,7 +36,7 @@ public class AireGraphique extends JComponent {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		// Graphics 2D est le vrai type de l'objet pass√© en param√®tre
+		// Graphics 2D est le vrai type de l'objet pass®¶ en param®®tre
 		// Le cast permet d'avoir acces a un peu plus de primitives de dessin
 		Graphics2D drawable = (Graphics2D) g;
 

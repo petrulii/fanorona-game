@@ -162,7 +162,10 @@ public class AireJeu {
 		}
 		
 		// S'il existe des coups avec des captures mais ce coup n'effectue pas de captures.
+		//System.out.println("** jouerPeutCapturer = " + jouerPeutCapturer(coup.getJoueur()));
+		//System.out.println("**  possibleCapturer = "+ possibleCapturer(coup));
 		if ( !possibleCapturer(coup) && jouerPeutCapturer(coup.getJoueur())) {
+			//System.out.println("Il y a des captures possible. Mais votre coup ne fait pas une capture.");
 			return false;
 		}
 		
@@ -197,10 +200,12 @@ public class AireJeu {
 		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
 		Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
 		boolean resultat = false;
-		if (positionEstSurGrille(capture_devant)) {
-			resultat = resultat || grille[capture_devant.getLigne()][capture_devant.getColonne()]==couleur_adversaire;
-		} else if (positionEstSurGrille(capture_derriere)) {
-			resultat = resultat ||grille[capture_derriere.getLigne()][capture_derriere.getColonne()]==couleur_adversaire;
+
+		if(positionEstSurGrille(capture_devant) && grille[capture_devant.getLigne()][capture_devant.getColonne()]==couleur_adversaire) {
+			resultat = true;
+		}
+		if(positionEstSurGrille(capture_derriere) && grille[capture_derriere.getLigne()][capture_derriere.getColonne()]==couleur_adversaire) {
+			resultat = true;
 		}
 		return resultat;
 	}
@@ -218,12 +223,13 @@ public class AireJeu {
 		// Verifier si dans la grille il y a des coups de ce joueur avec des captures possibles.for (int i = 0; i < NB_LIGNES; i++) {
 		for (int l = 0; l < NB_LIGNES; l++) {
 			for (int c = 0; c < NB_COLONNES; c++) {
-				if (grille[l][c] == joueur_adversaire) {
+				if (grille[l][c] == joueur) {
 					debut = new Position(l, c);
 					ArrayList<Position> voisins = positionsAdjacents(debut);
 					for (Position fin : voisins) {
 						coup = new Coup(debut, fin, joueur);
 						if (possibleCapturer(coup)) {
+							//System.out.println("jouerPeutCapturer----- "+coup);
 							return true;
 						}
 					}
