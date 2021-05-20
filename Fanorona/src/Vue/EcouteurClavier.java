@@ -15,16 +15,22 @@ public class EcouteurClavier extends KeyAdapter {
 	public void keyPressed(KeyEvent event) {
 		switch (event.getKeyCode()) {
 			case KeyEvent.VK_A:
-				control.instructionClavier("Annuler");
+				control.instruction("Annuler");
 				break;
 			case KeyEvent.VK_R:
-				control.instructionClavier("Refaire");
+				control.instruction("Refaire");
 				break;
 			case KeyEvent.VK_E:
-				control.instructionClavier("Exporter");
+				control.instruction("Exporter");
 				break;
 			case KeyEvent.VK_I:
-				control.instructionClavier("Activer IA");
+				control.instruction("Activer IA");
+				break;
+			case KeyEvent.VK_DOWN:
+				control.instruction("Percusion");
+				break;
+			case KeyEvent.VK_UP:
+				control.instruction("Aspiration");
 				break;
 		}
 	}

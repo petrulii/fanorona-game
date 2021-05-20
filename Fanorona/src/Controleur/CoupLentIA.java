@@ -19,7 +19,7 @@ public class CoupLentIA implements ActionListener {
 		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			control.joueIA(coup);
+			control.joueCoup(coup);//control.joueIA(coup);
 			t.stop();
 		}
 	}

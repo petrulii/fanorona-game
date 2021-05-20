@@ -1,5 +1,6 @@
 package Controleur;
 
+import java.util.ArrayList;
 import java.util.Random;
 import Modele.*;
 
@@ -29,7 +30,7 @@ public class AleatoireIA implements IA {
     }
     
     /**
-     * Genere un coup aleatoire
+     * Genere un coup aleatoire.
      * @return un Coup valide
      */
     public Coup donneCoup() {
@@ -47,6 +48,16 @@ public class AleatoireIA implements IA {
 	public boolean faitChoixAspiration() {
 		Random r = new Random();
 		return r.nextBoolean();
+	}
+
+    /**
+     * Choisit un coup aleatoirement dans la liste des coups possibles.
+     * @param la liste des coups possibles
+     * @return un Coup valide
+     */
+    public Coup donneCoup(ArrayList<Coup> coupsPossibles) {
+		int index = randomInRange(0, coupsPossibles.size()-1);
+		return coupsPossibles.get(index);
 	}
 
 }
