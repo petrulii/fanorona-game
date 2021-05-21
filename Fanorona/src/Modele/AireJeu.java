@@ -8,7 +8,6 @@ import java.util.ArrayList;
  * @version 1.0
  */
 public class AireJeu {
-	// Ajouter methode pour renvoyer la liste des coups possibles d'un joueur.
 	public final int BLANC = 1;
 	public final int NOIR = 2;
 	final int NB_LIGNES = 5;
@@ -137,41 +136,41 @@ public class AireJeu {
 		int direction_c = fin.getColonne()-debut.getColonne();
 		// Si la couleur que le joueur veux joueur ne correspond pas au couleur de pion.
 		if (grille[debut.getLigne()][debut.getColonne()] != coup.getJoueur()) {
-			System.out.println("La couleur que le joueur veux joueur ne correspond pas au couleur de pion.");
+			//System.out.println("La couleur que le joueur veux joueur ne correspond pas au couleur de pion.");
 			return false;
 		}
 		// Si la position debut ou fin n'est pas sur la grille.
 		if ( !positionEstSurGrille(debut) || !positionEstSurGrille(fin) ) {
-			System.out.println("La position debut ou fin n'est pas sur la grille.");
+			//System.out.println("La position debut ou fin n'est pas sur la grille.");
 			return false;
 		}
 		// Si la position debut et fin ne sont pas distincts.
 		if ( debut.equals(fin) ) {
-			System.out.println("La position debut et fin ne sont pas distincts.");
+			//System.out.println("La position debut et fin ne sont pas distincts.");
 			return false;
 		}
 		// Si la position fin n'est pas adjacente vide a la position debut.
 		if ( !sontPositionsAdjacents(debut, fin) ) {
-			System.out.println("La position fin n'est pas adjacente vide a la position debut.");
+			//System.out.println("La position fin n'est pas adjacente vide a la position debut.");
 			return false;
 		}
 		
 		// Si le joueur jeue la meme direction comme son coup precedent.
-		if ( coups.size()>1 && memeDirectionSuiteCoups(coup) ) {
-			System.out.println("La direction de coup n'est pas compatible avec le coup precedent.");
+		if ( coups.size()>0 && memeDirectionSuiteCoups(coup) ) {
+			//System.out.println("La direction de coup n'est pas compatible avec le coup precedent.");
 			return false;
 		}
 		
 		// Si le jouer essaie de revenir vers la meme position dans la suite de coups
-		System.out.println("Meme position : "+memePositionDansSuiteCoups(coup)+", coups size : "+(coups.size()>0)+".");
+		//System.out.println("Meme position : "+memePositionDansSuiteCoups(coup)+", coups size : "+(coups.size()>0)+".");
 		if ( coups.size()>0 && memePositionDansSuiteCoups(coup) ) {
-			System.out.println("Le jouer essaie de revenir vers la meme position dans la suite de coups.");
+			//System.out.println("Le jouer essaie de revenir vers la meme position dans la suite de coups.");
 			return false;
 		}
 		
 		// S'il existe des coups avec des captures mais ce coup n'effectue pas de captures.
 		if ( !coupFaitCapture(coup) && joueurPeutCapturer(coup.getJoueur())) {
-			System.out.println("Il y a des captures possible. Mais le coup ne fait pas de capture.");
+			//System.out.println("Il y a des captures possible. Mais le coup ne fait pas de capture.");
 			return false;
 		}
 		
@@ -184,7 +183,7 @@ public class AireJeu {
 				return false;
 			}
 		}
-		return true;
+		return (coup != null);
 	}
 
 	/**
@@ -279,9 +278,9 @@ public class AireJeu {
 		ArrayList<Position> voisins = positionsAdjacents(debut);
 		for (Position fin : voisins) {
 			coup = new Coup(debut, fin, joueur);
-			System.out.println("Je test : "+coup.getDebut()+coup.getFin()+".");
+			//System.out.println("Je test : "+coup.getDebut()+coup.getFin()+".");
 			if (coupValide(coup)) {
-				System.out.println("Ca passe : "+coup.getDebut()+coup.getFin()+".");
+				//System.out.println("Ca passe : "+coup.getDebut()+coup.getFin()+".");
 				return true;
 			}
 		}
@@ -295,7 +294,7 @@ public class AireJeu {
 	 */
 	private boolean memePositionDansSuiteCoups(Coup coup) {
 		Position destination = coup.getFin();
-		System.out.println("Destination : "+destination+".");
+		//System.out.println("Destination : "+destination+".");
 		int i = coups.size()-1;
 		while (i >= 0 && (coups.get(i)).getJoueur() == coup.joueur) {
 			if ((coups.get(i)).getFin().equals(destination)) {
@@ -310,10 +309,10 @@ public class AireJeu {
 		// Un seul coup dans la suite de coups de joueur.
 		if (i == coups.size()-2) {
 			int j = coups.size()-1;
-			System.out.println("Le seul dans la suite : "+(coups.get(j)).getDebut()+(coups.get(j)).getFin()+".");
+			//System.out.println("Le seul dans la suite : "+(coups.get(j)).getDebut()+(coups.get(j)).getFin()+".");
 			return ((coups.get(j).getDebut()).equals(destination));
 		}
-		System.out.println("Le dernier dans la suite : "+(coups.get(i+1)).getDebut()+(coups.get(i+1)).getFin()+".");
+		//System.out.println("Le dernier dans la suite : "+(coups.get(i+1)).getDebut()+(coups.get(i+1)).getFin()+".");
 		return (((coups.get(i+1)).getDebut()).equals(destination));
 	}
 
@@ -648,5 +647,50 @@ public class AireJeu {
 		}
 		System.out.println(")");
 	}
+	
+	/**
+	 * Renvoie la copie de la classe AireJeu.
+	 */
+	public AireJeu copy() {
+		int[][] copie_grille = copyGrille();
+		ArrayList<Coup> coups_copie = copyListeCoups();
+		Coup choix = choix_aspiration_percusion;
+		AireJeu aire = new AireJeu();
+		aire.setGrille(copie_grille);
+		aire.setCoups(coups_copie);
+		aire.setChoixAspirationPercusion(choix);
+		return aire;
+	}
+    
+	private void setCoups(ArrayList<Coup> coups_copie) {
+		this.coups = coups_copie;
+	}
+
+	private void setGrille(int[][] copie_grille) {
+		this.grille = copie_grille;
+	}
+
+	/**
+     * Copy d'un grille qui represente un configuration d'un plateau de jeu
+     * @param un grille qui represente un configuration d'un plateau de jeu
+     * @return un copie profond d'un grille qui represente un configuration d'un plateau de jeu
+     */
+    public int[][] copyGrille() {
+    	int[][] grille_copie = new int[NB_LIGNES][NB_COLONNES];
+		for (int i = 0; i < NB_LIGNES; i++) {
+			for (int j = 0; j < NB_COLONNES; j++) {
+				grille_copie[i][j] = grille[i][j];
+			}
+		}
+		return grille_copie;
+    }
+    
+    public ArrayList<Coup> copyListeCoups() {
+    	ArrayList<Coup> coups_copie = new ArrayList<Coup>();
+		for (Coup c : coups) {
+			coups_copie.add(c);
+		}
+		return coups_copie;
+    }
 
 }

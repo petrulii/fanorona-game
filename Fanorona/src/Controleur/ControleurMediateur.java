@@ -21,7 +21,7 @@ public class ControleurMediateur {
 	* Activation IA, 0 - desactiver, 1 - IA joue premier joueur, 2 - IA joue deuxieme joueur.
 	*/
 	int active_IA;
-	AleatoireIA ia;
+	MinMaxIA ia;//AleatoireIA ia;
 
 	public ControleurMediateur(AireJeu aire_jeu, AireGraphique aire_graphique) {
 		this.aire_jeu = aire_jeu;
@@ -104,9 +104,9 @@ public class ControleurMediateur {
 				break;
 			// Active le joueur IA, le joueur actuel va etre remplace par un IA.
 			case "Activer IA":
-				ia = new AleatoireIA(aire_jeu, joueur);
+				ia = new MinMaxIA(aire_jeu, joueur);//new AleatoireIA(aire_jeu, joueur);
 				active_IA = joueur;
-				Coup coup_ia = ia.donneCoup();
+				Coup coup_ia = ia.donneCoup(null);
 				joueCoup(coup_ia);
 				break;
 			default:
@@ -141,8 +141,14 @@ public class ControleurMediateur {
 		}
 		// Si le joueur actuel est un IA on commence le coup d'IA.
 		if (ia != null && active_IA == joueur) {
-			// On recupere le coup d'IA valide.
-			Coup coup_ia = ia.donneCoup(aire_jeu.coupsPossibles(joueur));
+			Coup coup_ia;
+			if (coup != null && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
+				// On recupere le coup d'IA valide qui commence a la fin de dernier coup.
+				coup_ia = ia.donneCoup(coup.getFin());
+			} else {
+				// On recupere le coup d'IA valide.
+				coup_ia = ia.donneCoup(null);
+			}
 			// Si le joueur IA a le choix d'aspiration ou de percusion.
 			if (aire_jeu.joueurDoitChoisir(coup_ia)) {
 				// On choisit aleatoirement.
