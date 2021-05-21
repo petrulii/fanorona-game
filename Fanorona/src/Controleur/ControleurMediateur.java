@@ -121,6 +121,7 @@ public class ControleurMediateur {
     public void joueCoup(Coup coup) {
     	// Ici le choix est deja fait donc on dit au model qu'il n'attends plus le choix de joueur.
 		aire_jeu.setChoixAspirationPercusion(null);
+		boolean effectue_capture = aire_jeu.coupFaitCapture(coup);
     	// On joue le coup.
 		aire_jeu.joueCoup(coup);
 		System.out.println("Joueur "+joueur+" viens de jouer.");
@@ -134,7 +135,7 @@ public class ControleurMediateur {
 			System.exit(0);
 		}
 		// Changement de joueur.
-		if (aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
+		if (effectue_capture && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
 			System.out.println("Joueur peut continuer.");
 		} else {
 			changeJoueur();
@@ -142,7 +143,7 @@ public class ControleurMediateur {
 		// Si le joueur actuel est un IA on commence le coup d'IA.
 		if (ia != null && active_IA == joueur) {
 			Coup coup_ia;
-			if (coup != null && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
+			if (coup != null && effectue_capture && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
 				// On recupere le coup d'IA valide qui commence a la fin de dernier coup.
 				coup_ia = ia.donneCoup(coup.getFin());
 			} else {

@@ -162,12 +162,11 @@ public class AireJeu {
 		}
 		
 		// Si le jouer essaie de revenir vers la meme position dans la suite de coups
-		//System.out.println("Meme position : "+memePositionDansSuiteCoups(coup)+", coups size : "+(coups.size()>0)+".");
 		if ( coups.size()>0 && memePositionDansSuiteCoups(coup) ) {
 			//System.out.println("Le jouer essaie de revenir vers la meme position dans la suite de coups.");
 			return false;
 		}
-		
+
 		// S'il existe des coups avec des captures mais ce coup n'effectue pas de captures.
 		if ( !coupFaitCapture(coup) && joueurPeutCapturer(coup.getJoueur())) {
 			//System.out.println("Il y a des captures possible. Mais le coup ne fait pas de capture.");
@@ -191,7 +190,7 @@ public class AireJeu {
 	 * @param le coup a jouer
 	 * @return vrai si le coup fait une capture, faux sinon
 	 */
-	private boolean coupFaitCapture(Coup coup) {
+	public boolean coupFaitCapture(Coup coup) {
 		Position debut = coup.getDebut();
 		Position fin = coup.getFin();
 		// Direction dans la ligne.
@@ -279,7 +278,7 @@ public class AireJeu {
 		for (Position fin : voisins) {
 			coup = new Coup(debut, fin, joueur);
 			//System.out.println("Je test : "+coup.getDebut()+coup.getFin()+".");
-			if (coupValide(coup)) {
+			if (coupFaitCapture(coup) && coupValide(coup)) {
 				//System.out.println("Ca passe : "+coup.getDebut()+coup.getFin()+".");
 				return true;
 			}
