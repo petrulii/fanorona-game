@@ -20,7 +20,6 @@ public class AireGraphique extends JComponent {
 			System.out.println("J'arrive pas a construire les images." + "Images" + File.separator + nom + ".png");
 			System.exit(1);
 		}
-		//System.out.println("Construceur aire ici.");
 		return img;
 	}
 
@@ -36,7 +35,7 @@ public class AireGraphique extends JComponent {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		// Graphics 2D est le vrai type de l'objet pass¨¦ en param¨¨tre
+		// Graphics 2D est le vrai type de l'objet passï¿½ï¿½ en paramï¿½ï¿½tre
 		// Le cast permet d'avoir acces a un peu plus de primitives de dessin
 		Graphics2D drawable = (Graphics2D) g;
 
@@ -48,8 +47,8 @@ public class AireGraphique extends JComponent {
 		drawable.clearRect(0, 0, getWidth(), getHeight());
 		
 		int[][] grille = aire.getGrille();
-		for (int j = 0; j < aire.getNbColonnes(); j++) {
-			for (int i = 0; i < aire.getNbLignes(); i++) {
+		for (int j = 0; j < AireJeu.NB_COLONNES; j++) {
+			for (int i = 0; i < AireJeu.NB_LIGNES; i++) {
 				switch(grille[i][j]) {
 				    case 1:
 						// Si c'est une case avec 8 voisins, autrement dit les deux ligne et colonne impairs ou pairs.
@@ -89,11 +88,11 @@ public class AireGraphique extends JComponent {
 	}
 
 	public int getCaseWidth() {
-		return getWidth()/aire.getNbColonnes();
+		return getWidth()/AireJeu.NB_COLONNES;
 	}
 
 	public int getCaseHeight() {
-		return getHeight()/aire.getNbLignes();
+		return getHeight()/AireJeu.NB_LIGNES;
 	}
 
 }

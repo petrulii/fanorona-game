@@ -33,22 +33,15 @@ public class AleatoireIA implements IA {
      * Genere un coup aleatoire.
      * @return un Coup valide
      */
-    public Coup donneCoup() {
-    	Position debut = new Position(0,0);
+    public Coup donneCoup(Position debut) {
     	Position fin = new Position(0,0);
     	Coup coup = new Coup(debut, fin, joueur);
     	while (!aire_jeu.coupValide(coup)) {
-    		debut = new Position(randomInRange(0, aire_jeu.getNbLignes()-1), randomInRange(0, aire_jeu.getNbColonnes()-1));
-    		fin =  new Position(randomInRange(0, aire_jeu.getNbLignes()-1), randomInRange(0, aire_jeu.getNbColonnes()-1));
+    		fin =  new Position(randomInRange(0, AireJeu.NB_LIGNES-1), randomInRange(0, AireJeu.NB_COLONNES-1));
     		coup = new Coup(debut, fin, joueur);
     	}
 		return coup;
     }
-
-	public boolean faitChoixAspiration() {
-		Random r = new Random();
-		return r.nextBoolean();
-	}
 
     /**
      * Choisit un coup aleatoirement dans la liste des coups possibles.
@@ -58,6 +51,16 @@ public class AleatoireIA implements IA {
     public Coup donneCoup(ArrayList<Coup> coupsPossibles) {
 		int index = randomInRange(0, coupsPossibles.size()-1);
 		return coupsPossibles.get(index);
+	}
+
+	/**
+     * Fait un choix aleatoire entre l'aspiration et percusion.
+     * @return vrai si choix d'aspiration, faux sinon
+     */
+    @Override
+	public boolean faitChoixAspiration() {
+		Random r = new Random();
+		return r.nextBoolean();
 	}
 
 }

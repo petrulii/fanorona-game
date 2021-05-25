@@ -21,13 +21,13 @@ public class ControleurMediateur {
 	* Activation IA, 0 - desactiver, 1 - IA joue premier joueur, 2 - IA joue deuxieme joueur.
 	*/
 	int active_IA;
-	MinMaxIA ia;//AleatoireIA ia;
+	MinMaxIA ia;
 
 	public ControleurMediateur(AireJeu aire_jeu, AireGraphique aire_graphique) {
 		this.aire_jeu = aire_jeu;
 		this.aire_graphique = aire_graphique;
 		// Les blancs commence le jeu.
-		this.joueur = aire_jeu.BLANC;
+		this.joueur = AireJeu.BLANC;
 		// Si l'attribut debut est null alors on est au debut de creation d'un coup.
 		this.debut = null;
 		this.active_IA = 0;
@@ -101,6 +101,12 @@ public class ControleurMediateur {
 			case "Exporter":
 				aire_jeu.sauvegarderHistoriqueCoups();
 				System.out.println("Demande export d'hisorique.");
+				break;
+			// Charger un historique de jeu.
+			case "Importer":
+				aire_jeu.chargeHistoriqueCoups("historique-05_25_2021-15_09_32.txt");
+				aire_graphique.repaint();
+				System.out.println("Demande import d'hisorique.");
 				break;
 			// Active le joueur IA, le joueur actuel va etre remplace par un IA.
 			case "Activer IA":
@@ -201,7 +207,7 @@ public class ControleurMediateur {
      * Change de joueur.
      */
     public void changeJoueur() {
-		if (joueur == aire_jeu.BLANC) { joueur = aire_jeu.NOIR; } else { joueur = aire_jeu.BLANC; }
+		if (joueur == AireJeu.BLANC) { joueur = AireJeu.NOIR; } else { joueur = AireJeu.BLANC; }
     }
     
 }

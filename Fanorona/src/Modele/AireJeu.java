@@ -8,30 +8,31 @@ import java.util.ArrayList;
  * @version 1.0
  */
 public class AireJeu {
-	public final int BLANC = 1;
-	public final int NOIR = 2;
-	final int NB_LIGNES = 5;
-	final int NB_COLONNES = 9;
+	public static final int BLANC = 1;
+	public static final int NOIR = 2;
+	public static final int NB_LIGNES = 5;
+	public static final int NB_COLONNES = 9;
 	// 0 - case vide, 1 - case blanc, 2 - case noir.
-	public int[][] grille;
+	private int[][] grille;
+	private HistoriqueCoups historique;
+	// 0 - case vide, 1 - case blanc, 2 - case noir.
+	int joueur; // FAIRE CA + getter, ou coup actuel?
 	/**
 	* Ce attribut n'est pas null si l'utilisateur doit choisir entre l'aspiration et percusion.
 	*/
 	Coup choix_aspiration_percusion;
-	/**
-	* Liste pour enregistrer les coups.
-	*/
-	ArrayList<Coup> coups;
-	/**
-	* Liste pour se souvenir des coups annules en cours d'annulation.
-	*/
-	ArrayList<Coup> coups_annules;
 
+
+	/*******************/
+	/** CONSTRUCTEURS **/
+	/*******************/
+
+	/**
+	 * Constructeur d'aire de jeu avec la grille initial de fanorona.
+	 */
 	public AireJeu() {
-		// Initialisation d'un liste pour l'enregistrement des coups.
-		coups = new ArrayList<Coup>();
-		// Initialisation d'un liste pour l'annulation des coups.
-		coups_annules = new ArrayList<Coup>();
+		// Initialisation d'historique pour l'enregistrement de jeu.
+		historique = new HistoriqueCoups();
 		// Initialisation d'une grille de jeu.
 		this.grille = new int[NB_LIGNES][NB_COLONNES];
 		// Remplissage initial d'une grille de jeu.
@@ -59,12 +60,95 @@ public class AireJeu {
 	}
 
 	/**
+	 * Constructeur utilise pour faire un deep copie d'aire de jeu.
+	 * @param copie_grille : une copie de grille de jeu
+	 * @param historique_copie : une copie d'historique de jeu
+	 * @param choix : le coup choix si l'utilisateur doit choisir entre l'aspiration et percusion
+	 */
+	public AireJeu(int[][] copie_grille, HistoriqueCoups historique_copie, Coup choix) {
+		this.grille = copie_grille;
+		this.historique = historique_copie;
+		this.choix_aspiration_percusion = choix;
+	}
+
+
+	/******************************/
+	/** VERIFICATION COUP VALIDE **/
+	/******************************/
+
+	/**
+	 * Verifier si le coups peut etre jouer.
+	 * @param coup : le coup a jouer
+	 * @return vrai si le coup est valide, faux sinon
+	 */
+	public boolean coupValide(Coup coup) {
+		Position debut = coup.getDebut();
+		Position fin = coup.getFin();
+		int direction_l = fin.getLigne()-debut.getLigne();
+		int direction_c = fin.getColonne()-debut.getColonne();
+		// Si la couleur que le joueur veux joueur ne correspond pas au couleur de pion.
+		if (grille[debut.getLigne()][debut.getColonne()] != coup.getJoueur()) {
+			//System.out.println("La couleur que le joueur veux joueur ne correspond pas au couleur de pion.");
+			return false;
+		}
+		// Si la position debut ou fin n'est pas sur la grille.
+		if ( !positionEstSurGrille(debut) || !positionEstSurGrille(fin) ) {
+			//System.out.println("La position debut ou fin n'est pas sur la grille.");
+			return false;
+		}
+		// Si la position debut et fin ne sont pas distincts.
+		if ( debut.equals(fin) ) {
+			//System.out.println("La position debut et fin ne sont pas distincts.");
+			return false;
+		}
+		// Si la position fin n'est pas adjacente vide a la position debut.
+		if ( !sontPositionsAdjacents(debut, fin) ) {
+			//System.out.println("La position fin n'est pas adjacente vide a la position debut.");
+			return false;
+		}
+		
+		// Si le joueur jeue la meme direction comme son coup precedent.
+		if ( (historique.getCoups()).size()>0 && memeDirectionSuiteCoups(coup) ) {
+			//System.out.println("La direction de coup n'est pas compatible avec le coup precedent.");
+			return false;
+		}
+		
+		// Si le jouer essaie de revenir vers la meme position dans la suite de coups
+		if ( (historique.getCoups()).size()>0 && memePositionDansSuiteCoups(coup) ) {
+			//System.out.println("Le jouer essaie de revenir vers la meme position dans la suite de coups.");
+			return false;
+		}
+
+		// S'il existe des coups avec des captures mais ce coup n'effectue pas de captures.
+		if ( !coupFaitCapture(coup) && joueurPeutCapturer(coup.getJoueur())) {
+			//System.out.println("Il y a des captures possible. Mais le coup ne fait pas de capture.");
+			return false;
+		}
+		
+		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+		// Si aspiration est vrai.
+		if ( coup.getAspiration() ) {
+			// S'il n'est pas possible de capturer celui devant.
+			if (grille[capture_devant.getLigne()][capture_devant.getColonne()] == grille[debut.getLigne()][debut.getColonne()] ||
+				grille[capture_devant.getLigne()][capture_devant.getColonne()] == 0) {
+				return false;
+			}
+		}
+		return (coup != null);
+	}
+
+
+	/****************/
+	/** JOUER COUP **/
+	/****************/
+
+	/**
 	 * Creation et execution d'un coup a utiliser pour le controleur, on suppose que le coup est valide.
 	 * @param coup : le coup a jouer
 	 */
 	public void joueCoup(Coup coup) {
 		// Si le joueur etait en train d'annuler les coups et recommence a jouer.
-		if (!coups_annules.isEmpty()) { coups_annules = new ArrayList<Coup>(); }
+		if (historique.refaireCoupPossible()) { historique.resetCoupsAnnules(); }
 		executeCoup(coup);
 	}
 
@@ -81,7 +165,7 @@ public class AireJeu {
 		Position fin = coup.getFin();
 		// Deplace le pion dans la case de fin.
 		grille[fin.getLigne()][fin.getColonne()] = coup.getJoueur();
-		coups.add(coup);
+		historique.ajouterCoup(coup);
 	}
 	
 	/**
@@ -122,67 +206,6 @@ public class AireJeu {
 			}
 		}
 		return pions;
-	}
-
-	/**
-	 * Verifier si le coups peut etre jouer.
-	 * @param coup : le coup a jouer
-	 * @return vrai si le coup est valide, faux sinon
-	 */
-	public boolean coupValide(Coup coup) {
-		Position debut = coup.getDebut();
-		Position fin = coup.getFin();
-		int direction_l = fin.getLigne()-debut.getLigne();
-		int direction_c = fin.getColonne()-debut.getColonne();
-		// Si la couleur que le joueur veux joueur ne correspond pas au couleur de pion.
-		if (grille[debut.getLigne()][debut.getColonne()] != coup.getJoueur()) {
-			//System.out.println("La couleur que le joueur veux joueur ne correspond pas au couleur de pion.");
-			return false;
-		}
-		// Si la position debut ou fin n'est pas sur la grille.
-		if ( !positionEstSurGrille(debut) || !positionEstSurGrille(fin) ) {
-			//System.out.println("La position debut ou fin n'est pas sur la grille.");
-			return false;
-		}
-		// Si la position debut et fin ne sont pas distincts.
-		if ( debut.equals(fin) ) {
-			//System.out.println("La position debut et fin ne sont pas distincts.");
-			return false;
-		}
-		// Si la position fin n'est pas adjacente vide a la position debut.
-		if ( !sontPositionsAdjacents(debut, fin) ) {
-			//System.out.println("La position fin n'est pas adjacente vide a la position debut.");
-			return false;
-		}
-		
-		// Si le joueur jeue la meme direction comme son coup precedent.
-		if ( coups.size()>0 && memeDirectionSuiteCoups(coup) ) {
-			//System.out.println("La direction de coup n'est pas compatible avec le coup precedent.");
-			return false;
-		}
-		
-		// Si le jouer essaie de revenir vers la meme position dans la suite de coups
-		if ( coups.size()>0 && memePositionDansSuiteCoups(coup) ) {
-			//System.out.println("Le jouer essaie de revenir vers la meme position dans la suite de coups.");
-			return false;
-		}
-
-		// S'il existe des coups avec des captures mais ce coup n'effectue pas de captures.
-		if ( !coupFaitCapture(coup) && joueurPeutCapturer(coup.getJoueur())) {
-			//System.out.println("Il y a des captures possible. Mais le coup ne fait pas de capture.");
-			return false;
-		}
-		
-		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
-		// Si aspiration est vrai.
-		if ( coup.getAspiration() ) {
-			// S'il n'est pas possible de capturer celui devant.
-			if (grille[capture_devant.getLigne()][capture_devant.getColonne()] == grille[debut.getLigne()][debut.getColonne()] ||
-				grille[capture_devant.getLigne()][capture_devant.getColonne()] == 0) {
-				return false;
-			}
-		}
-		return (coup != null);
 	}
 
 	/**
@@ -292,6 +315,7 @@ public class AireJeu {
 	 * @return vrai si le joueur essaie de revenir vers la meme position, faux sinon
 	 */
 	private boolean memePositionDansSuiteCoups(Coup coup) {
+		ArrayList<Coup> coups = historique.getCoups();
 		Position destination = coup.getFin();
 		//System.out.println("Destination : "+destination+".");
 		int i = coups.size()-1;
@@ -321,7 +345,7 @@ public class AireJeu {
 	 * @return vrai si le coup est de meme joueur et dans le meme direction, faux sinon
 	 */
 	private boolean memeDirectionSuiteCoups(Coup coup) {
-		Coup dernier_coup = coups.get(coups.size()-1);
+		Coup dernier_coup = historique.getDernierCoup();
 		Position debut_der_coup = dernier_coup.getDebut();
 		Position fin_der_coup = dernier_coup.getFin();
 		int joueur_der_coup = dernier_coup.getJoueur();
@@ -461,27 +485,6 @@ public class AireJeu {
 	}
 	
 	/**
-	 * Renvoie vrai si le jeu est termine, faux sinon.
-	 * @return vrai s'il reste que des pions d'un couleur dans la grille, faux sinon
-	 */
-	public boolean gameOver() {
-		boolean noir = false;
-		boolean blanc = false;
-		// Verifie s'il y a les pions blancs et noirs sur la grille de jeu.
-		for (int i = 0; i < NB_LIGNES; i++) {
-			for (int j = 0; j < NB_COLONNES; j++) {
-				if (grille[i][j] == 2) {
-					noir = true;
-				} else if (grille[i][j] == 1) {
-					blanc = true;
-				}
-			}
-		}
-		// L'inverse de fait que les deux couleurs sont sur la grille de jeu.
-		return !(noir && blanc);
-	}
-	
-	/**
 	 * Renvoie vrai si la case a verifier est l'adversaire de couleur donne, faux sinon.
 	 * @param couleur de joueur
 	 * @param case a verifier
@@ -520,23 +523,42 @@ public class AireJeu {
 		return pions;
 	}
 
+	
+	/*************/
+	/** FIN JEU **/
+	/*************/
+	
+	/**
+	 * Renvoie vrai si le jeu est termine, faux sinon.
+	 * @return vrai s'il reste que des pions d'un couleur dans la grille, faux sinon
+	 */
+	public boolean gameOver() {
+		boolean noir = false;
+		boolean blanc = false;
+		// Verifie s'il y a les pions blancs et noirs sur la grille de jeu.
+		for (int i = 0; i < NB_LIGNES; i++) {
+			for (int j = 0; j < NB_COLONNES; j++) {
+				if (grille[i][j] == 2) {
+					noir = true;
+				} else if (grille[i][j] == 1) {
+					blanc = true;
+				}
+			}
+		}
+		// L'inverse de fait que les deux couleurs sont sur la grille de jeu.
+		return !(noir && blanc);
+	}
+
+	
+	/*************/
+	/** GETTERS **/
+	/*************/
+	
 	/**
 	 * Renvoie la grille de jeu.
 	 * @return grille de jeu
 	 */
 	public int[][] getGrille() { return grille; }
-	
-	/**
-	 * Renvoie le nombre de lignes dans la grille de jeu.
-	 * @return le nombre de lignes
-	 */
-	public int getNbLignes() { return NB_LIGNES; }
-	
-	/**
-	 * Renvoie le nombre de colonnes dans la grille de jeu.
-	 * @return le nombre de colonnes
-	 */
-	public int getNbColonnes() { return NB_COLONNES; }
 
 	/**
 	 * Renvoie le coup sur lequel un choix d'aspiration ou percusion est ettendu.
@@ -546,6 +568,11 @@ public class AireJeu {
 		return choix_aspiration_percusion;
 	}
 
+	
+	/*************/
+	/** SETTERS **/
+	/*************/
+
 	/**
 	 * Met a jour le coup sur lequel un choix d'aspiration ou percusion est ettendu.
 	 * @param le coup sur lequel un choix d'aspiration ou percusion est ettendu
@@ -553,13 +580,18 @@ public class AireJeu {
 	public void setChoixAspirationPercusion(Coup c) {
 		choix_aspiration_percusion = c;
 	}
+
+	
+	/**************************/
+	/** ANNULER/REFAIRE COUP **/
+	/**************************/
 	
 	/**
 	 * Dit si l'annulation d'un coup est possible coups annules
 	 * @return vrai s'il y a des coups a annuler, faux sinon
 	 */
 	public boolean annulationCoupPossible() {
-		return (!coups.isEmpty());
+		return historique.annulationCoupPossible();
 	}
 	
 	/**
@@ -567,7 +599,7 @@ public class AireJeu {
 	 * @return vrai s'il y a des coups annules, faux sinon
 	 */
 	public boolean refaireCoupPossible() {
-		return (!coups_annules.isEmpty());
+		return historique.refaireCoupPossible();
 	}
 
 	/**
@@ -576,7 +608,7 @@ public class AireJeu {
 	public void annulerCoup() {
 		if (annulationCoupPossible()) {
 			// On recupere le dernier coup dans la liste des coups de jeu.
-			Coup coup = coups.remove((coups.size() - 1));
+			Coup coup = historique.enleveCoup();
 			System.out.println("Coup a annuler: "+coup);
 			// La case de fin devient vide.
 			Position fin = coup.getFin();
@@ -590,9 +622,7 @@ public class AireJeu {
 			for (Position p : coup.getPions()) {
 				grille[p.getLigne()][p.getColonne()] = couleur_pion;
 			}
-			coups_annules.add(coup);
-			afficheCoups();
-			afficheCoupsAnnules();
+			historique.ajouterCoupAnnule(coup);
 		}
 	}
 	
@@ -601,72 +631,25 @@ public class AireJeu {
 	 */
 	public void refaireCoup() {
 		if (refaireCoupPossible()) {
-			Coup coup = coups_annules.remove((coups_annules.size() - 1));
+			Coup coup = historique.enleveCoupAnnule();
 			System.out.println("Coup refait: "+coup);
 			executeCoup(coup);
-			afficheCoups();
-			afficheCoupsAnnules();
 		}
 	}
-	
-	/**
-	 * Lit un liste des coups dans un fichier.
-	 * @param nom_fichier : fichier qui contien un liste des coups
-	 */
-	// sauvegarder aussi les coups annulees pour pouvoir refaire quand on reprend la partie
-/*	public ArrayList<Coup> chargeHistoriqueCoups(String nom_fichier) {
-		return HistoriqueCoups.importer(nom_fichier);
-	}*/
-	
-	/**
-	 * Ecrit la liste des coups dans un fichier.
-	 */
-	public void sauvegarderHistoriqueCoups() {
-		HistoriqueCoups.exporter(coups);
-	}
-	
-	/**
-	 * Affiche les coups de jeu.
-	 */
-	public void afficheCoups() {
-		System.out.print("Coups de jeu : ( ");
-		for(Coup c : coups) {
-			System.out.print(c.toString() + " ");
-		}
-		System.out.println(")");
-	}
-	
-	/**
-	 * Affiche les coups annules.
-	 */
-	public void afficheCoupsAnnules() {
-		System.out.print("Coups annules : ( ");
-		for(Coup c : coups_annules) {
-			System.out.print(c.toString() + " ");
-		}
-		System.out.println(")");
-	}
+
+
+	/***************/
+	/** DEEP COPY **/
+	/***************/
 	
 	/**
 	 * Renvoie la copie de la classe AireJeu.
 	 */
 	public AireJeu copy() {
 		int[][] copie_grille = copyGrille();
-		ArrayList<Coup> coups_copie = copyListeCoups();
+		HistoriqueCoups historique_copie = historique.copy();
 		Coup choix = choix_aspiration_percusion;
-		AireJeu aire = new AireJeu();
-		aire.setGrille(copie_grille);
-		aire.setCoups(coups_copie);
-		aire.setChoixAspirationPercusion(choix);
-		return aire;
-	}
-    
-	private void setCoups(ArrayList<Coup> coups_copie) {
-		this.coups = coups_copie;
-	}
-
-	private void setGrille(int[][] copie_grille) {
-		this.grille = copie_grille;
+		return new AireJeu(copie_grille, historique_copie, choix);
 	}
 
 	/**
@@ -683,13 +666,37 @@ public class AireJeu {
 		}
 		return grille_copie;
     }
-    
-    public ArrayList<Coup> copyListeCoups() {
-    	ArrayList<Coup> coups_copie = new ArrayList<Coup>();
-		for (Coup c : coups) {
-			coups_copie.add(c);
+
+
+	/****************/
+	/** HISTORIQUE **/
+	/****************/
+	
+	/**
+	 * Ecrit la liste des coups dans un fichier.
+	 */
+	public void sauvegarderHistoriqueCoups() {
+		historique.exporter();
+	}
+	
+	/**
+	 * Lit un liste des coups dans un fichier.
+	 * @param nom_fichier : fichier qui contien un liste des coups
+	 */
+	// sauvegarder aussi les coups annulees pour pouvoir refaire quand on reprend la partie
+	public void chargeHistoriqueCoups(String nom_fichier) {
+		historique.importer(nom_fichier);
+		ArrayList<Coup> coups = historique.getCoups();
+		for (Coup coup : coups) {
+			// Gere la capture des pions d'adversaire.
+			coup.setPionsCaptures(effectueCapture(coup));
+			// La case de debut devient vide.
+			Position debut = coup.getDebut();
+			grille[debut.getLigne()][debut.getColonne()] = 0;
+			Position fin = coup.getFin();
+			// Deplace le pion dans la case de fin.
+			grille[fin.getLigne()][fin.getColonne()] = coup.getJoueur();
 		}
-		return coups_copie;
-    }
+	}
 
 }

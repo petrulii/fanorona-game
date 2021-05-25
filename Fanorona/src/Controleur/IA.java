@@ -1,5 +1,6 @@
 package Controleur;
 import Modele.Coup;
+import Modele.Position;
 
 /**
  * Interface commun pour tout joueur aleatoire.
@@ -11,6 +12,6 @@ public interface IA {
      * Genere un coup en utilisant la strategie d'IA
      * @return un Coup valide
      */
-    public Coup donneCoup();
+	public Coup donneCoup(Position debut);
     public boolean faitChoixAspiration();
 }
