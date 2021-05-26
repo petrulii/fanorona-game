@@ -555,6 +555,12 @@ public class AireJeu {
 	/*************/
 	
 	/**
+	 * Renvoie le joueur actuel (noir ou blanc).
+	 * @return le joueur actuel
+	 */
+	public int getJoueur() { return joueur; }
+	
+	/**
 	 * Renvoie la grille de jeu.
 	 * @return grille de jeu
 	 */
@@ -574,11 +580,11 @@ public class AireJeu {
 	/*************/
 
 	/**
-	 * Met a jour le coup sur lequel un choix d'aspiration ou percusion est ettendu.
-	 * @param le coup sur lequel un choix d'aspiration ou percusion est ettendu
+	 * Met a jour le joueur actuel.
+	 * @param j : le joueur actuel
 	 */
 	public void setJoueur(int j) {
-		joueur = j;
+		this.joueur = j;
 	}
 
 	/**
