@@ -13,10 +13,10 @@ public class CoupLentIA implements ActionListener {
 			this.control = control;
 			this.coup = coup;
 			// On donne a Timer l'objet meme comme l'objet d'ecoute.
-			t = new Timer(500, this);
+			t = new Timer(0, this);
 			t.start();
 		}
-		
+	
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			control.joueCoup(coup);//control.joueIA(coup);

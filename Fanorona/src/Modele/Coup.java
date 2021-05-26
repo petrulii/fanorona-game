@@ -27,6 +27,14 @@ public class Coup {
 		this.pions_captures = null;
 	}
 
+	public Coup(Position debut, Position fin, boolean aspiration, int joueur, ArrayList<Position> pions) {
+		this.debut = debut;
+		this.fin = fin;
+		this.aspiration = aspiration;
+		this.joueur = joueur;
+		this.pions_captures = pions;
+	}
+
 	public boolean equals(Coup coup) {
 		// L'adresse dans memoire pointe vers le meme objet.
 		if (this == coup) {
@@ -87,12 +95,24 @@ public class Coup {
 	public String toString() {
 		String s = new String();
 		s = "Debut: "+debut+", fin: "+fin+" , aspiration: "+aspiration+" , joueur: "+joueur+", pions captures: [ ";
-		if (pions_captures != null) {
-			for (Position p : pions_captures) {
-					s = s+p.toString()+" ";
-				}
+		for (Position p : pions_captures) {
+			s = s + p + " ";
 		}
-		s = s+"].";
+		s = s + "].\n";
+		return s;
+	}
+	
+	/**
+	 * Affichage d'un coup sans explications et que avec des espaces.
+	 * @return une chaine de caracteres decrivant le coup.
+	 */
+	public String toStringEspace() {
+		String s = new String();
+		s = debut.getLigne()+" "+debut.getColonne()+" "+fin.getLigne()+" "+fin.getColonne()+" "+aspiration+" "+joueur+" ";
+		for (Position p : pions_captures) {
+			s = s + p.getLigne() + " " + p.getColonne() + " ";
+		}
+		s = s + "\n";
 		return s;
 	}
 	
