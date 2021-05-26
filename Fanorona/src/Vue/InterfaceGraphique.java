@@ -19,8 +19,8 @@ public class InterfaceGraphique implements Runnable {
 		frame = new JFrame("Jeu");
 		AireGraphique aire_graphique = new AireGraphique(aire_jeu);
 		frame.add(aire_graphique);
-		// 2 - niveau d'IA 1, 3 - niveau d'IA 2, BLANC - joueur qui commence
-		ControleurMediateur control = new ControleurMediateur(aire_jeu, aire_graphique, 0, 3, AireJeu.BLANC);
+		// 0 - niveau d'IA 1, 2 - niveau d'IA 2, BLANC - joueur qui commence
+		ControleurMediateur control = new ControleurMediateur(aire_jeu, aire_graphique, 0, 2, AireJeu.BLANC);
 		aire_graphique.setFocusable(true);
 		aire_graphique.addMouseListener(new EcouteurSourisAire(control));
 		aire_graphique.addKeyListener(new EcouteurClavier(control));

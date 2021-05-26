@@ -69,10 +69,10 @@ public class ControleurMediateur {
 				ia = new AleatoireIA(aire_jeu, couleur);
 				break;
 			case MOYEN:
-				ia = new MinMaxIAOpti(aire_jeu, couleur, 3);
+				ia = new StaticMinMaxIA(aire_jeu, couleur, 5);
 				break;
 			case DIFFICILE:
-				ia = new MinMaxIAOpti(aire_jeu, couleur, 6);
+				ia = new DynamicMinMaxIA(aire_jeu, couleur, 5);
 				break;
 		}
 		return ia;
