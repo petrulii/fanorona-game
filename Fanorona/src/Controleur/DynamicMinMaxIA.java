@@ -55,7 +55,7 @@ public class DynamicMinMaxIA extends IA {
    	   				valeur_neoud = donneCoupRecB(configuration, profondeur);
    	   				// Si on est dans niveau 0.
    	   				if ((coups_initials != null)) {
-	   					System.out.println("1. valeur_neoud < meilleur_valeur : "+(valeur_neoud < meilleur_valeur)+", valeur_neoud : "+valeur_neoud);
+	   					//System.out.println("1. valeur_neoud < meilleur_valeur : "+(valeur_neoud < meilleur_valeur)+", valeur_neoud : "+valeur_neoud);
    	   				}
    	   				if ((coups_initials != null) && valeur_neoud < meilleur_valeur) {
    	   					meilleur_valeur = valeur_neoud;
@@ -69,7 +69,7 @@ public class DynamicMinMaxIA extends IA {
    				valeur_neoud = donneCoupRecB(configuration, profondeur);
    				// Si on est dans niveau 0.
 	   			if ((coups_initials != null)) {
-   					System.out.println("2. valeur_neoud < meilleur_valeur : "+(valeur_neoud < meilleur_valeur)+", valeur_neoud : "+valeur_neoud);
+   					//System.out.println("2. valeur_neoud < meilleur_valeur : "+(valeur_neoud < meilleur_valeur)+", valeur_neoud : "+valeur_neoud);
 	   			}
    	   			if ((coups_initials != null) && valeur_neoud < meilleur_valeur) {
    	   				meilleur_valeur = valeur_neoud;
@@ -121,7 +121,7 @@ public class DynamicMinMaxIA extends IA {
     private int evaluation(AireJeu configuration) {
     	int pions_A = comptePions(configuration, couleur_A);
     	// Strategie debut de partie, quand nombre de pions de joueur IA > 10.
-		if (pions_A > 10) {
+		if (pions_A > 7) {
 			return pions_A - comptePions(configuration, couleur_B);
 	    // Strategie fin de partie, quand il n'y a plus beacoup (<= changement_evaluation) de pions sur le plateau de jeu.
 		} else {
