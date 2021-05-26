@@ -33,7 +33,7 @@ public class StaticMinMaxIA extends IA {
      */
     public int donneCoupRecA(AireJeu configuration, int profondeur, ArrayList<Coup> coups_initials) {
 		//System.out.println("Dans A: "+profondeur);
-		int valeur = Integer.MIN_VALUE;
+		int valeur = Integer.MIN_VALUE + 1;
 		int valeur_neoud;
    		if (profondeur > profondeur_max) {
    			return evaluation(configuration);
@@ -84,7 +84,7 @@ public class StaticMinMaxIA extends IA {
      */
     public int donneCoupRecB(AireJeu configuration, int profondeur) {
 		//System.out.println("Dans B: "+profondeur);
-		int valeur = Integer.MAX_VALUE;
+		int valeur = Integer.MAX_VALUE - 1;
    		if (profondeur > profondeur_max) {
    			return evaluation(configuration);
    		} else {
@@ -113,7 +113,7 @@ public class StaticMinMaxIA extends IA {
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     private int evaluation(AireJeu configuration) {
-		return comptePions(configuration, couleur_A);
+		return comptePions(configuration, couleur_A) - comptePions(configuration, couleur_B);
 	}
 
 	/**
@@ -148,28 +148,21 @@ public class StaticMinMaxIA extends IA {
     	ArrayList<Coup> coups_jouables_initials = aire.coupsPossibles(couleur_A);
     	ArrayList<Coup> coups_jouables = new ArrayList<Coup>();
         if (debut != null) {
-			for (Coup cp : coups_jouables_initials) {
-				if (cp.getDebut().equals(debut)) {
-					coups_jouables.add(cp);
-				}
-			}
+    		ArrayList<Position> voisins = aire.positionsAdjacents(debut);
+    		Coup c;
+    		for (Position fin : voisins) {
+    			c = new Coup(debut, fin, couleur_A);
+    			if (aire.coupFaitCapture(c) && aire.coupValide(c)) {
+    				coups_jouables.add(c);
+    			}
+    		}
 		} else {
 			coups_jouables = coups_jouables_initials;
 		}
         // Calcul de meilleur coup.
     	donneCoupRecA(aire, 0, coups_jouables);
-		System.out.println("Coup IA MinMax: "+meilleur_coup);
+		System.out.println("Coup statique IA MinMax: " + meilleur_coup);
 		return meilleur_coup;
     }
-
-	/**
-     * Fait un choix aleatoire entre l'aspiration et percusion.
-     * @return vrai si choix d'aspiration, faux sinon
-     */
-    @Override
-	public boolean faitChoixAspiration() {
-		Random r = new Random();
-		return r.nextBoolean();
-	}
 
 }

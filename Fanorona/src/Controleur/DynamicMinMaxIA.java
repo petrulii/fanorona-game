@@ -12,15 +12,15 @@ import Modele.*;
 public class DynamicMinMaxIA extends IA {
     AireJeu aire_jeu;
     private int profondeur_max;
-    private int changement_evaluation;
     private int couleur_A;
     private int couleur_B;
+    private int meilleur_valeur;
+    private Coup meilleur_coup;
 
     public DynamicMinMaxIA(AireJeu a, int joueur, int niveau) {
         this.aire_jeu = a;
         this.couleur_A = joueur;
         this.profondeur_max = niveau;
-        this.changement_evaluation = 2;
 		System.out.println("L'IA joue: "+joueur);
         if (couleur_A == AireJeu.BLANC) { couleur_B = AireJeu.NOIR; } else { couleur_B = AireJeu.BLANC; }
     }
@@ -31,14 +31,20 @@ public class DynamicMinMaxIA extends IA {
      * @param profondeur : le profondeur que l'IA explore dans l'arbre des configurations de jeu possibles
      * @return la valeur de la branche dans l'arbre qui amene au configuration qui maximise le nombre de pions de joueur A
      */
-    public int donneCoupRecA(AireJeu configuration, int profondeur) {
+    public int donneCoupRecA(AireJeu configuration, int profondeur, ArrayList<Coup> coups_initials) {
 		//System.out.println("Dans A: "+profondeur);
-		int valeur = Integer.MIN_VALUE;
-   		if (profondeur >= profondeur_max) {
-   			return evaluation(configuration, couleur_A);
+		int valeur = Integer.MIN_VALUE + 1;
+		int valeur_neoud;
+   		if (profondeur > profondeur_max) {
+   			return evaluation(configuration);
    		} else {
    			// peut etre des tabs pre-definis pour chaque niveau de l'arbre ?
-   			ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_A);
+   			ArrayList<Coup> coups_jouables;
+   			if (coups_initials != null) {
+   				coups_jouables = coups_initials;
+   			} else {
+   				coups_jouables = configuration.coupsPossibles(couleur_A);
+   			}
 			profondeur++;
 			// intervalle (-inf , +inf)
    			for (Coup coup_ia : coups_jouables) {
@@ -46,12 +52,30 @@ public class DynamicMinMaxIA extends IA {
    					coup_ia.setAspiration(true);
    	   				configuration.joueCoup(coup_ia);
    	   				// passer intervalle en param pour donneCoupRecB, dans donneCoupRecB je coupe si configuration evalue pas dans l'intervalle
-   	   				valeur = Math.max(valeur, donneCoupRecB(configuration, profondeur));
+   	   				valeur_neoud = donneCoupRecB(configuration, profondeur);
+   	   				// Si on est dans niveau 0.
+   	   				if ((coups_initials != null)) {
+	   					System.out.println("1. valeur_neoud < meilleur_valeur : "+(valeur_neoud < meilleur_valeur)+", valeur_neoud : "+valeur_neoud);
+   	   				}
+   	   				if ((coups_initials != null) && valeur_neoud < meilleur_valeur) {
+   	   					meilleur_valeur = valeur_neoud;
+	   		    		meilleur_coup = coup_ia;
+	   		    	}
+   	   				valeur = Math.max(valeur, valeur_neoud);
    	   				configuration.annulerCoup();
    					coup_ia.setAspiration(false);
    				}
    				configuration.joueCoup(coup_ia);
-   				valeur = Math.max(valeur, donneCoupRecB(configuration, profondeur));
+   				valeur_neoud = donneCoupRecB(configuration, profondeur);
+   				// Si on est dans niveau 0.
+	   			if ((coups_initials != null)) {
+   					System.out.println("2. valeur_neoud < meilleur_valeur : "+(valeur_neoud < meilleur_valeur)+", valeur_neoud : "+valeur_neoud);
+	   			}
+   	   			if ((coups_initials != null) && valeur_neoud < meilleur_valeur) {
+   	   				meilleur_valeur = valeur_neoud;
+	   		    	meilleur_coup = coup_ia;
+	   		    }
+   				valeur = Math.max(valeur, valeur_neoud);
    				configuration.annulerCoup();
    			}
    		}
@@ -66,9 +90,9 @@ public class DynamicMinMaxIA extends IA {
      */
     public int donneCoupRecB(AireJeu configuration, int profondeur) {
 		//System.out.println("Dans B: "+profondeur);
-		int valeur = Integer.MAX_VALUE;
-   		if (profondeur >= profondeur_max) {
-   			return evaluation(configuration, couleur_A);
+		int valeur = Integer.MAX_VALUE - 1;
+   		if (profondeur > profondeur_max) {
+   			return evaluation(configuration);
    		} else {
    			ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_B);
 				profondeur++;
@@ -76,12 +100,12 @@ public class DynamicMinMaxIA extends IA {
    				if (configuration.joueurDoitChoisir(coup_ia)) {
    					coup_ia.setAspiration(true);
    	   				configuration.joueCoup(coup_ia);
-   	   				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur));
+   	   				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur, null));
    	   				configuration.annulerCoup();
    					coup_ia.setAspiration(false);
    				}
    				configuration.joueCoup(coup_ia);
-   				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur));
+   				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur, null));
    				configuration.annulerCoup();
    			}
    		}
@@ -94,15 +118,14 @@ public class DynamicMinMaxIA extends IA {
      * @param couleur : un couleur d'un des joueurs (noir ou blanc)
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
-    private int evaluation(AireJeu configuration, int couleur) {
-		int pions_couleur = comptePions(configuration, couleur);
-		int pions_diagonal = comptePionsDiagonal(configuration, couleur);
-    	// Strategie debut de partie, quand nombre de pions > changement_evaluation.
-		if (pions_couleur > ((5*9-1)/2)/changement_evaluation) {
-			return pions_couleur;
+    private int evaluation(AireJeu configuration) {
+    	int pions_A = comptePions(configuration, couleur_A);
+    	// Strategie debut de partie, quand nombre de pions de joueur IA > 10.
+		if (pions_A > 10) {
+			return pions_A - comptePions(configuration, couleur_B);
 	    // Strategie fin de partie, quand il n'y a plus beacoup (<= changement_evaluation) de pions sur le plateau de jeu.
 		} else {
-			return pions_diagonal;
+			return comptePionsDiagonal(configuration, couleur_A);
 		}
 	}
     
@@ -150,61 +173,28 @@ public class DynamicMinMaxIA extends IA {
      * @return un Coup valide
      */
     public Coup donneCoup(Position debut) {
-    	Coup coup = null;
-    	Coup meilleur_coup = null;
+    	meilleur_valeur = Integer.MAX_VALUE;
+    	meilleur_coup = null;
         AireJeu aire = aire_jeu.copy();
-        // Calcul de liste des coups jouables.
+        // Calcul des coups possibles.
     	ArrayList<Coup> coups_jouables_initials = aire.coupsPossibles(couleur_A);
     	ArrayList<Coup> coups_jouables = new ArrayList<Coup>();
         if (debut != null) {
-			for (Coup cp : coups_jouables_initials) {
-				if (cp.getDebut().equals(debut)) {
-					coups_jouables.add(cp);
-				}
-			}
+    		ArrayList<Position> voisins = aire.positionsAdjacents(debut);
+    		Coup c;
+    		for (Position fin : voisins) {
+    			c = new Coup(debut, fin, couleur_A);
+    			if (aire.coupFaitCapture(c) && aire.coupValide(c)) {
+    				coups_jouables.add(c);
+    			}
+    		}
 		} else {
 			coups_jouables = coups_jouables_initials;
 		}
-		int valeur = 0;
-		int valeur_min = 100;
-		// Pour chaque coup joauable on explore toute branche d'un arbre.
-		for (Coup c : coups_jouables) {
-			// On jeu un des coups jouables.
-   			if (aire.joueurDoitChoisir(c)) {
-   				c.setAspiration(true);
-   				aire.joueCoup(c);
-   	   			valeur = donneCoupRecB(aire, 0);
-   				// On choisit le coup qui amene a une branche qui a une feuille avec la configuration desavantageuse pour l'adversaire.
-   		    	if (valeur < valeur_min) {
-   		    		valeur_min = valeur;
-   		    		meilleur_coup = c;
-   		    	}
-   	   			aire.annulerCoup();
-   				c.setAspiration(false);
-   			}
-			aire.joueCoup(c);
-			// On explore une branche d'un arbre Min/Max qui commence par ce coup.
-			valeur = Math.max(valeur, donneCoupRecB(aire, 0));
-			// On choisit le coup qui amene a une branche qui a une feuille avec la configuration desavantageuse pour l'adversaire.
-	    	if (valeur < valeur_min) {
-	    		valeur_min = valeur;
-	    		meilleur_coup = c;
-	    	}
-	    	aire.annulerCoup();
-		}
-		coup = meilleur_coup;
-		System.out.println("Coup IA MinMax: "+coup);
-		return coup;
+        // Calcul de meilleur coup.
+    	donneCoupRecA(aire, 0, coups_jouables);
+		System.out.println("Coup statique IA MinMax: " + meilleur_coup);
+		return meilleur_coup;
     }
-
-	/**
-     * Fait un choix aleatoire entre l'aspiration et percusion.
-     * @return vrai si choix d'aspiration, faux sinon
-     */
-    @Override
-	public boolean faitChoixAspiration() {
-		Random r = new Random();
-		return r.nextBoolean();
-	}
 
 }

@@ -431,7 +431,7 @@ public class AireJeu {
 	 * @param coup : le coup
 	 * @return liste des coups adjacents vides sur la grille de jeu
 	 */
-	private ArrayList<Position> positionsAdjacents(Position p) {		// Factoriser ca (boucle?).
+	public ArrayList<Position> positionsAdjacents(Position p) {		// Factoriser ca (boucle?).
 		ArrayList<Position> positions = new ArrayList<Position>();
 		int l = p.getLigne();
 		int c = p.getColonne();
