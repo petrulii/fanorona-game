@@ -9,17 +9,20 @@ import Modele.*;
  * @author Petrulionyte Ieva
  * @version 1.0
  */
-public class MinMaxIA implements IA {
+public class MinMaxIA extends IA {
     AireJeu aire_jeu;
-    int PROFONDEUR_MAX = 5;
-    int couleur_A;
-    int couleur_B;
+    private int profondeur_max;
+    private int changement_evaluation;
+    private int couleur_A;
+    private int couleur_B;
 
-    public MinMaxIA(AireJeu a, int joueur) {
-        aire_jeu = a;
-        couleur_A = joueur;
+    public MinMaxIA(AireJeu a, int joueur, int niveau) {
+        this.aire_jeu = a;
+        this.couleur_A = joueur;
+        this.profondeur_max = niveau;
+        this.changement_evaluation = 4;
 		System.out.println("L'IA joue: "+joueur);
-        if (couleur_A == 1) { couleur_B = 2; } else { couleur_B = 1; }
+        if (couleur_A == AireJeu.BLANC) { couleur_B = AireJeu.NOIR; } else { couleur_B = AireJeu.BLANC; }
     }
     
     /**
@@ -31,7 +34,7 @@ public class MinMaxIA implements IA {
     public int donneCoupRecA(AireJeu configuration, int profondeur) {
 		//System.out.println("Dans A: "+profondeur);
 		int valeur = evaluation(configuration, couleur_A);
-   		if (profondeur >= PROFONDEUR_MAX) {
+   		if (profondeur >= profondeur_max) {
    			return valeur;
    		} else {
    			ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_A);
@@ -54,7 +57,7 @@ public class MinMaxIA implements IA {
     public int donneCoupRecB(AireJeu configuration, int profondeur) {
 		//System.out.println("Dans B: "+profondeur);
 		int valeur = evaluation(configuration, couleur_A);
-   		if (profondeur >= PROFONDEUR_MAX) {
+   		if (profondeur >= profondeur_max) {
    			return valeur;
    		} else {
    			ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_B);
@@ -75,16 +78,53 @@ public class MinMaxIA implements IA {
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     private int evaluation(AireJeu configuration, int couleur) {
+		int pions_couleur = comptePions(configuration, couleur);
+		int pions_diagonal = comptePionsDiagonal(configuration, couleur);
+    	// Strategie debut de partie, quand nombre de pions > changement_evaluation.
+		if (pions_couleur > ((5*9-1)/2)/changement_evaluation) {
+			return pions_couleur;
+	    // Strategie fin de partie, quand il n'y a plus beacoup (<= changement_evaluation) de pions sur le plateau de jeu.
+		} else {
+			return pions_diagonal;
+		}
+	}
+    
+    /**
+     * Compte le nombre de pions diagonals d'un joueur donne sur le plateau de jeu.
+     * @param configuration : un grille qui represente un configuration d'un plateau de jeu
+     * @param couleur : un couleur d'un des joueurs (noir ou blanc)
+     * @return nombre de pions diagonals de certain couleur sur le plateau de jeu
+     */
+    private int comptePionsDiagonal(AireJeu configuration, int couleur) {
     	int[][] grille = configuration.getGrille();
-    	int pions = 0;
+		int pions_diagonal = 0;
 		for (int i = 0; i < AireJeu.NB_LIGNES; i++) {
 			for (int j = 0; j < AireJeu.NB_COLONNES; j++) {
-				if (grille[i][j] == couleur) {
-					pions++;
+				if ((i%2==1 && j%2==1 || i%2==0 && j%2==0) && (grille[i][j] == couleur)) {
+					pions_diagonal++;
 				}
 			}
 		}
-		return pions;
+		return pions_diagonal;
+	}
+
+	/**
+     * Compte le nombre de pions d'un joueur donne sur le plateau de jeu.
+     * @param configuration : un grille qui represente un configuration d'un plateau de jeu
+     * @param couleur : un couleur d'un des joueurs (noir ou blanc)
+     * @return nombre de pions de certain couleur sur le plateau de jeu
+     */
+    private int comptePions(AireJeu configuration, int couleur) {
+    	int[][] grille = configuration.getGrille();
+		int pions_couleur = 0;
+		for (int i = 0; i < AireJeu.NB_LIGNES; i++) {
+			for (int j = 0; j < AireJeu.NB_COLONNES; j++) {
+				if (grille[i][j] == couleur) {
+					pions_couleur++;
+				}
+			}
+		}
+		return pions_couleur;
 	}
 
 	/**

@@ -9,7 +9,7 @@ import Modele.*;
  * @author Petrulionyte Ieva
  * @version 1.0
  */
-public class AleatoireIA implements IA {
+public class AleatoireIA extends IA {
     AireJeu aire_jeu;
     int joueur;
 
@@ -34,9 +34,17 @@ public class AleatoireIA implements IA {
      * @return un Coup valide
      */
     public Coup donneCoup(Position debut) {
+    	boolean debut_null = false;
+    	if (debut == null) {
+        	debut_null = true;
+        	debut = new Position(0,0);
+    	}
     	Position fin = new Position(0,0);
     	Coup coup = new Coup(debut, fin, joueur);
     	while (!aire_jeu.coupValide(coup)) {
+        	if (debut_null) {
+        		debut =  new Position(randomInRange(0, AireJeu.NB_LIGNES-1), randomInRange(0, AireJeu.NB_COLONNES-1));
+        	}
     		fin =  new Position(randomInRange(0, AireJeu.NB_LIGNES-1), randomInRange(0, AireJeu.NB_COLONNES-1));
     		coup = new Coup(debut, fin, joueur);
     	}

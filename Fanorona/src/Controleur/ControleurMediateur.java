@@ -18,19 +18,65 @@ public class ControleurMediateur {
 	*/
 	int joueur;
 	/**
-	* Activation IA, 0 - desactiver, 1 - IA joue premier joueur, 2 - IA joue deuxieme joueur.
+	* Premier joueur IA qui joue toujours pour les blancs, null si desactive.
 	*/
-	int active_IA;
-	MinMaxIA ia;
+	IA IA1;
+	/**
+	* Deuxieme joueur IA qui joue toujours pour les noirs, null si desactive.
+	*/
+	IA IA2;
+	private final int FACILE = 1;
+	private final int MOYEN = 2;
+	private final int DIFFICILE = 3;
 
-	public ControleurMediateur(AireJeu aire_jeu, AireGraphique aire_graphique) {
+	public ControleurMediateur(AireJeu aire_jeu, AireGraphique aire_graphique, int niveau_IA1, int niveau_IA2, int joueur_commence) {
 		this.aire_jeu = aire_jeu;
 		this.aire_graphique = aire_graphique;
-		// Les blancs commence le jeu.
-		this.joueur = AireJeu.BLANC;
+		// Le joueur qui commence le jeu, blanc ou noir.
+		this.joueur = joueur_commence;
 		// Si l'attribut debut est null alors on est au debut de creation d'un coup.
 		this.debut = null;
-		this.active_IA = 0;
+		// Si IA 1 joue, on l'initialise.
+		if (niveau_IA1 != 0) {
+			// Activation d'IA 1.
+			IA1 = creerIA(niveau_IA1, AireJeu.BLANC);
+		}
+		// Si IA 2 joue, on l'initialise.
+		if (niveau_IA2 != 0) {
+			// Activation d'IA 2.
+			IA2 = creerIA(niveau_IA2, AireJeu.NOIR);
+		}
+		if (joueur == AireJeu.BLANC && IA1 != null) {
+			Coup coup_IA1 = IA1.donneCoup(null);
+			joueCoup(coup_IA1);
+			aire_graphique.repaint();
+		} else if (joueur == AireJeu.NOIR && IA2 != null) {
+			Coup coup_IA2 = IA2.donneCoup(null);
+			joueCoup(coup_IA2);
+			aire_graphique.repaint();
+		}
+	}
+	
+    /**
+     * Creer un jouer IA de certain niveau donne.
+	 * @param niveau : niveau d'IA demande
+	 * @return joueur IA
+     */
+    public IA creerIA(int niveau, int couleur) {
+		IA ia = null;
+		// Initialisation de joueur IA.
+		switch(niveau) {
+			case FACILE:
+				ia = new AleatoireIA(aire_jeu, couleur);
+				break;
+			case MOYEN:
+				ia = new MinMaxIA(aire_jeu, couleur, 5);
+				break;
+			case DIFFICILE:
+				ia = new MinMaxIAOpti(aire_jeu, couleur, 6);
+				break;
+		}
+		return ia;
 	}
 
     /**
@@ -108,13 +154,6 @@ public class ControleurMediateur {
 				aire_graphique.repaint();
 				System.out.println("Demande import d'hisorique.");
 				break;
-			// Active le joueur IA, le joueur actuel va etre remplace par un IA.
-			case "Activer IA":
-				ia = new MinMaxIA(aire_jeu, joueur);//new AleatoireIA(aire_jeu, joueur);
-				active_IA = joueur;
-				Coup coup_ia = ia.donneCoup(null);
-				joueCoup(coup_ia);
-				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction souris.");
 		}
@@ -140,26 +179,41 @@ public class ControleurMediateur {
 	    	// On quitte le program.
 			System.exit(0);
 		}
-		// Changement de joueur.
+		// Continuation de tour.
 		if (effectue_capture && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
 			System.out.println("Joueur peut continuer.");
+		// Changement de joueur.
 		} else {
 			changeJoueur();
 		}
 		// Si le joueur actuel est un IA on commence le coup d'IA.
-		if (ia != null && active_IA == joueur) {
-			Coup coup_ia;
-			if (coup != null && effectue_capture && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
+		if (joueur == AireJeu.BLANC && IA1 != null || joueur == AireJeu.NOIR && IA2 != null) {
+			Coup coup_ia = null;
+			// Si l'IA continue son tour.
+			if (effectue_capture && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
 				// On recupere le coup d'IA valide qui commence a la fin de dernier coup.
-				coup_ia = ia.donneCoup(coup.getFin());
+				if (joueur == AireJeu.BLANC) {
+					coup_ia = IA1.donneCoup(coup.getFin());
+				} else if (joueur == AireJeu.NOIR) {
+					coup_ia = IA2.donneCoup(coup.getFin());
+				}
+			// Si l'IA commence son tour.
 			} else {
 				// On recupere le coup d'IA valide.
-				coup_ia = ia.donneCoup(null);
+				if (joueur == AireJeu.BLANC) {
+					coup_ia = IA1.donneCoup(null);
+				} else if (joueur == AireJeu.NOIR) {
+					coup_ia = IA2.donneCoup(null);
+				}
 			}
 			// Si le joueur IA a le choix d'aspiration ou de percusion.
 			if (aire_jeu.joueurDoitChoisir(coup_ia)) {
-				// On choisit aleatoirement.
-				coup.setAspiration(ia.faitChoixAspiration());
+				// On recupere le choix d'aspiration d'IA.
+				if (joueur == AireJeu.BLANC) {
+					coup_ia.setAspiration(IA1.faitChoixAspiration());
+				} else if (joueur == AireJeu.NOIR) {
+					coup_ia.setAspiration(IA2.faitChoixAspiration());
+				}
 			}
 			// On joue le coup d'IA valide avec un relentissement.
 			CoupLentIA l = new CoupLentIA(this, coup_ia);

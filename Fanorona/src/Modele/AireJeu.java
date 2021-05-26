@@ -609,7 +609,7 @@ public class AireJeu {
 		if (annulationCoupPossible()) {
 			// On recupere le dernier coup dans la liste des coups de jeu.
 			Coup coup = historique.enleveCoup();
-			System.out.println("Coup a annuler: "+coup);
+			//System.out.println("Coup a annuler: "+coup);
 			// La case de fin devient vide.
 			Position fin = coup.getFin();
 			grille[fin.getLigne()][fin.getColonne()] = 0;
