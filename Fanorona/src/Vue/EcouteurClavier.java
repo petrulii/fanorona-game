@@ -23,11 +23,11 @@ public class EcouteurClavier extends KeyAdapter {
 			case KeyEvent.VK_E:
 				control.instruction("Exporter");
 				break;
-			case KeyEvent.VK_M:
+			case KeyEvent.VK_I:
 				control.instruction("Importer");
 				break;
-			case KeyEvent.VK_I:
-				control.instruction("Activer IA");
+			case KeyEvent.VK_N:
+				control.instruction("Finir tour");
 				break;
 			case KeyEvent.VK_DOWN:
 				control.instruction("Percusion");

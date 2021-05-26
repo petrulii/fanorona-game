@@ -17,15 +17,13 @@ public class InterfaceGraphique implements Runnable {
 
 	public void run() {
 		frame = new JFrame("Jeu");
-		
 		AireGraphique aire_graphique = new AireGraphique(aire_jeu);
 		frame.add(aire_graphique);
 		// 2 - niveau d'IA 1, 3 - niveau d'IA 2, BLANC - joueur qui commence
-		ControleurMediateur control = new ControleurMediateur(aire_jeu, aire_graphique, 2, 3, AireJeu.BLANC);
+		ControleurMediateur control = new ControleurMediateur(aire_jeu, aire_graphique, 0, 3, AireJeu.BLANC);
 		aire_graphique.setFocusable(true);
 		aire_graphique.addMouseListener(new EcouteurSourisAire(control));
 		aire_graphique.addKeyListener(new EcouteurClavier(control));
-		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(X, Y);
 		frame.setResizable(true);

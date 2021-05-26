@@ -577,6 +577,14 @@ public class AireJeu {
 	 * Met a jour le coup sur lequel un choix d'aspiration ou percusion est ettendu.
 	 * @param le coup sur lequel un choix d'aspiration ou percusion est ettendu
 	 */
+	public void setJoueur(int j) {
+		joueur = j;
+	}
+
+	/**
+	 * Met a jour le coup sur lequel un choix d'aspiration ou percusion est ettendu.
+	 * @param le coup sur lequel un choix d'aspiration ou percusion est ettendu
+	 */
 	public void setChoixAspirationPercusion(Coup c) {
 		choix_aspiration_percusion = c;
 	}

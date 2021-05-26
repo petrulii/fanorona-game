@@ -34,6 +34,7 @@ public class ControleurMediateur {
 		this.aire_graphique = aire_graphique;
 		// Le joueur qui commence le jeu, blanc ou noir.
 		this.joueur = joueur_commence;
+		aire_jeu.setJoueur(joueur);
 		// Si l'attribut debut est null alors on est au debut de creation d'un coup.
 		this.debut = null;
 		// Si IA 1 joue, on l'initialise.
@@ -49,11 +50,9 @@ public class ControleurMediateur {
 		if (joueur == AireJeu.BLANC && IA1 != null) {
 			Coup coup_IA1 = IA1.donneCoup(null);
 			joueCoup(coup_IA1);
-			aire_graphique.repaint();
 		} else if (joueur == AireJeu.NOIR && IA2 != null) {
 			Coup coup_IA2 = IA2.donneCoup(null);
 			joueCoup(coup_IA2);
-			aire_graphique.repaint();
 		}
 	}
 	
@@ -70,7 +69,7 @@ public class ControleurMediateur {
 				ia = new AleatoireIA(aire_jeu, couleur);
 				break;
 			case MOYEN:
-				ia = new MinMaxIA(aire_jeu, couleur, 5);
+				ia = new MinMaxIAOpti(aire_jeu, couleur, 3);
 				break;
 			case DIFFICILE:
 				ia = new MinMaxIAOpti(aire_jeu, couleur, 6);
@@ -103,6 +102,19 @@ public class ControleurMediateur {
      */
     public void instruction(String instruction) {
 		switch (instruction) {
+			// Le joueur choisit de finir son tour.
+			case "Finir tour":
+				System.out.println("Joueur veut finir son tour.");
+				debut = null;
+				changeJoueur();
+				if (joueur == AireJeu.BLANC && IA1 != null) {
+					Coup coup_IA1 = IA1.donneCoup(null);
+					joueCoup(coup_IA1);
+				} else if (joueur == AireJeu.NOIR && IA2 != null) {
+					Coup coup_IA2 = IA2.donneCoup(null);
+					joueCoup(coup_IA2);
+				}
+				break;
 			// Choisit percusion si le joueur a le choix.
 			case "Percusion":
 				if (aire_jeu.getChoixAspirationPercusion() != null) {
@@ -262,6 +274,7 @@ public class ControleurMediateur {
      */
     public void changeJoueur() {
 		if (joueur == AireJeu.BLANC) { joueur = AireJeu.NOIR; } else { joueur = AireJeu.BLANC; }
+		aire_jeu.setJoueur(joueur);
     }
     
 }
