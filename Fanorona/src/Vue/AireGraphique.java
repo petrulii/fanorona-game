@@ -20,7 +20,7 @@ public class AireGraphique extends JPanel {
 	/**
 	 * Textures utilisées pour l'affichage
 	 */
-	private final Image plateau, pion_a, pion_b, pion_a_ombre, pion_b_ombre;
+	private final Image plateau, pion_blanc, pion_noir, pion_blanc_ombre, pion_noir_ombre;
 
 	/**
 	 * Tailles des éléments affichés et décalages de placement (marges)
@@ -41,17 +41,16 @@ public class AireGraphique extends JPanel {
 	 */
 	private BufferedImage dessin_jeu;
 
-    public AireGraphique(AireJeu a) {
-    	setFocusable(true);
-    	requestFocus();
+	private Boolean aides_sont_affichees;
 
+    public AireGraphique(AireJeu a) {
         aire = a;
 
         plateau = chargerTexture("plateau");
-        pion_a = chargerTexture("pion_a");
-        pion_b = chargerTexture("pion_b");
-        pion_a_ombre = chargerTexture("pion_a_ombre");
-        pion_b_ombre = chargerTexture("pion_b_ombre");
+        pion_blanc = chargerTexture("pion_blanc");
+        pion_noir = chargerTexture("pion_noir");
+        pion_blanc_ombre = chargerTexture("pion_blanc_ombre");
+        pion_noir_ombre = chargerTexture("pion_noir_ombre");
 
         taille_cellule = 32;
         taille_pion = 16;
@@ -65,6 +64,10 @@ public class AireGraphique extends JPanel {
         pion_deplace = new PionDeplacable();
         position_survolee = new Position(-1, -1);
     }
+
+    public void afficherAides(Boolean b) {
+    	aides_sont_affichees = b;
+	}
 
     private Image chargerTexture(String nom) {
 		Image img = null;
@@ -88,7 +91,7 @@ public class AireGraphique extends JPanel {
             taille_principale.setLocation(getSize().width, getSize().height);
 
             double taille_principale_ratio = (double)taille_principale.x/(double)taille_principale.y;
-            double taille_dessin_ratio = (double)aire.getNbColonnes()/(double)aire.getNbLignes();
+            double taille_dessin_ratio = (double)AireJeu.NB_COLONNES/(double)AireJeu.NB_LIGNES;
 
 			if(taille_principale_ratio >= taille_dessin_ratio) {
             	taille_dessin.setLocation((int)(taille_plateau.y*taille_principale_ratio), taille_plateau.y);
@@ -201,8 +204,8 @@ public class AireGraphique extends JPanel {
 
 		int taille_pion_moitie = taille_pion/2;
 
-		for (int x = 0; x < aire.getNbColonnes(); x++) {
-		for (int y = 0; y < aire.getNbLignes(); y++) {
+		for (int x = 0; x < AireJeu.NB_COLONNES; x++) {
+		for (int y = 0; y < AireJeu.NB_LIGNES; y++) {
 
 			if(grille[y][x] == 0)
 				continue;
@@ -212,7 +215,7 @@ public class AireGraphique extends JPanel {
 			double facteur_taille = (position_survolee.getColonne() == x && position_survolee.getLigne() == y) ? 1.25 : 1;
 
 			ctx.drawImage(
-					grille[y][x] == 1 ? pion_a : pion_b,
+					grille[y][x] == AireJeu.BLANC ? pion_blanc : pion_noir,
 					taille_cellule*x - (int)(taille_pion_moitie*facteur_taille),
 					taille_cellule*y - (int)(taille_pion_moitie*facteur_taille),
 					(int)(taille_pion*facteur_taille),
@@ -231,7 +234,7 @@ public class AireGraphique extends JPanel {
 
 		int taille_pion_moitie = taille_pion/2;
 		ctx.drawImage(
-    			pion_deplace.getJoueur() == 1 ? pion_a_ombre : pion_b_ombre,
+    			pion_deplace.getJoueur() == 1 ? pion_blanc_ombre : pion_noir_ombre,
 				pion_deplace.getPositionXabsolue() - taille_pion_moitie + taille_pion/4,
 				pion_deplace.getPositionYabsolue() - taille_pion_moitie + taille_pion/4,
 				taille_pion,
@@ -250,7 +253,7 @@ public class AireGraphique extends JPanel {
 		));
 
     	ctx.drawImage(
-    			pion_deplace.getJoueur() == 1 ? pion_a : pion_b,
+    			pion_deplace.getJoueur() == 1 ? pion_blanc : pion_noir,
 				pion_deplace.getPositionXabsolue() - taille_pion_moitie,
 				pion_deplace.getPositionYabsolue() - taille_pion_moitie,
 				taille_pion,
@@ -402,7 +405,7 @@ public class AireGraphique extends JPanel {
 	 * @param y l'ordonnée de la coordonnée
 	 * @return renvoie une position en fonction de coordonnées en absolu
 	 */
-	public Position getPosition(int x, int y) {
+	public Position coordonneesVersPosition(int x, int y) {
     	return new Position(getLigne(y), getColonne(x));
 	}
 

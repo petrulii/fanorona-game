@@ -133,9 +133,6 @@
           <Dimension value="[400, 400]"/>
         </Property>
       </Properties>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JPanel() {&#xa;            @Override&#xa;            public final Dimension getPreferredSize() {&#xa;                Dimension new_dim_conteneur;&#xa;                Dimension dim_conteneur = new Dimension(400,200);&#xa;                Dimension dim_parent = getParent().getSize();&#xa;&#xa;                double ratio_parent = (double)dim_parent.width/(double)dim_parent.height;&#xa;                double ratio_conteneur = (double)dim_conteneur.width/dim_conteneur.height;&#xa;&#xa;                if(ratio_parent &gt; ratio_conteneur) {&#xa;                    new_dim_conteneur = new Dimension((int)(dim_parent.height*ratio_conteneur), dim_parent.height);&#xa;                } else {&#xa;                    new_dim_conteneur = new Dimension(dim_parent.width, (int)(dim_parent.width/ratio_conteneur));&#xa;                }&#xa;&#xa;                return new_dim_conteneur;&#xa;            }&#xa;&#xa;            /*@Override&#xa;            public final Dimension getMinimumSize() {&#xa;                return new Dimension(400,200);&#xa;            }*/&#xa;&#xa;            /*@Override&#xa;            public final Dimension getSize() {&#xa;                return new Dimension(400,200);&#xa;            }*/&#xa;        }"/>
-      </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
       <SubComponents>

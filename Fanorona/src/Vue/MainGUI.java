@@ -1,9 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Vue;
+
+import Controleur.ControleurMediateur;
+import Modele.AireJeu;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,30 +9,100 @@ import java.util.Enumeration;
 
 /**
  *
- * @author mrpap
+ * @author Marin et Titouan
  */
 public class MainGUI extends javax.swing.JFrame {
 
-    private static final int HUMAIN = 0;
-    private static final int IA = 1;
-    private static final int FACILE = 0;
-    private static final int MOYEN = 1;
-    private static final int DIFFICILE = 2;
-    private static final int NOIR = 0;
-    private static final int BLANC = 1;
+    private ControleurMediateur controleur_mediateur;
+    private final AireGraphique aire_graphique;
+    private final AireJeu aire_jeu;
+
     /**
      * Creates new form MainGUI
      */
-    public MainGUI() { initComponents(); }
+    public MainGUI(AireJeu a) {
+        aire_jeu = a;
 
-    /**
-     * Ajoute l'aire de jeu à la fenêtre.
-     * @param aire aire graphique de jeu à ajouter
-     */
-    public void ajouterAireGraphique(AireGraphique aire) {
-        zone_de_jeu.add(aire, java.awt.BorderLayout.CENTER);
+        initComponents();
+
+        aire_graphique = new AireGraphique(aire_jeu);
+
+        zone_de_jeu.add(aire_graphique, java.awt.BorderLayout.CENTER);
         zone_de_jeu.revalidate();
         zone_de_jeu.repaint();
+
+        changerPanneau("panneau_menu");
+
+        this.setVisible(true);
+    }
+
+    /**
+     * @param nom_panneau panneau pour lequel on souhaite changer dans la fenêtre
+     */
+    private void changerPanneau(String nom_panneau) {
+        ((CardLayout)conteneur_principal.getLayout()).show(conteneur_principal, nom_panneau);
+
+        if(nom_panneau.equals("panneau_menu")) {
+            menu_sauvegarder.setEnabled(false);
+            menu_separator_2.setVisible(false);
+            menu_afficher_les_aides.setVisible(false);
+            menu_separator_3.setVisible(false);
+            menu_terminer.setVisible(false);
+        } else if(nom_panneau.equals("panneau_jeu")) {
+            menu_sauvegarder.setEnabled(true);
+            menu_separator_2.setVisible(true);
+            menu_afficher_les_aides.setVisible(true);
+            menu_separator_3.setVisible(true);
+            menu_terminer.setVisible(true);
+        }
+    }
+
+    /**
+     * Met à jour la fenêtre en fonction du modèle
+     */
+    public void mettreAjour() {
+
+        if(aire_jeu.gameOver()) {
+            label_joueur_actif.setText("Partie terminée.");
+
+			// affichage d’une boite de dialogue de confirmation
+            Object[] options = {"Relancer la partie", "Retourner au menu principal"};
+
+            int n = JOptionPane.showOptionDialog(this,
+                "Joueur ? <- (à faire !) a gagné la partie !",
+                "Fin de la partie",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                options,
+                options[0]
+            );
+
+            switch (n) {
+                case JOptionPane.YES_OPTION:
+                    System.out.println("Joueur a cliqué sur 'Relancer la partie.'");
+                    break;
+                case JOptionPane.NO_OPTION:
+                    changerPanneau("panneau_menu");
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            label_joueur_actif.setText(
+                aire_jeu.getJoueur() == AireJeu.BLANC ?
+                        "C'est au tour de joueur blanc"
+                        : "C'est au tour de joueur noir"
+            );
+        }
+
+        bouton_annuler.setEnabled(aire_jeu.annulationCoupPossible());
+        bouton_retablir.setEnabled(aire_jeu.refaireCoupPossible());
+
+
+
+        // bouton_terminer.setEnabled(aire_jeu.terminer_tour_possible());
+
     }
 
     /**
@@ -53,35 +121,7 @@ public class MainGUI extends javax.swing.JFrame {
         group_type_j2 = new javax.swing.ButtonGroup();
         group_niveau_j2 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
-        conteneur_principal = new javax.swing.JPanel() {
-            @Override
-            public final Dimension getPreferredSize() {
-                Dimension new_dim_conteneur;
-                Dimension dim_conteneur = new Dimension(400,200);
-                Dimension dim_parent = getParent().getSize();
-
-                double ratio_parent = (double)dim_parent.width/(double)dim_parent.height;
-                double ratio_conteneur = (double)dim_conteneur.width/dim_conteneur.height;
-
-                if(ratio_parent > ratio_conteneur) {
-                    new_dim_conteneur = new Dimension((int)(dim_parent.height*ratio_conteneur), dim_parent.height);
-                } else {
-                    new_dim_conteneur = new Dimension(dim_parent.width, (int)(dim_parent.width/ratio_conteneur));
-                }
-
-                return new_dim_conteneur;
-            }
-
-            /*@Override
-            public final Dimension getMinimumSize() {
-                return new Dimension(400,200);
-            }*/
-
-            /*@Override
-            public final Dimension getSize() {
-                return new Dimension(400,200);
-            }*/
-        };
+        conteneur_principal = new javax.swing.JPanel();
         panneau_menu = new javax.swing.JPanel();
         panel_flottant = new javax.swing.JPanel();
         panel_joueurs = new javax.swing.JPanel();
@@ -696,103 +736,64 @@ public class MainGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void bouton_suggestionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_suggestionActionPerformed
-        // TODO add your handling code here:
+
         if (bouton_suggestion.isSelected()) {
             System.out.println("Suggestion est actif");
         } else {
             System.out.println("Suggestion est inactif");
         }
+
     }//GEN-LAST:event_bouton_suggestionActionPerformed
 
     private void bouton_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_terminerActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur terminer");
-        // pour test seulement, à changer
-        //afficherDialoguePartieTerminee(AireJeu.BLANC);
+        controleur_mediateur.instruction("Finir tour");
     }//GEN-LAST:event_bouton_terminerActionPerformed
 
     private void bouton_annulerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_annulerActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur annuler");
+        controleur_mediateur.instruction("Annuler");
     }//GEN-LAST:event_bouton_annulerActionPerformed
 
     private void bouton_retablirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_retablirActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur rétablir");
+        controleur_mediateur.instruction("Refaire");
     }//GEN-LAST:event_bouton_retablirActionPerformed
 
     private void bouton_commencerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_commencerActionPerformed
-        // TODO lancer la partie selon les infos contenues dans les boutons radio
-        // pour le moment (tests) on ne fait qu’afficher dans la console
 
-        // le joueur qui commence. On peut aussi récupérer ça sous forme de booléen, dans ce test ce qui compte c’est qu’on voie bien l’appel à isSelected()
-        int joueur_qui_commence = radio_debut_noir.isSelected() ? NOIR : BLANC;
+        // le joueur qui commence
+        int joueur_qui_commence = radio_debut_noir.isSelected() ? AireJeu.NOIR : AireJeu.BLANC;
 
-        // le type de chaque joueur
-        int type_j1 = radio_type_humain_j1.isSelected() ? HUMAIN : IA;
-        int type_j2 = radio_type_humain_j2.isSelected() ? HUMAIN : IA;
+        // la difficulté des IA, vaut 0 si le type du joueur est HUMAIN
+        int niveau_type_j1 = radio_type_humain_j1.isSelected() ? ControleurMediateur.HUMAIN
+                        : radio_niveau_ia_facile_j1.isSelected() ? ControleurMediateur.FACILE
+                        : radio_niveau_ia_moyen_j1.isSelected() ? ControleurMediateur.MOYEN
+                        : ControleurMediateur.DIFFICILE;
 
-        // la difficulté des IA (pour le moment on la récupère même si le joueur est humain, à voir si c’est la vue ou le modèle qui gère cet aspect
-            int niveau_j1;
-            if (radio_niveau_ia_facile_j1.isSelected()) {
-                niveau_j1 = FACILE;
-            } else if (radio_niveau_ia_moyen_j1.isSelected()) {
-                niveau_j1 = MOYEN;
-            } else {
-                niveau_j1 = DIFFICILE;
-            }
+        int niveau_type_j2 = radio_type_humain_j2.isSelected() ? ControleurMediateur.HUMAIN
+                        : radio_niveau_ia_facile_j1.isSelected() ? ControleurMediateur.FACILE
+                        : radio_niveau_ia_moyen_j2.isSelected() ? ControleurMediateur.MOYEN
+                        : ControleurMediateur.DIFFICILE;
 
-            int niveau_j2;
-            if (radio_niveau_ia_facile_j2.isSelected()) {
-                niveau_j2 = FACILE;
-            } else if (radio_niveau_ia_moyen_j2.isSelected()) {
-                niveau_j2 = MOYEN;
-            } else {
-                niveau_j2 = DIFFICILE;
-            }
+        boolean mode_debutant = checkbox_debutant.isSelected();
 
-            boolean mode_debutant = checkbox_debutant.isSelected();
+        controleur_mediateur = new ControleurMediateur(aire_jeu, aire_graphique, this, niveau_type_j1, niveau_type_j2, joueur_qui_commence);
 
-            // idée pour l'appel
-            //control.creerPartie(joueur_qui_commence, type_j1, type_j2, niveau_j1, niveau_j2, mode_debutant);
+        aire_graphique.addMouseListener(new EcouteurSourisAire(controleur_mediateur, aire_graphique));
+        aire_graphique.afficherAides(mode_debutant);
+        addKeyListener(new EcouteurClavier(controleur_mediateur));
 
-            // affichage des paramètres récupérés, dans le vrai jeu on appelle le Contrôleur et on lui donne ces paramètres
-            System.out.println("Paramètres récupérés : ");
-            System.out.println("\tJoueur qui commence : " + (joueur_qui_commence == NOIR ? "NOIR" : "BLANC"));
-            System.out.println("\tType de Noir : " + (type_j1 == HUMAIN ? "HUMAIN" : "IA"));
-            if (type_j1 == IA) {
-                System.out.print("\tDifficulté de Noir : ");
-                if (niveau_j1 == FACILE)
-                System.out.println("FACILE");
-                else if (niveau_j1 == MOYEN)
-                System.out.println("MOYEN");
-                else //(niveau_j1 == DIFFICILE)
-                System.out.println("DIFFICILE");
-            }
-            System.out.println("\tType de Blanc : " + (type_j2 == HUMAIN ? "HUMAIN" : "IA"));
-            if (type_j2 == IA) {
-                System.out.print("\tDifficulté de Blanc : ");
-                // autre écriture que pour j1, (comme c’est des tests j’en profite pour essayer des choses)
-                switch (niveau_j2) {
-                    case FACILE -> System.out.println("FACILE");
-                    case MOYEN -> System.out.println("MOYEN");
-                    default -> System.out.println("DIFFICILE");
-                }
-            }
+        changerPanneau("panneau_jeu");
 
-            System.out.println("Affichage des aides : " + (mode_debutant ? "OUI" : "NON"));
-            
-            CardLayout cl = (CardLayout)conteneur_principal.getLayout();
-            cl.show(conteneur_principal, "panneau_jeu");
     }//GEN-LAST:event_bouton_commencerActionPerformed
 
     private void radio_type_humain_j1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_humain_j1ActionPerformed
+
         Enumeration<AbstractButton> boutons = group_niveau_j1.getElements();
         boolean activer_boutons = radio_type_ia_j1.isSelected();
 
         while(boutons.hasMoreElements()) {
             boutons.nextElement().setEnabled(activer_boutons);
         }
+
     }//GEN-LAST:event_radio_type_humain_j1ActionPerformed
 
     private void radio_type_ia_j1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_ia_j1ActionPerformed
@@ -800,12 +801,14 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_radio_type_ia_j1ActionPerformed
 
     private void radio_type_humain_j2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_humain_j2ActionPerformed
+
         Enumeration<AbstractButton> boutons = group_niveau_j2.getElements();
         boolean activer_boutons = radio_type_ia_j2.isSelected();
 
         while(boutons.hasMoreElements()) {
             boutons.nextElement().setEnabled(activer_boutons);
         }
+
     }//GEN-LAST:event_radio_type_humain_j2ActionPerformed
 
     private void radio_type_ia_j2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_ia_j2ActionPerformed
@@ -813,42 +816,39 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_radio_type_ia_j2ActionPerformed
 
     private void menu_chargerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_chargerActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur menu_charger");
+        controleur_mediateur.instruction("Importer");
     }//GEN-LAST:event_menu_chargerActionPerformed
 
     private void menu_sauvegarderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_sauvegarderActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur menu_sauvegarder");
+        controleur_mediateur.instruction("Exporter");
     }//GEN-LAST:event_menu_sauvegarderActionPerformed
 
     private void menu_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_terminerActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur menu_terminer");
 
         // affichage d’une boite de dialogue de confirmation
-        Object[] options = {"Oui", "Non"};
+        Object[] options = {"Terminer et retourner au menu", "Revenir au jeu"};
+
         int n = JOptionPane.showOptionDialog(this,
-            "Êtes-vous sûr de vouloir revenir au menu ? La partie ne sera pas sauvegardée.",
-            "Revenir au menu ?",
+            "Êtes-vous certain de vouloir terminer la partie ? Tous les changements seront perdus.",
+            "Terminer la partie",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE,
             null,
             options,
-            options[0]);
+            options[0]
+        );
+
         switch (n) {
-            case JOptionPane.YES_OPTION -> {
-                CardLayout cl = (CardLayout)conteneur_principal.getLayout();
-                cl.show(conteneur_principal, "panneau_menu");
-            }
-            case JOptionPane.NO_OPTION -> System.out.println("Le joueur a refusé pour menu_terminer");
-            default -> System.out.println("Le joueur a fermé la boite de dialogue pour menu_terminer");
+            case JOptionPane.YES_OPTION:
+                changerPanneau("panneau_menu");
+            case JOptionPane.NO_OPTION:
+            default:
+                break;
         }
+
     }//GEN-LAST:event_menu_terminerActionPerformed
 
     private void menu_quitterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_quitterActionPerformed
-        // TODO add your handling code here:
-        System.out.println("Clic sur menu_quitter");
 
         // affichage d’une boite de dialogue de confirmation
         Object[] options = {"Oui", "Non"};
@@ -859,55 +859,33 @@ public class MainGUI extends javax.swing.JFrame {
             JOptionPane.WARNING_MESSAGE,
             null,
             options,
-            options[0]);
+            options[0]
+        );
+
         switch (n) {
-            case JOptionPane.YES_OPTION -> {
-                System.out.println("Le joueur a confirmé pour menu_quitter");
+            case JOptionPane.YES_OPTION:
                 System.exit(0);
-            }
-            case JOptionPane.NO_OPTION -> System.out.println("Le joueur a refusé pour menu_quitter");
-            default -> System.out.println("Le joueur a fermé la boite de dialogue pour menu_quitter");
+            case JOptionPane.NO_OPTION:
+            default:
+                break;
         }
+
     }//GEN-LAST:event_menu_quitterActionPerformed
 
     private void menu_afficher_les_aidesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_afficher_les_aidesActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        final String etat_inactif = "Afficher les aides";
+        final String etat_actif = "Cacher les aides";
+
+        if(menu_afficher_les_aides.getText().equals(etat_actif)) {
+            menu_afficher_les_aides.setText(etat_inactif);
+            System.out.println("Les aides doivent être cachées.");
+        } else {
+            menu_afficher_les_aides.setText(etat_actif);
+            System.out.println("Les aides doivent être affichées.");
         }
-        //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MainGUI().setVisible(true);
-            }
-        });
-    }
+    }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuBar barre_menu;
@@ -938,7 +916,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem menu_sauvegarder;
     private javax.swing.JPopupMenu.Separator menu_separator_1;
     private javax.swing.JPopupMenu.Separator menu_separator_2;
-    private javax.swing.JSeparator menu_separator_3;
+    private javax.swing.JPopupMenu.Separator menu_separator_3;
     private javax.swing.JMenuItem menu_terminer;
     private javax.swing.JPanel paneau_jeu;
     private javax.swing.JPanel panel_debut;

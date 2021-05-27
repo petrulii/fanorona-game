@@ -32,11 +32,11 @@ public class EcouteurSourisAire implements MouseListener, MouseMotionListener {
 	public void mouseReleased(MouseEvent e) {
 		if(aire_graphique.relacherPion(e.getX(), e.getY())) {
 			//System.out.println("Pion relaché sur case : " + colonne + " " + ligne);
-			/*control.instructionSouris(
+			control.instructionSouris(
 					"Jouer",
 					aire_graphique.getPositionDepartPion(),
-					aire_graphique.getPosition(e.getX(), e.getY())
-			);*/
+					aire_graphique.coordonneesVersPosition(e.getX(), e.getY())
+			);
 		}
 		aire_graphique.repaint();
 	}
