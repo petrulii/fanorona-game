@@ -3,7 +3,6 @@ import Modele.AireJeu;
 import Modele.Coup;
 import Modele.Position;
 import Vue.AireGraphique;
-import Vue.MainGUI;
 
 /**
  * La classe principale de controleur qui recoit les notifications de la vue et decide qoui faire.
@@ -13,7 +12,7 @@ import Vue.MainGUI;
 public class ControleurMediateur {
 	AireJeu aire_jeu;
 	AireGraphique aire_graphique;
-	MainGUI fenetre;
+	Position debut;
 	/**
 	* Joueur actuel, 1 - joueur blanc, 2 - joueur noir.
 	*/
@@ -26,18 +25,18 @@ public class ControleurMediateur {
 	* Deuxieme joueur IA qui joue toujours pour les noirs, null si desactive.
 	*/
 	IA IA2;
-	public static final int HUMAIN = 0;
-	public static final int FACILE = 1;
-	public static final int MOYEN = 2;
-	public static final int DIFFICILE = 3;
+	private final int FACILE = 1;
+	private final int MOYEN = 2;
+	private final int DIFFICILE = 3;
 
-	public ControleurMediateur(AireJeu aire_jeu, AireGraphique aire_graphique, MainGUI fenetre, int niveau_IA1, int niveau_IA2, int joueur_commence) {
+	public ControleurMediateur(AireJeu aire_jeu, AireGraphique aire_graphique, int niveau_IA1, int niveau_IA2, int joueur_commence) {
 		this.aire_jeu = aire_jeu;
 		this.aire_graphique = aire_graphique;
-		this.fenetre = fenetre;
 		// Le joueur qui commence le jeu, blanc ou noir.
 		this.joueur = joueur_commence;
 		aire_jeu.setJoueur(joueur);
+		// Si l'attribut debut est null alors on est au debut de creation d'un coup.
+		this.debut = null;
 		// Si IA 1 joue, on l'initialise.
 		if (niveau_IA1 != 0) {
 			// Activation d'IA 1.
@@ -55,8 +54,6 @@ public class ControleurMediateur {
 			Coup coup_IA2 = IA2.donneCoup(null);
 			joueCoup(coup_IA2);
 		}
-
-		fenetre.mettreAjour();
 	}
 	
     /**
@@ -65,35 +62,34 @@ public class ControleurMediateur {
 	 * @return joueur IA
      */
     public IA creerIA(int niveau, int couleur) {
-		IA ia = switch (niveau) {
-			case FACILE -> new AleatoireIA(aire_jeu, couleur);
-			case MOYEN -> new StaticMinMaxIA(aire_jeu, couleur, 5);
-			case DIFFICILE -> new DynamicMinMaxIA(aire_jeu, couleur, 5);
-			default -> null;
-			// Initialisation de joueur IA.
-		};
+		IA ia = null;
+		// Initialisation de joueur IA.
+		switch(niveau) {
+			case FACILE:
+				ia = new AleatoireIA(aire_jeu, couleur);
+				break;
+			case MOYEN:
+				ia = new StaticMinMaxIA(aire_jeu, couleur, 4);
+				break;
+			case DIFFICILE:
+				ia = new DynamicMinMaxIA(aire_jeu, couleur, 4);
+				break;
+		}
 		return ia;
 	}
 
-	/**
-	 * Effectue une instruction après un clic simple de la souris sur la grille
-	 * @param instruction l'instruction à effectuer
-	 * @param position la position de la souris sur une case de la grille
-	 */
-	public void instructionSouris(String instruction, Position position) {
-    	instructionSouris(instruction, position, null);
-	}
-
     /**
-     * Effectue une instruction après un clic (ou un drag-and-drop) de la souris sur la grille
-	 * @param instruction l'instruction a effectuer
-	 * @param position_depart la position de départ de la souris
-	 * @param position_arrivee la position d'arrivée de la souris (valable si drag-and-drop)
+     * Effectue une instruction donne apres un click souris.
+	 * @param l'instruction a effectuer
+	 * @param l'entier coordone x de fenetre graphique
+	 * @param l'entier coordone y de fenetre graphique
      */
-    public void instructionSouris(String instruction, Position position_depart, Position position_arrivee) {
+    public void instructionSouris(String instruction, int x, int y) {
 		switch (instruction) {
 			case "Jouer":
-				creerCoupHumain(position_depart, position_arrivee);
+				int ligne = y/aire_graphique.getCaseHeight();
+				int colonne = x/aire_graphique.getCaseWidth();
+				creerCoupHumain(ligne, colonne);
 				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction souris.");
@@ -102,13 +98,14 @@ public class ControleurMediateur {
 
 	/**
      * Effectue une instruction donne apres un click d'un touche clavier.
-	 * @param instruction l'instruction a effectuer
+	 * @param l'instruction a effectuer
      */
     public void instruction(String instruction) {
 		switch (instruction) {
 			// Le joueur choisit de finir son tour.
 			case "Finir tour":
 				System.out.println("Joueur veut finir son tour.");
+				debut = null;
 				changeJoueur();
 				if (joueur == AireJeu.BLANC && IA1 != null) {
 					Coup coup_IA1 = IA1.donneCoup(null);
@@ -117,10 +114,9 @@ public class ControleurMediateur {
 					Coup coup_IA2 = IA2.donneCoup(null);
 					joueCoup(coup_IA2);
 				}
-				fenetre.mettreAjour();
 				break;
-			// Choisit percussion si le joueur a le choix.
-			case "Percussion":
+			// Choisit percusion si le joueur a le choix.
+			case "Percusion":
 				if (aire_jeu.getChoixAspirationPercusion() != null) {
 					Coup coup = aire_jeu.getChoixAspirationPercusion();
 					aire_jeu.setChoixAspirationPercusion(null);
@@ -144,17 +140,19 @@ public class ControleurMediateur {
 					// Changement de joueur.
 					changeJoueur();
 					aire_graphique.repaint();
-					fenetre.mettreAjour();
 				}
 				break;
 			// Refait le dernier coup annule.
 			case "Refaire":
 				if (aire_jeu.refaireCoupPossible()) {
 					aire_jeu.refaireCoup();
+					if (aire_jeu.gameOver()) {
+						System.out.println("Game Over!");
+						System.exit(0);
+					}
 					// Changement de joueur.
 					changeJoueur();
 					aire_graphique.repaint();
-					fenetre.mettreAjour();
 				}
 				break;
 			// Sauvegarde l'historique actuel de jeu.
@@ -166,7 +164,6 @@ public class ControleurMediateur {
 			case "Importer":
 				aire_jeu.chargeHistoriqueCoups("historique-05_25_2021-15_09_32.txt");
 				aire_graphique.repaint();
-				fenetre.mettreAjour();
 				System.out.println("Demande import d'hisorique.");
 				break;
 			default:
@@ -176,7 +173,7 @@ public class ControleurMediateur {
 
     /**
      * Joue un coup valide sur la grille de jeu.
-	 * @param coup le coup valide a jouer
+	 * @param le coup valide a jouer
      */
     public void joueCoup(Coup coup) {
     	// Ici le choix est deja fait donc on dit au model qu'il n'attends plus le choix de joueur.
@@ -186,6 +183,14 @@ public class ControleurMediateur {
 		aire_jeu.joueCoup(coup);
 		System.out.println("Joueur "+joueur+" viens de jouer.");
 		System.out.println("Son coup : "+coup);
+    	// On redessine l'aire graphique apres avoir modifie la grille avec le coup joue.
+		aire_graphique.repaint();
+    	// Si le joue est termine.
+		if (aire_jeu.gameOver()) {
+			System.out.println("Game Over!");
+	    	// On quitte le program.
+			System.exit(0);
+		}
 		// Continuation de tour.
 		if (effectue_capture && aire_jeu.joueurPeutContinuerTour(coup.getFin())) {
 			System.out.println("Joueur peut continuer.");
@@ -225,30 +230,41 @@ public class ControleurMediateur {
 			// On joue le coup d'IA valide avec un relentissement.
 			CoupLentIA l = new CoupLentIA(this, coup_ia);
 		}
-    	// On redessine l'aire graphique apres avoir modifie la grille avec le coup joue.
-		aire_graphique.repaint();
-		fenetre.mettreAjour();
     }
 
-    private void creerCoupHumain(Position debut, Position fin) {
-    	System.out.println("Le pion choisi est sur la case "+debut+".");
-    	System.out.println("La destination choisie est sur la case "+fin+".");
-
-		// On cree un coup.
-		Coup coup = new Coup(debut, fin, joueur);
-
-		if (!aire_jeu.coupValide(coup)) {
-			System.out.println("Le coup n'est pas valide, rejoue!");
-		// Si le coup est valide, on commence a l'executer.
+    /**
+     * Prend les coorodnees ou joueur a clice et essaie de creer un coup.
+	 * @param les coorodnees ou joueur a clice sur la grille de jeu
+     */
+    private void creerCoupHumain(int ligne, int colonne) {
+		// Si le joueur n'a pas choisi son pion.
+		if (debut == null) {
+			// On initialise son pion choisi.
+			debut = new Position(ligne, colonne);
+			System.out.println("Le pion choisi est sur la case "+debut+".");
+		// Si le joueur a deja choisi son pion est maintenant choisit ou mettre son pion.
 		} else {
-			// Si le joueur a le choix d'aspiration ou de percusion.
-			if (aire_jeu.joueurDoitChoisir(coup) && (aire_jeu.getChoixAspirationPercusion() == null)) {
-				System.out.println("Joueur "+joueur+" doit choisir entre une aspiration et une percussion.");
-				// On dit au model qu'un choix d'utilisateur est attendu.
-				aire_jeu.setChoixAspirationPercusion(coup);
+			// On initialise la destination de pion choisi.
+			Position fin = new Position(ligne, colonne);
+			System.out.println("La destination choisi est sur la case "+fin+".");
+			// On cree un coup.
+			Coup coup = new Coup(debut, fin, joueur);
+			// Aucun pion n'est plus choisi apres la creation d'un coup.
+			debut = null;
+			// Si le coup cree n'est pas valide.
+			if (!aire_jeu.coupValide(coup)) {
+				System.out.println("Le coup n'est pas valide, rejoue!");
+			// Si le coup est valide, on commence a l'executer.
 			} else {
-				// On joue le coup.
-				joueCoup(coup);
+				// Si le joueur a le choix d'aspiration ou de percusion.
+				if (aire_jeu.joueurDoitChoisir(coup) && (aire_jeu.getChoixAspirationPercusion() == null)) {
+					System.out.println("Joueur "+joueur+" doit choisir entre aspiration et percusion. Touche UP pour aspiration, touche DOWN pour percution.");
+					// On dit au model qu'un choix d'utilisateur est attendu.
+					aire_jeu.setChoixAspirationPercusion(coup);
+				} else {
+					// On joue le coup.
+					joueCoup(coup);
+				}
 			}
 		}
 	}
@@ -257,7 +273,7 @@ public class ControleurMediateur {
      * Change de joueur.
      */
     public void changeJoueur() {
-    	joueur = joueur == AireJeu.BLANC ? AireJeu.NOIR : AireJeu.BLANC;
+		if (joueur == AireJeu.BLANC) { joueur = AireJeu.NOIR; } else { joueur = AireJeu.BLANC; }
 		aire_jeu.setJoueur(joueur);
     }
     

@@ -24,7 +24,7 @@ public class Coup {
 		this.debut = debut;
 		this.fin = fin;
 		this.joueur = joueur;
-		this.pions_captures = null;
+		this.pions_captures = new ArrayList<Position>();
 	}
 
 	public Coup(Position debut, Position fin, boolean aspiration, int joueur, ArrayList<Position> pions) {
@@ -35,23 +35,46 @@ public class Coup {
 		this.pions_captures = pions;
 	}
 
+	public Coup copy() {
+		Position d = (this.debut).copy();
+		Position f = (this.fin).copy();
+		boolean a = this.aspiration;
+		int j = this.joueur;
+		ArrayList<Position> p_c = copyPionsCaptures();
+		return new Coup(d, f, a, j, p_c);
+	}
+    
+    /**
+     * Copie la liste des pions captures.
+     */
+    public ArrayList<Position> copyPionsCaptures() {
+    	ArrayList<Position> pions_copie = new ArrayList<Position>();
+		for (Position p : this.pions_captures) {
+			pions_copie.add(p);
+		}
+		return pions_copie;
+    }
+
 	public boolean equals(Coup coup) {
 		// L'adresse dans memoire pointe vers le meme objet.
 		if (this == coup) {
 			return true;
 		// Les attributs des coups sont egals.
-		} else return debut.equals(coup.getDebut()) && fin.equals(coup.getFin()) && joueur == coup.getJoueur();
+		} else if (debut.equals(coup.getDebut()) && fin.equals(coup.getFin()) && joueur==coup.getJoueur()) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
 	 * Set l'attribut pions captures, qui designe tout pion capture pendant ce coup.
-	 * @param p les pions captures
+	 * @param les pions captures
 	 */
 	public void setPionsCaptures(ArrayList<Position> p) { this.pions_captures = p; }
 
 	/**
 	 * Set l'attribut aspiration, si vrai, on capture le pion devant, derriere sinon.
-	 * @param aspiration la valeur d'aspiration a set
+	 * @param la valeur d'aspiration a set
 	 */
 	public void setAspiration(boolean aspiration) { this.aspiration = aspiration; }
 	
@@ -90,7 +113,7 @@ public class Coup {
 	 * @return une chaine de caracteres decrivant le coup.
 	 */
 	public String toString() {
-		String s;
+		String s = new String();
 		s = "Debut: "+debut+", fin: "+fin+" , aspiration: "+aspiration+" , joueur: "+joueur+", pions captures: [ ";
 		for (Position p : pions_captures) {
 			s = s + p + " ";
@@ -104,7 +127,7 @@ public class Coup {
 	 * @return une chaine de caracteres decrivant le coup.
 	 */
 	public String toStringEspace() {
-		String s;
+		String s = new String();
 		s = debut.getLigne()+" "+debut.getColonne()+" "+fin.getLigne()+" "+fin.getColonne()+" "+aspiration+" "+joueur+" ";
 		for (Position p : pions_captures) {
 			s = s + p.getLigne() + " " + p.getColonne() + " ";

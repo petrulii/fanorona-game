@@ -44,40 +44,44 @@ public class MinMaxIA extends IA {
    			} else {
    				coups_jouables = configuration.coupsPossibles(couleur_A);
    			}
+   			ArrayList<ArrayList<Coup>> tours_jouables = toursPossibles(configuration, coups_jouables, couleur_A);
 			profondeur++;
 			// intervalle (-inf , +inf)
 	   		//System.out.println("Taille coups jouables joueur A: " + coups_jouables.size());
-   			for (Coup coup_ia : coups_jouables) {
-   		   		//System.out.println("Coup jouable niveau joueur A: " + coup_ia + ", p: "+profondeur);
-   				if (configuration.joueurDoitChoisir(coup_ia)) {
-   					coup_ia.setAspiration(true);
-   	   				configuration.joueCoup(coup_ia);
-   	   				// passer intervalle en param pour donneCoupRecB, dans donneCoupRecB je coupe si configuration evalue pas dans l'intervalle
-   	   				valeur_neoud = donneCoupRecB(configuration, profondeur);
-   	   				// Si on est dans niveau 0.
-   	   				if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
-   	   					meilleur_valeur = valeur_neoud;
-	   		    		meilleur_coup = coup_ia;
-	   		    	}
-   	   				valeur = Math.max(valeur, valeur_neoud);
-   	   				configuration.annulerCoup();
-   					coup_ia.setAspiration(false);
-   				}
-   				configuration.joueCoup(coup_ia);
-   				valeur_neoud = donneCoupRecB(configuration, profondeur);
-   				// Si on est dans niveau 0.
-   	   			if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
-   	   				meilleur_valeur = valeur_neoud;
-	   		    	meilleur_coup = coup_ia;
-	   		    }
-   				valeur = Math.max(valeur, valeur_neoud);
-   				configuration.annulerCoup();
-   			}
+			for (ArrayList<Coup> tour_ia : tours_jouables) {
+				jouerTour(configuration, tour_ia);
+				valeur_neoud = donneCoupRecB(configuration, profondeur);
+	   			// Si on est dans niveau 0.
+	   	   		if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
+	   	   			meilleur_valeur = valeur_neoud;
+		   		   	meilleur_coup = tour_ia.get(0);
+		   		}
+	   			valeur = Math.max(valeur, valeur_neoud);
+				annulerTour(configuration, tour_ia);
+			}
    		}
 		return valeur;
     }
 
     /**
+     * Joue un tour (une sequence de coups).
+     */
+    private void jouerTour(AireJeu configuration, ArrayList<Coup> tour_ia) {
+		for (Coup coup_ia : tour_ia) {
+			configuration.joueCoup(coup_ia);
+		}
+	}
+
+    /**
+     * Annule un tour (une sequence de coups).
+     */
+    private void annulerTour(AireJeu configuration, ArrayList<Coup> tour_ia) {
+		for (Coup coup_ia : tour_ia) {
+			configuration.annulerCoup();
+		}
+	}
+
+	/**
      * Joue le coup de joueur B en essayant de minimiser le nombre de pions de joueur A dans la configuration.
      * @param configuration : un grille qui represente un configuration d'un plateau de jeu
      * @param profondeur : le profondeur que l'IA explore dans l'arbre des configurations de jeu possibles
@@ -91,21 +95,14 @@ public class MinMaxIA extends IA {
    			return evaluation(configuration);
    		} else {
    			ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_B);
+   			ArrayList<ArrayList<Coup>> tours_jouables = toursPossibles(configuration, coups_jouables, couleur_B);
 			profondeur++;
 	   		//System.out.println("Taille coups jouables joueur B: " + coups_jouables.size()+", prof : "+profondeur);
-   			for (Coup coup_ia : coups_jouables) {
-   		   		//System.out.println("Coup jouable niveau joueur B: " + coup_ia + ", p: "+profondeur);
-   				if (configuration.joueurDoitChoisir(coup_ia)) {
-   					coup_ia.setAspiration(true);
-   	   				configuration.joueCoup(coup_ia);
-   	   				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur, null));
-   	   				configuration.annulerCoup();
-   					coup_ia.setAspiration(false);
-   				}
-   				configuration.joueCoup(coup_ia);
-   				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur, null));
-   				configuration.annulerCoup();
-   			}
+			for (ArrayList<Coup> tour_ia : tours_jouables) {
+				jouerTour(configuration, tour_ia);
+				valeur = Math.min(valeur, donneCoupRecA(configuration, profondeur, null));
+   				annulerTour(configuration, tour_ia);
+			}
    		}
 		return valeur;
     }
@@ -159,6 +156,78 @@ public class MinMaxIA extends IA {
 		return pions_diagonal;
 	}
 
+    /**
+     * Calcul les tours possibles recursivement.
+     */
+    protected ArrayList<ArrayList<Coup>> toursPossibles(AireJeu configuration, ArrayList<Coup> coups_jouables, int joueur) {
+    	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<ArrayList<Coup>>();
+    	// Ajout des coups avec choix.
+    	Coup c_copie;
+		for (Coup c : coups_jouables) {
+			c_copie = c.copy();
+			// Ajout d'un coup avec choix d'aspiration different.
+			if (configuration.joueurDoitChoisir(c)) {
+				if (c_copie.getAspiration()) {
+					c_copie.setAspiration(false);
+				} else {
+					c_copie.setAspiration(true);
+				}
+				ArrayList<Coup> t1 = new ArrayList<Coup>();
+				t1.add(c_copie);
+				tours_jouables.add(t1);
+			}
+			// Ajout de tour (sequence de coups) avec un seul coup sans continuation.
+			ArrayList<Coup> t0 = new ArrayList<Coup>();
+			t0.add(c);
+			tours_jouables.add(t0);
+		}
+		ArrayList<ArrayList<Coup>> tours_jouables_final = new ArrayList<ArrayList<Coup>>();
+		for (ArrayList<Coup> tour : tours_jouables) {
+			// completer tour avec les coups percusion/aspiration
+			tours_jouables_final.add(tour);
+			tours_jouables_final.addAll(toursPossiblesRec(tour, configuration, joueur));
+		}
+		return tours_jouables;
+	}
+
+    /**
+     * Calcul les tours possibles recursivement.
+     */
+    protected ArrayList<ArrayList<Coup>> toursPossiblesRec(ArrayList<Coup> tour, AireJeu configuration, int joueur) {
+    	// Ajout des tours possibles dans la liste de tours jouables.
+    	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<ArrayList<Coup>>();
+    	Coup c;
+    	Coup c_possible;
+		//System.out.println(stringCoups(tour));
+		c = tour.get(tour.size()-1);
+		if (configuration.joueurPeutContinuerTour(c.getFin())) {
+			configuration.joueCoup(c);
+			ArrayList<Position> positions_possibles = configuration.positionsAdjacents(c.getFin());
+			for (Position fin : positions_possibles) {
+				c_possible = new Coup(c.getFin(), fin, joueur);
+				if (configuration.coupValide(c_possible)) {
+					ArrayList<Coup> tour_possible = copyCoups(tour);
+					tour_possible.add(c_possible);
+					tours_jouables.add(tour_possible);
+					tours_jouables.addAll(toursPossiblesRec(tour_possible, configuration, joueur));
+				}
+			}
+			configuration.annulerCoup();
+		}
+		return tours_jouables;
+	}
+    
+    /**
+     * Copie la liste des coups.
+     */
+    public ArrayList<Coup> copyCoups(ArrayList<Coup> coups) {
+    	ArrayList<Coup> coups_copie = new ArrayList<Coup>();
+		for (Coup c : coups) {
+			coups_copie.add(c);
+		}
+		return coups_copie;
+    }
+
 	/**
      * Genere un coup d'IA valide en explorant un arbre min/max.
      * @param debut : un position debut d'un coup d'IA
@@ -185,8 +254,19 @@ public class MinMaxIA extends IA {
 		}
         // Calcul de meilleur coup.
     	donneCoupRecA(aire, 0, coups_jouables);
-		System.out.println("Coup IA MinMax: " + meilleur_coup);
+		//System.out.println("Coup IA MinMax: " + meilleur_coup);
 		return meilleur_coup;
     }
+
+	/**
+	 * Transforme une liste de coups en chaine de charactere.
+	 */
+	public String stringCoups(ArrayList<Coup> liste) {
+		String s = new String();
+		for(Coup c : liste) {
+    		s = s + c.toStringEspace();
+		}
+		return s;
+	}
 
 }

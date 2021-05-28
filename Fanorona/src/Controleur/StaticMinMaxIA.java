@@ -20,7 +20,7 @@ public class StaticMinMaxIA extends MinMaxIA {
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     protected int evaluation(AireJeu configuration) {
-		System.out.println("Difference pions A - pions B dans statique.");
+		//System.out.println("Difference pions A - pions B dans statique.");
 		return comptePions(configuration, couleur_A) - comptePions(configuration, couleur_B);
 	}
 

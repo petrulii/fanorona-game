@@ -13,13 +13,20 @@ public class Position {
 		ligne = l;
 		colonne = c;
 	}
+	
+	public Position copy() {
+		return new Position(ligne, colonne);
+	}
 
 	public boolean equals(Position p) {
 		// L'adresse dans memoire pointe vers le meme objet.
 		if (this == p) {
 			return true;
 		// Les atttributs des positions sont egals.
-		} else return this.ligne == p.getLigne() && this.colonne == p.getColonne();
+		} else if (this.ligne == p.getLigne() && this.colonne == p.getColonne()) {
+			return true;
+		}
+		return false;
 	}
 
 	public Position soustraire(Position p) {

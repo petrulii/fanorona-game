@@ -1,46 +1,36 @@
 package Vue;
-
 import javax.swing.*;
+import Controleur.ControleurMediateur;
 import Modele.AireJeu;
-import com.formdev.flatlaf.FlatDarkLaf;
 
 public class InterfaceGraphique implements Runnable {
-	private final AireJeu aire_jeu;
+	int X;
+	int Y;
+	AireJeu aire_jeu;
+	JFrame frame;
 	
-	public InterfaceGraphique(AireJeu a) {
+	public InterfaceGraphique(AireJeu a, int X, int Y) {
 		aire_jeu = a;
+		this.X = X;
+		this.Y = Y;
 	}
 
-	/*private Font chargerFont(String nom) {
-		Font font = null;
-		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("Fonts" + File.separator + nom + ".ttf");
-
-		try {
-			font = Font.createFont(Font.TRUETYPE_FONT, in);
-		} catch (Exception e) {
-			System.out.println("Erreur au chargement de la font  : " + "Fonts" + File.separator + nom + ".ttf");
-			System.exit(1);
-		}
-		//fenetre_jeu.ajouterFont(chargerFont("nokiafc22").deriveFont(20f));
-
-		return font;
-	}*/
-
-
-	@Override
 	public void run() {
-
-		try {
-			UIManager.setLookAndFeel(new FlatDarkLaf());
-		} catch (UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
-
-		new MainGUI(aire_jeu);
-
+		frame = new JFrame("Jeu");
+		AireGraphique aire_graphique = new AireGraphique(aire_jeu);
+		frame.add(aire_graphique);
+		// 1 - niveau d'IA 1, 3 - niveau d'IA 2, BLANC - joueur qui commence
+		ControleurMediateur control = new ControleurMediateur(aire_jeu, aire_graphique, 1, 2, AireJeu.BLANC);
+		aire_graphique.setFocusable(true);
+		aire_graphique.addMouseListener(new EcouteurSourisAire(control));
+		aire_graphique.addKeyListener(new EcouteurClavier(control));
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(X, Y);
+		frame.setResizable(true);
+		frame.setVisible(true);
 	}
 
-	public static void demarrer(AireJeu a) {
-		SwingUtilities.invokeLater(new InterfaceGraphique(a));
+	public static void demarrer(AireJeu a, int X, int Y) {
+		SwingUtilities.invokeLater(new InterfaceGraphique(a, X, Y));
 	}
 }
