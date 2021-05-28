@@ -14,34 +14,41 @@ public class Position {
 		colonne = c;
 	}
 
+	public Position copy() {
+		return new Position(ligne, colonne);
+	}
+
 	public boolean equals(Position p) {
 		// L'adresse dans memoire pointe vers le meme objet.
 		if (this == p) {
 			return true;
 		// Les atttributs des positions sont egals.
-		} else return this.ligne == p.getLigne() && this.colonne == p.getColonne();
+		} else if (this.ligne == p.getLigne() && this.colonne == p.getColonne()) {
+			return true;
+		}
+		return false;
 	}
 
 	public Position soustraire(Position p) {
 		return new Position(ligne-p.getLigne(), colonne-p.getColonne());
 	}
-	
+
 	/**
 	 * Renvoie la coordonne ligne de la position
 	 * @return la coordonne ligne
 	 */
 	public int getLigne() {	return ligne; }
-	
+
 	/**
 	 * Renvoie la coordonne colonne de la position
 	 * @return la coordonne colonne
 	 */
 	public int getColonne() { return colonne; }
-	
+
 	/**
 	 * Affichage d'unu position
 	 * @return une chaine de caracteres decrivant la position
 	 */
 	public String toString() { return "( "+ligne+", "+colonne+" )"; }
-	
+
 }
