@@ -10,17 +10,16 @@ import Modele.*;
  */
 public class MinMaxIA extends IA {
     AireJeu aire_jeu;
-    private int profondeur_max;
-    private int couleur_A;
-    private int couleur_B;
-    private int meilleur_valeur;
-    private Coup meilleur_coup;
+    protected int profondeur_max;
+    protected int couleur_A;
+    protected int couleur_B;
+    protected int meilleur_valeur;
+    protected Coup meilleur_coup;
 
     public MinMaxIA(AireJeu a, int joueur, int niveau) {
         this.aire_jeu = a;
         this.couleur_A = joueur;
         this.profondeur_max = niveau;
-		System.out.println("L'IA joue: "+joueur);
         if (couleur_A == AireJeu.BLANC) { couleur_B = AireJeu.NOIR; } else { couleur_B = AireJeu.BLANC; }
     }
     
@@ -34,7 +33,8 @@ public class MinMaxIA extends IA {
 		//System.out.println("Dans A: "+profondeur);
 		int valeur = Integer.MIN_VALUE + 1;
 		int valeur_neoud;
-   		if (profondeur > profondeur_max) {
+   		if (profondeur >= profondeur_max && coups_initials != null) {
+   			//System.out.println("Feuille joueur A: " + evaluation(configuration));
    			return evaluation(configuration);
    		} else {
    			// peut etre des tabs pre-definis pour chaque niveau de l'arbre ?
@@ -46,14 +46,16 @@ public class MinMaxIA extends IA {
    			}
 			profondeur++;
 			// intervalle (-inf , +inf)
+	   		//System.out.println("Taille coups jouables joueur A: " + coups_jouables.size());
    			for (Coup coup_ia : coups_jouables) {
+   		   		//System.out.println("Coup jouable niveau joueur A: " + coup_ia + ", p: "+profondeur);
    				if (configuration.joueurDoitChoisir(coup_ia)) {
    					coup_ia.setAspiration(true);
    	   				configuration.joueCoup(coup_ia);
    	   				// passer intervalle en param pour donneCoupRecB, dans donneCoupRecB je coupe si configuration evalue pas dans l'intervalle
    	   				valeur_neoud = donneCoupRecB(configuration, profondeur);
    	   				// Si on est dans niveau 0.
-   	   				if ((coups_initials != null) && valeur_neoud < meilleur_valeur) {
+   	   				if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
    	   					meilleur_valeur = valeur_neoud;
 	   		    		meilleur_coup = coup_ia;
 	   		    	}
@@ -64,7 +66,7 @@ public class MinMaxIA extends IA {
    				configuration.joueCoup(coup_ia);
    				valeur_neoud = donneCoupRecB(configuration, profondeur);
    				// Si on est dans niveau 0.
-   	   			if ((coups_initials != null) && valeur_neoud < meilleur_valeur) {
+   	   			if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
    	   				meilleur_valeur = valeur_neoud;
 	   		    	meilleur_coup = coup_ia;
 	   		    }
@@ -84,12 +86,15 @@ public class MinMaxIA extends IA {
     public int donneCoupRecB(AireJeu configuration, int profondeur) {
 		//System.out.println("Dans B: "+profondeur);
 		int valeur = Integer.MAX_VALUE - 1;
-   		if (profondeur > profondeur_max) {
+   		if (profondeur >= profondeur_max) {
+   			//System.out.println("Feuille joueur B: " + evaluation(configuration));
    			return evaluation(configuration);
    		} else {
    			ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_B);
-				profondeur++;
+			profondeur++;
+	   		//System.out.println("Taille coups jouables joueur B: " + coups_jouables.size()+", prof : "+profondeur);
    			for (Coup coup_ia : coups_jouables) {
+   		   		//System.out.println("Coup jouable niveau joueur B: " + coup_ia + ", p: "+profondeur);
    				if (configuration.joueurDoitChoisir(coup_ia)) {
    					coup_ia.setAspiration(true);
    	   				configuration.joueCoup(coup_ia);
@@ -112,6 +117,7 @@ public class MinMaxIA extends IA {
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     protected int evaluation(AireJeu configuration) {
+		System.out.println("Nombre pions A.");
 		return comptePions(configuration, couleur_A);
 	}
 
@@ -159,7 +165,7 @@ public class MinMaxIA extends IA {
      * @return un Coup valide
      */
     public Coup donneCoup(Position debut) {
-    	meilleur_valeur = Integer.MAX_VALUE;
+    	meilleur_valeur = Integer.MIN_VALUE;
     	meilleur_coup = null;
         AireJeu aire = aire_jeu.copy();
         // Calcul des coups possibles.
@@ -179,7 +185,7 @@ public class MinMaxIA extends IA {
 		}
         // Calcul de meilleur coup.
     	donneCoupRecA(aire, 0, coups_jouables);
-		System.out.println("Coup statique IA MinMax: " + meilleur_coup);
+		System.out.println("Coup IA MinMax: " + meilleur_coup);
 		return meilleur_coup;
     }
 
