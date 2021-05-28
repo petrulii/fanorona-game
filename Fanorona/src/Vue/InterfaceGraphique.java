@@ -30,7 +30,11 @@ public class InterfaceGraphique implements Runnable {
 	@Override
 	public void run() {
 
-		FlatDarkLaf.install();
+		try {
+			UIManager.setLookAndFeel(new FlatDarkLaf());
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 
 		new MainGUI(aire_jeu);
 
