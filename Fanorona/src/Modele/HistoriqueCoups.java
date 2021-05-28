@@ -1,13 +1,10 @@
 package Modele;
 
 import java.io.*;
-import java.sql.Date;
 import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Random;
 
 /**
  * Classe pour ecrire et lire dans un fichier une liste de coups.
@@ -26,9 +23,9 @@ public class HistoriqueCoups {
     
 	public HistoriqueCoups() {
 		// Initialisation d'un liste pour l'enregistrement des coups.
-		coups = new ArrayList<Coup>();
+		coups = new ArrayList<>();
 		// Initialisation d'un liste pour l'annulation des coups.
-		coups_annules = new ArrayList<Coup>();
+		coups_annules = new ArrayList<>();
 	}
 
 	public void ajouterCoup(Coup coup) {
@@ -73,9 +70,7 @@ public class HistoriqueCoups {
 	
     /**
      * Prend une liste des coups et l'ecrit dans un fichier
-     * @param la liste des coups
-     * @throws IOException
-     */
+	 */
     public void exporter() {
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
     	try {
@@ -102,13 +97,10 @@ public class HistoriqueCoups {
     /**
      * Prend un nom de fichier et lit un liste de coups dans ce fichier
      * @param nom_fichier : nom de fichier
-     * @return la liste lu dans le fichier
-     * @throws IOException 
-     * @throws NumberFormatException 
      */
     public void importer(String nom_fichier) {
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
-    	coups = new ArrayList<Coup>();
+    	coups = new ArrayList<>();
     	try {
 			BufferedReader bf; 
 			bf = new BufferedReader(new FileReader("res"+File.separator+"Historiques"+File.separator+nom_fichier));
@@ -147,25 +139,25 @@ public class HistoriqueCoups {
     }
 	
 	private Coup construireCoup(String[] ligne_coup) {		// A CORRIGER
-		int l_debut = (int) Integer.parseInt(ligne_coup[0]);
+		int l_debut = Integer.parseInt(ligne_coup[0]);
 		System.out.println(ligne_coup[0]);
-		int c_debut = (int) Integer.parseInt(ligne_coup[1]);
+		int c_debut = Integer.parseInt(ligne_coup[1]);
 		System.out.println(ligne_coup[1]);
 		Position p_debut = new Position(l_debut, c_debut);
-		int l_fin = (int) Integer.parseInt(ligne_coup[2]);
+		int l_fin = Integer.parseInt(ligne_coup[2]);
 		System.out.println(ligne_coup[2]);
-		int c_fin = (int) Integer.parseInt(ligne_coup[3]);
+		int c_fin = Integer.parseInt(ligne_coup[3]);
 		System.out.println(ligne_coup[3]);
 		Position p_fin = new Position(l_fin, c_fin);
-		boolean aspiration = (boolean) Boolean.parseBoolean(ligne_coup[4]);
+		boolean aspiration = Boolean.parseBoolean(ligne_coup[4]);
 		System.out.println(ligne_coup[4]);
-		int joueur = (int) Integer.parseInt(ligne_coup[5]);
+		int joueur = Integer.parseInt(ligne_coup[5]);
 		System.out.println(ligne_coup[5]);
-		ArrayList<Position> pions_caputures = new ArrayList<Position>();
+		ArrayList<Position> pions_caputures = new ArrayList<>();
 		Position p;
 		try {
 			for (int i = 6; i < ligne_coup.length; i = i + 2) {
-				p = new Position((int) Integer.parseInt(ligne_coup[i]), (int) Integer.parseInt(ligne_coup[i+1]));
+				p = new Position(Integer.parseInt(ligne_coup[i]), Integer.parseInt(ligne_coup[i+1]));
 				// Ajouter la position dans la liste
 				pions_caputures.add(p);
 				System.out.println(ligne_coup[i]);
@@ -181,7 +173,7 @@ public class HistoriqueCoups {
 	 * Transforme une liste de coups en chaine de charactere.
 	 */
 	public String stringCoups(ArrayList<Coup> liste) {
-		String s = new String();
+		String s = "";
 		for(Coup c : liste) {
     		s = s + c.toStringEspace();
 		}
@@ -206,7 +198,7 @@ public class HistoriqueCoups {
      * Copie la liste des coups joues pendant le jeu
      */
     public ArrayList<Coup> copyCoups() {
-    	ArrayList<Coup> coups_copie = new ArrayList<Coup>();
+    	ArrayList<Coup> coups_copie = new ArrayList<>();
 		for (Coup c : coups) {
 			coups_copie.add(c);
 		}
@@ -217,7 +209,7 @@ public class HistoriqueCoups {
      * Copie la liste des coups annules pendant le jeu en cours d'annulation
      */
     public ArrayList<Coup> copyCoupsAnnules() {
-    	ArrayList<Coup> coups_annules_copie = new ArrayList<Coup>();
+    	ArrayList<Coup> coups_annules_copie = new ArrayList<>();
 		for (Coup c : coups_annules) {
 			coups_annules_copie.add(c);
 		}
@@ -242,7 +234,7 @@ public class HistoriqueCoups {
      * Assigne la liste des coups annules pendant le jeu en cours d'annulation
      */
     public void resetCoupsAnnules() {
-		this.coups_annules = new ArrayList<Coup>();
+		this.coups_annules = new ArrayList<>();
 	}
 	
     /**

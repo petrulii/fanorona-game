@@ -19,10 +19,7 @@ public class Position {
 		if (this == p) {
 			return true;
 		// Les atttributs des positions sont egals.
-		} else if (this.ligne == p.getLigne() && this.colonne == p.getColonne()) {
-			return true;
-		}
-		return false;
+		} else return this.ligne == p.getLigne() && this.colonne == p.getColonne();
 	}
 
 	public Position soustraire(Position p) {
