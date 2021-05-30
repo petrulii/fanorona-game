@@ -13,27 +13,18 @@ import java.util.Enumeration;
  */
 public class MainGUI extends javax.swing.JFrame {
 
+    private AireJeu aire_jeu;
     private ControleurMediateur controleur_mediateur;
-    private final AireGraphique aire_graphique;
-    private final AireJeu aire_jeu;
+    private AireGraphique aire_graphique;
 
     /**
      * Creates new form MainGUI
      */
-    public MainGUI(AireJeu a) {
-        aire_jeu = a;
-
+    public MainGUI() {
         initComponents();
-
-        aire_graphique = new AireGraphique(aire_jeu);
-
-        zone_de_jeu.add(aire_graphique, java.awt.BorderLayout.CENTER);
-        zone_de_jeu.revalidate();
-        zone_de_jeu.repaint();
+        this.setVisible(true);
 
         changerPanneau("panneau_menu");
-
-        this.setVisible(true);
     }
 
     /**
@@ -43,13 +34,13 @@ public class MainGUI extends javax.swing.JFrame {
         ((CardLayout)conteneur_principal.getLayout()).show(conteneur_principal, nom_panneau);
 
         if(nom_panneau.equals("panneau_menu")) {
-            menu_sauvegarder.setEnabled(false);
+            menu_sauvegarder.setVisible(false);
             menu_separator_2.setVisible(false);
             menu_afficher_les_aides.setVisible(false);
             menu_separator_3.setVisible(false);
             menu_terminer.setVisible(false);
         } else if(nom_panneau.equals("panneau_jeu")) {
-            menu_sauvegarder.setEnabled(true);
+            menu_sauvegarder.setVisible(true);
             menu_separator_2.setVisible(true);
             menu_afficher_les_aides.setVisible(true);
             menu_separator_3.setVisible(true);
@@ -57,52 +48,43 @@ public class MainGUI extends javax.swing.JFrame {
         }
     }
 
-    /**
-     * Met à jour la fenêtre en fonction du modèle
-     */
-    public void mettreAjour() {
+    public void majBoutonTerminer(boolean b) {
+        bouton_terminer.setEnabled(b);
+    }
 
-        if(aire_jeu.gameOver()) {
-            label_joueur_actif.setText("Partie terminée.");
-
-			// affichage d’une boite de dialogue de confirmation
-            Object[] options = {"Relancer la partie", "Retourner au menu principal"};
-
-            int n = JOptionPane.showOptionDialog(this,
-                "Joueur ? <- (à faire !) a gagné la partie !",
-                "Fin de la partie",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                options,
-                options[0]
-            );
-
-            switch (n) {
-                case JOptionPane.YES_OPTION:
-                    System.out.println("Joueur a cliqué sur 'Relancer la partie.'");
-                    break;
-                case JOptionPane.NO_OPTION:
-                    changerPanneau("panneau_menu");
-                    break;
-                default:
-                    break;
-            }
-        } else {
-            label_joueur_actif.setText(
-                aire_jeu.getJoueur() == AireJeu.BLANC ?
-                        "C'est au tour de joueur blanc"
-                        : "C'est au tour de joueur noir"
-            );
-        }
-
+    public void majBoutonHistorique() {
         bouton_annuler.setEnabled(aire_jeu.annulationCoupPossible());
         bouton_retablir.setEnabled(aire_jeu.refaireCoupPossible());
+    }
 
+    public void majAffichageJoueurActif() {
+        label_joueur_actif.setText(
+            aire_jeu.getJoueur() == AireJeu.BLANC ?
+                    "C'est au tour de joueur blanc"
+                    : "C'est au tour de joueur noir"
+        );
+    }
 
+    public void afficherGameOver() {
+        label_joueur_actif.setText("Partie terminée.");
 
-        // bouton_terminer.setEnabled(aire_jeu.terminer_tour_possible());
+        // affichage d’une boite de dialogue de confirmation
+        Object[] options = {"Relancer la partie", "Retourner au menu principal"};
 
+        int n = JOptionPane.showOptionDialog(this,
+            "Joueur ? <- (à faire !) a gagné la partie !",
+            "Fin de la partie",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[0]
+        );
+
+        switch (n) {
+            case JOptionPane.YES_OPTION -> System.out.println("Joueur a cliqué sur 'Relancer la partie.'");
+            case JOptionPane.NO_OPTION, JOptionPane.CLOSED_OPTION -> changerPanneau("panneau_menu");
+        }
     }
 
     /**
@@ -775,9 +757,21 @@ public class MainGUI extends javax.swing.JFrame {
 
         boolean mode_debutant = checkbox_debutant.isSelected();
 
-        controleur_mediateur = new ControleurMediateur(aire_jeu, aire_graphique, this, niveau_type_j1, niveau_type_j2, joueur_qui_commence);
+        // créé une aire de jeu
+        aire_jeu = new AireJeu();
 
-        aire_graphique.addMouseListener(new EcouteurSourisAire(controleur_mediateur, aire_graphique));
+        // créé l'aire graphique associée et l'ajoute à la fenêtre
+        if(aire_graphique != null) zone_de_jeu.remove(aire_graphique);
+        aire_graphique = new AireGraphique(aire_jeu);
+        zone_de_jeu.add(aire_graphique, java.awt.BorderLayout.CENTER);
+        zone_de_jeu.revalidate();
+        zone_de_jeu.repaint();
+
+        // ajoute le controleur mediateur + les écouteurs d'évènements
+        controleur_mediateur = new ControleurMediateur(aire_jeu, aire_graphique, this, niveau_type_j1, niveau_type_j2, joueur_qui_commence);
+        EcouteurSourisAire ecouteur_souris_aire = new EcouteurSourisAire(controleur_mediateur);
+        aire_graphique.addMouseListener(ecouteur_souris_aire);
+        aire_graphique.addMouseMotionListener(ecouteur_souris_aire);
         aire_graphique.afficherAides(mode_debutant);
         addKeyListener(new EcouteurClavier(controleur_mediateur));
 

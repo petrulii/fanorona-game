@@ -20,7 +20,7 @@ public class AireGraphique extends JPanel {
 	/**
 	 * Textures utilisées pour l'affichage
 	 */
-	private final Image plateau, pion_blanc, pion_noir, pion_blanc_ombre, pion_noir_ombre;
+	private final Image plateau; //, pion_blanc, pion_noir, pion_blanc_ombre, pion_noir_ombre;
 
 	/**
 	 * Tailles des éléments affichés et décalages de placement (marges)
@@ -33,40 +33,95 @@ public class AireGraphique extends JPanel {
 	/**
 	 * Informations sur des interactions directes (survol de pions ou glisser-déposer d'un pion)
 	 */
-    private final PionDeplacable pion_deplace;
-    private Position position_survolee;
+    private Position position_curseur, position_curseur_temporaire;
+    private final Point coordonnees_curseur, coordonnees_curseur_temporaire;
+    private boolean pion_est_maintenu, pion_est_maintenu_temporairement, curseur_survole_pion, magnetisme_est_active;
+
+    private ArrayList<Position> chemin_joueur, pions_deplacables, cases_accessibles;
 
 	/**
 	 * Image en mémoire tampon dans laquelle on dessine le jeu
 	 */
 	private BufferedImage dessin_jeu;
 
-	private Boolean aides_sont_affichees;
+	private boolean aides_sont_affichees;
 
     public AireGraphique(AireJeu a) {
         aire = a;
 
         plateau = chargerTexture("plateau");
-        pion_blanc = chargerTexture("pion_blanc");
+        /*pion_blanc = chargerTexture("pion_blanc");
         pion_noir = chargerTexture("pion_noir");
         pion_blanc_ombre = chargerTexture("pion_blanc_ombre");
-        pion_noir_ombre = chargerTexture("pion_noir_ombre");
+        pion_noir_ombre = chargerTexture("pion_noir_ombre");*/
 
         taille_cellule = 32;
         taille_pion = 16;
 
-        taille_principale = new Point(getSize().width, getSize().height);
+        taille_principale = new Point(1, 1);
         taille_dessin = new Point(0, 0);
         taille_plateau = new Point(288, 160);
         decalage_plateau = new Point(0, 0);
         decalage_grille = new Point(taille_pion, taille_pion);
 
-        pion_deplace = new PionDeplacable();
-        position_survolee = new Position(-1, -1);
+		position_curseur = new Position(0,0);
+		coordonnees_curseur = new Point(0,0);
+		coordonnees_curseur_temporaire = new Point(0,0);
+		pion_est_maintenu = false;
+		curseur_survole_pion = false;
+		magnetisme_est_active = false;
+
+		chemin_joueur = new ArrayList<>();
+		pions_deplacables = null;
+		cases_accessibles = null;
     }
 
-    public void afficherAides(Boolean b) {
+    public void afficherAides(boolean b) {
     	aides_sont_affichees = b;
+	}
+
+	public void setCurseur(Position p, int x, int y) {
+    	position_curseur = p;
+    	if(magnetisme_est_active) {
+    		coordonnees_curseur.setLocation(
+    				getColonne(x)*taille_cellule + taille_cellule/2,
+					getLigne(y)*taille_cellule + taille_cellule/2
+			);
+		} else {
+    		coordonnees_curseur.setLocation(ecranVersPlateauX(x), ecranVersPlateauY(y));
+		}
+    	if(!pion_est_maintenu_temporairement)
+    		coordonnees_curseur_temporaire.setLocation(x, y);
+	}
+	public void setCurseurSurvolePion(boolean b) {
+    	curseur_survole_pion = b;
+	}
+	public void setCurseurMaintienPion(boolean b) {
+    	pion_est_maintenu = b;
+	}
+	public void setCurseurMaintienPionTemporaire(boolean b) {
+    	pion_est_maintenu_temporairement = b;
+    	position_curseur_temporaire = coordonneesVersPosition(coordonnees_curseur_temporaire.x, coordonnees_curseur_temporaire.y);
+	}
+	public void setCurseurMagnetisme(boolean b) {
+    	magnetisme_est_active = b;
+	}
+
+	public void ajouterACheminJoueur(Position p) {
+    	chemin_joueur.add(p);
+	}
+	public void retirerDernierCheminJoueur() {
+    	if(chemin_joueur.size() > 0)
+    		chemin_joueur.remove(chemin_joueur.size() - 1);
+	}
+	public void emptyCheminJoueur() {
+    	chemin_joueur = new ArrayList<>();
+	}
+	public void afficherPionsDeplacables(ArrayList<Position> p) {
+    	pions_deplacables = p;
+	}
+	public void afficherCasesAccessibles(ArrayList<Position> p) {
+    	cases_accessibles = p;
 	}
 
     private Image chargerTexture(String nom) {
@@ -74,6 +129,7 @@ public class AireGraphique extends JPanel {
 		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("Images" + File.separator + nom + ".png");
 
 		try {
+			assert in != null;
 			img = ImageIO.read(in);
 		} catch (Exception e) {
 			System.out.println("Erreur au chargement de l'image : " + "Images" + File.separator + nom + ".png");
@@ -105,190 +161,162 @@ public class AireGraphique extends JPanel {
         }
     }
 
-	/**
-	 * Indique à l'aire graphique sa coordonnée qui est survolée
-	 * @param x l'abscisse de la coordonnée survolée
-	 * @param y l'ordonnée de la coordonnée survolée
-	 */
-	public void survolerPosition(int x, int y) {
-    	if(collisionZonePion(x, y)) {
-    		position_survolee = new Position(getLigne(y), getColonne(x));
-		} else {
-    		position_survolee = new Position(-1, -1);
-		}
-	}
-
-	/**
-	 * Indique à l'aire graphique que le pion est maintenu à la coordonnée donnée en entrée
-	 * @param x l'abscisse de la coordonnée
-	 * @param y l'ordonnée de la coordonnée
-	 */
-    public void maintenirPion(int x, int y) {
-    	if(!pion_deplace.estRelache()) {
-    		if(collisionZonePion(x, y, .75f)) {
-    			pion_deplace.setPositionAbsolue(
-    					(getColonne(x)*taille_cellule) + decalage_grille.x,
-						(getLigne(y)*taille_cellule) + decalage_grille.y
-				);
-			} else {
-    			pion_deplace.setPositionAbsolue(ecranVersPlateauX(x), ecranVersPlateauY(y));
-			}
-		} else if(collisionZonePion(x, y)) {
-    		int ligne = getLigne(y), colonne = getColonne(x);
-			int joueur = aire.getGrille()[ligne][colonne];
-
-			if(joueur == 0)
-				return;
-
-			pion_deplace.maintenir(new Position(ligne, colonne), ecranVersPlateauX(x), ecranVersPlateauY(y), joueur);
-		}
-	}
-
-	/**
-	 * Indique à l'aire graphique que le pion est relaché à la coordonnée donnée en entrée
-	 * @param x l'abscisse de la coordonnée où le relâchement est fait
-	 * @param y l'ordonnée de la coordonnée où le relâchement est fait
-	 * @return renvoie Vrai si le pion est relaché sur une case de pion
-	 */
-	public Boolean relacherPion(int x, int y) {
-    	if(!pion_deplace.estRelache()) {
-    		pion_deplace.relacher();
-    		return collisionZonePion(x, y, .75f);
-		}
-    	return false;
-	}
-
-	/**
-	 * @return la position de départ du pion relaché
-	 */
-	public Position getPositionDepartPion() {
-    	return pion_deplace.getPositionDepart();
-	}
-
 	@Override
 	public void paintComponent(Graphics g) {
 		miseAjourDimensions();
 
-    	Graphics2D ctx = dessin_jeu.createGraphics();
-    	//ctx.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    	Graphics2D ctx = (Graphics2D)g;
+    	//Graphics2D ctx = dessin_jeu.createGraphics();
+    	ctx.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		ctx.clearRect(0, 0, getWidth(), getHeight());
+
+		double scale = (double)getWidth()/taille_dessin.x;
+		ctx.scale(scale, scale);
+
     	ctx.translate(decalage_plateau.x, decalage_plateau.y);
 
     	dessinerPlateau(ctx);
 
-    	/*ArrayList<Position> positions = new ArrayList<>();
-        positions.add(new Position(1,2));
-        positions.add(new Position(1,3));
-        positions.add(new Position(2,4));
-        positions.add(new Position(3,4));*/
-
-        //dessinerChemin(ctx, positions);
+    	AffineTransform transformation_copy =  ctx.getTransform();
+    	ctx.translate(decalage_grille.x, decalage_grille.y);
+		dessinerIndicationCasesAccessibles(ctx, cases_accessibles);
+        dessinerChemin(ctx, chemin_joueur);
     	dessinerPions(ctx);
+    	dessinerPionTemporaire(ctx);
         //indiquerPionsSupprimables(ctx, positions);
-		//dessinerIndicationPionsJouables(ctx, positions);
+		dessinerIndicationPionsJouables(ctx, pions_deplacables);
+
+		ctx.setTransform(transformation_copy);
     	dessinerPionDeplacable(ctx);
 
-    	Graphics2D main_ctx = (Graphics2D)g;
-		main_ctx.clearRect(0, 0, getWidth(), getHeight());
-    	main_ctx.drawImage(dessin_jeu, 0, 0, getWidth(), getHeight(), null);
+    	//Graphics2D main_ctx = (Graphics2D)g;
+		//ctx.clearRect(0, 0, getWidth(), getHeight());
+    	//ctx.drawImage(dessin_jeu, 0, 0, getWidth(), getHeight(), null);
 	}
 
 	private void dessinerPlateau(Graphics2D ctx) {
     	ctx.drawImage(plateau, 0, 0, taille_plateau.x, taille_plateau.y, null);
 	}
 
-	private void dessinerPions(Graphics2D ctx) {
-    	ctx.translate(decalage_grille.x, decalage_grille.y);
+	private void dessinerUnPion(Graphics2D ctx, Position position, int joueur) {
+		dessinerUnPion(
+				ctx,
+				position.getColonne()*taille_cellule,
+				position.getLigne()*taille_cellule,
+				joueur
+		);
+	}
 
-		int[][] grille = aire.getGrille();
-
+	private void dessinerUnPion(Graphics2D ctx, int x, int y, int joueur) {
+		/*dessinerUnElementPion(
+				ctx,
+				joueur == AireJeu.BLANC ? pion_blanc : pion_noir,
+				x, y
+		);*/
 		int taille_pion_moitie = taille_pion/2;
+		Ellipse2D cercle = new Ellipse2D.Double(x - taille_pion_moitie, y - taille_pion_moitie, taille_pion, taille_pion);
+		ctx.setColor(joueur == AireJeu.BLANC ? new Color(255, 255, 255) : new Color(50, 50, 50));
+		ctx.fill(cercle);
+		ctx.setStroke(new BasicStroke(2));
+		ctx.setColor(new Color(0));
+		ctx.draw(cercle);
+	}
 
-		for (int x = 0; x < AireJeu.NB_COLONNES; x++) {
-		for (int y = 0; y < AireJeu.NB_LIGNES; y++) {
+	private void dessinerUnElementPion(Graphics2D ctx, Image image, int x, int y) {
+		int taille_pion_moitie = taille_pion/2;
+		/*ctx.drawImage(
+				image,
+				x - taille_pion_moitie,
+				y - taille_pion_moitie,
+				taille_pion, taille_pion, null
+		);*/
 
-			if(grille[y][x] == 0)
-				continue;
-			if(!pion_deplace.estRelache() && pion_deplace.getPositionDepart().equals(new Position(y, x)))
-				continue;
+		ctx.setColor(new Color(50, 50, 50, 150));
+		ctx.fill(new Ellipse2D.Double(x - taille_pion_moitie, y - taille_pion_moitie, taille_pion, taille_pion));
+	}
 
-			double facteur_taille = (position_survolee.getColonne() == x && position_survolee.getLigne() == y) ? 1.25 : 1;
+	private void dessinerPions(Graphics2D ctx) {
+		for (int colonne = 0; colonne < AireJeu.NB_COLONNES; colonne++) {
+		for (int ligne = 0; ligne < AireJeu.NB_LIGNES; ligne++) {
+			Position position = new Position(ligne, colonne);
 
-			ctx.drawImage(
-					grille[y][x] == AireJeu.BLANC ? pion_blanc : pion_noir,
-					taille_cellule*x - (int)(taille_pion_moitie*facteur_taille),
-					taille_cellule*y - (int)(taille_pion_moitie*facteur_taille),
-					(int)(taille_pion*facteur_taille),
-					(int)(taille_pion*facteur_taille),
-					null
-			);
+			int joueur = aire.getCaseGrille(position);
+
+			if(
+					joueur == 0
+					|| ((pion_est_maintenu || pion_est_maintenu_temporairement) && position_curseur.equals(position))
+			) continue;
+
+			dessinerUnPion(ctx, new Position(ligne, colonne), joueur);
 		}
 		}
+	}
 
-    	ctx.translate(-decalage_grille.x, -decalage_grille.y);
+	private void dessinerPionTemporaire(Graphics2D ctx) {
+		if(!pion_est_maintenu_temporairement)
+			return;
+		dessinerUnPion(ctx, position_curseur_temporaire, aire.getCaseGrille(position_curseur));
 	}
 
 	private void dessinerPionDeplacable(Graphics2D ctx) {
-    	if(pion_deplace.estRelache())
+    	if(!pion_est_maintenu)
     		return;
 
-		int taille_pion_moitie = taille_pion/2;
-		ctx.drawImage(
-    			pion_deplace.getJoueur() == 1 ? pion_blanc_ombre : pion_noir_ombre,
-				pion_deplace.getPositionXabsolue() - taille_pion_moitie + taille_pion/4,
-				pion_deplace.getPositionYabsolue() - taille_pion_moitie + taille_pion/4,
-				taille_pion,
-				taille_pion,
-				null
-		);
+    	//Image pion_ombre = aire.getCaseGrille(position_curseur) == AireJeu.BLANC ? pion_blanc_ombre : pion_noir_ombre;
+		dessinerUnElementPion(ctx, null, coordonnees_curseur.x + taille_pion/4, coordonnees_curseur.y + taille_pion/4);
 
     	float[] dash_array = {10f, 10f};
-    	ctx.setColor(new Color(255,255,255));
-    	ctx.setStroke(new BasicStroke(2, CAP_SQUARE, JOIN_MITER, 1,  dash_array, 0));
+    	ctx.setColor(new Color(60,150,220));
+    	ctx.setStroke(new BasicStroke(3, CAP_SQUARE, JOIN_MITER, 1,  dash_array, 0));
     	ctx.draw(new Line2D.Float(
-				pion_deplace.getPositionXabsolue(),
-				pion_deplace.getPositionYabsolue(),
-    			taille_cellule*pion_deplace.getPositionDepart().getColonne() + decalage_grille.x,
-    			taille_cellule*pion_deplace.getPositionDepart().getLigne() + decalage_grille.y
+				coordonnees_curseur.x, coordonnees_curseur.y,
+    			taille_cellule*position_curseur.getColonne() + decalage_grille.x,
+    			taille_cellule*position_curseur.getLigne() + decalage_grille.y
 		));
 
-    	ctx.drawImage(
-    			pion_deplace.getJoueur() == 1 ? pion_blanc : pion_noir,
-				pion_deplace.getPositionXabsolue() - taille_pion_moitie,
-				pion_deplace.getPositionYabsolue() - taille_pion_moitie,
-				taille_pion,
-				taille_pion,
-				null
-		);
+		dessinerUnPion(ctx, coordonnees_curseur.x, coordonnees_curseur.y, aire.getCaseGrille(position_curseur));
 	}
 
 	private void dessinerIndicationPionsJouables(Graphics2D ctx, ArrayList<Position> positions) {
-    	ctx.translate(decalage_grille.x, decalage_grille.y);
+		if(positions == null)
+			return;
 
     	int taille_moitie = taille_pion/2;
 
+		ctx.setStroke(new BasicStroke(2));
+		ctx.setColor(new Color(255,0,0));
     	positions.forEach((Position p) -> {
-    		ctx.setStroke(new BasicStroke(1));
-    		ctx.setColor(new Color(255,0,0));
     		ctx.draw(new Ellipse2D.Float(
 				p.getColonne()*taille_cellule - taille_moitie,
 				p.getLigne()*taille_cellule - taille_moitie,
-				taille_pion,
-				taille_pion
+				taille_pion, taille_pion
 			));
 		});
-
-    	ctx.translate(-decalage_grille.x, -decalage_grille.y);
 	}
 
-	private void indiquerPionsSupprimables(Graphics2D ctx, ArrayList<Position> positions) {
-    	ctx.translate(decalage_grille.x, decalage_grille.y);
+	private void dessinerIndicationCasesAccessibles(Graphics2D ctx, ArrayList<Position> positions) {
+		if(positions == null)
+			return;
 
     	int taille_moitie = taille_pion/2;
 
+		ctx.setStroke(new BasicStroke(2));
+		ctx.setColor(new Color(0,255,0));
+    	positions.forEach((Position p) -> {
+    		ctx.draw(new Ellipse2D.Float(
+				p.getColonne()*taille_cellule - taille_moitie,
+				p.getLigne()*taille_cellule - taille_moitie,
+				taille_pion, taille_pion
+			));
+		});
+	}
+
+	private void dessinerIndicationPionsSupprimables(Graphics2D ctx, ArrayList<Position> positions) {
+		int taille_moitie = taille_pion/2;
+
+		ctx.setStroke(new BasicStroke(3));
+		ctx.setColor(new Color(255,0,0));
     	for(Position position : positions) {
-    		ctx.setStroke(new BasicStroke(3));
-    		ctx.setColor(new Color(255,0,0));
     		ctx.draw(new Line2D.Float(
 				position.getColonne()*taille_cellule - taille_moitie,
 				position.getLigne()*taille_cellule - taille_moitie,
@@ -302,22 +330,20 @@ public class AireGraphique extends JPanel {
 				position.getLigne()*taille_cellule + taille_moitie
 			));
 		}
-
-    	ctx.translate(-decalage_grille.x, -decalage_grille.y);
 	}
 
 	private void dessinerChemin(Graphics2D ctx, ArrayList<Position> positions) {
-    	ctx.translate(decalage_grille.x, decalage_grille.y);
+		if(positions.size() == 0)
+			return;
+
     	Path2D path = new Path2D.Float();
 
     	path.moveTo(positions.get(0).getColonne()*taille_cellule, positions.get(0).getLigne()*taille_cellule);
     	positions.forEach((Position p) -> path.lineTo(p.getColonne()*taille_cellule, p.getLigne()*taille_cellule));
 
-    	ctx.setStroke(new BasicStroke(4));
-    	ctx.setColor(new Color(0,0,0, 150));
+    	ctx.setStroke(new BasicStroke(3, CAP_SQUARE, JOIN_ROUND));
+    	ctx.setColor(new Color(60,150,220));
     	ctx.draw(path);
-
-    	ctx.translate(-decalage_grille.x, -decalage_grille.y);
 	}
 
 	/**
@@ -339,7 +365,7 @@ public class AireGraphique extends JPanel {
 	 * @param y ordonnée de la coordonnée testée
 	 * @return Renvoie vrai si la coordonnée est sur une zone de pion
 	 */
-	private Boolean collisionZonePion(int x, int y) {
+	public boolean collisionZonePion(int x, int y) {
     	return collisionZonePion(x, y, 1);
 	}
 
@@ -350,7 +376,7 @@ public class AireGraphique extends JPanel {
 	 *          (1 = taille de boite de collision inchangée)
 	 * @return Renvoie vrai si la coordonnée est sur une zone de pion
 	 */
-	private Boolean collisionZonePion(int x, int y, float taille_relative_pion) {
+	public boolean collisionZonePion(int x, int y, float taille_relative_pion) {
     	if(!collisionPlateau(x, y))
     		return false;
 
@@ -362,9 +388,11 @@ public class AireGraphique extends JPanel {
 				&& Math.abs(y%taille_cellule - taille_cellule/2) < taille_pion_moitie*taille_relative_pion;
 	}
 
-	private Boolean collisionPlateau(int x, int y) {
+	public boolean collisionPlateau(int x, int y) {
+
     	x = ecranVersPlateauX(x);
     	y = ecranVersPlateauY(y);
+
     	return x >= 0 && x < taille_plateau.x && y >= 0 && y < taille_plateau.y;
 	}
 
@@ -407,6 +435,15 @@ public class AireGraphique extends JPanel {
 	 */
 	public Position coordonneesVersPosition(int x, int y) {
     	return new Position(getLigne(y), getColonne(x));
+	}
+
+
+	public int positionVersX(Position p) {
+		return ((p.getColonne()*taille_cellule + decalage_plateau.x + decalage_grille.x)*taille_principale.x)/taille_dessin.x;
+	}
+
+	public int positionVersY(Position p) {
+    	return ((p.getLigne()*taille_cellule + decalage_plateau.y + decalage_grille.y)*taille_principale.y)/taille_dessin.y;
 	}
 
 }

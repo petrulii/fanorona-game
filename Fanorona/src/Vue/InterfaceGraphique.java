@@ -1,15 +1,10 @@
 package Vue;
 
 import javax.swing.*;
-import Modele.AireJeu;
-import com.formdev.flatlaf.FlatDarkLaf;
+/*import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;*/
 
 public class InterfaceGraphique implements Runnable {
-	private final AireJeu aire_jeu;
-	
-	public InterfaceGraphique(AireJeu a) {
-		aire_jeu = a;
-	}
 
 	/*private Font chargerFont(String nom) {
 		Font font = null;
@@ -30,17 +25,17 @@ public class InterfaceGraphique implements Runnable {
 	@Override
 	public void run() {
 
-		try {
-			UIManager.setLookAndFeel(new FlatDarkLaf());
+		/*try {
+			UIManager.setLookAndFeel(new FlatLightLaf());
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
-		}
+		}*/
 
-		new MainGUI(aire_jeu);
+		new MainGUI();
 
 	}
 
-	public static void demarrer(AireJeu a) {
-		SwingUtilities.invokeLater(new InterfaceGraphique(a));
+	public static void demarrer() {
+		SwingUtilities.invokeLater(new InterfaceGraphique());
 	}
 }

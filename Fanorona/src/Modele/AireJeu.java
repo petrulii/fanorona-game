@@ -232,9 +232,8 @@ public class AireJeu {
 	}
 
 	/**
-	 * Renvoie vrai si dans la grille il y a des coups de ce joueur avec des captures possibles.
 	 * @param joueur le numero de joueur
-	 * @return vrai si dans la grille il y a des coups de ce joueur avec des captures possibles, faux sinon
+	 * @return la liste des coups possibles pour un joueur donné
 	 */
 	public ArrayList<Coup> coupsPossibles(int joueur) {
 		ArrayList<Coup> coups_possibles = new ArrayList<>();
@@ -256,6 +255,46 @@ public class AireJeu {
 			}
 		}
 		return coups_possibles;
+	}
+
+	/**
+	 * @param joueur le numero de joueur
+	 * @return la liste des positions de début des coups possibles pour un joueur donné
+	 */
+	public ArrayList<Position> positionsDebutCoupsPossibles(int joueur) {
+		ArrayList<Position> positions_debut_coups_possibles = new ArrayList<>();
+		Position debut;
+		// Verifie si dans la grille il y a des coups de ce joueur avec des captures possibles.
+		for (int l = 0; l < NB_LIGNES; l++) {
+			for (int c = 0; c < NB_COLONNES; c++) {
+				if (grille[l][c] == joueur) {
+					debut = new Position(l, c);
+					ArrayList<Position> voisins = positionsAdjacents(debut);
+					for (Position fin : voisins) {
+						if (coupValide(new Coup(debut, fin, joueur))) {
+							positions_debut_coups_possibles.add(debut);
+							break;
+						}
+					}
+				}
+			}
+		}
+		return positions_debut_coups_possibles;
+	}
+
+	/**
+	 * @param joueur le numero de joueur
+	 * @return la liste des positions de fin des coups possibles pour un joueur donné et une position de début donnée
+	 */
+	public ArrayList<Position> positionsFinsCoupsPossibles(int joueur, Position debut) {
+		ArrayList<Position> positions_fin_coups_possibles = new ArrayList<>();
+		if (positionEstSurGrille(debut) && grille[debut.getLigne()][debut.getColonne()] == joueur) {
+			ArrayList<Position> voisins = positionsAdjacents(debut);
+			for (Position fin : voisins)
+				if (coupValide(new Coup(debut, fin, joueur)))
+					positions_fin_coups_possibles.add(fin);
+		}
+		return positions_fin_coups_possibles;
 	}
 
 	/**
@@ -558,6 +597,15 @@ public class AireJeu {
 	 * @return grille de jeu
 	 */
 	public int[][] getGrille() { return grille; }
+
+	/**
+	 *
+	 * @param p la position de la case dont on souhaite connaître le contenu
+	 * @return le contenu de la case de la grille correspondant à la position, vaut -1 si position invalide
+	 */
+	public int getCaseGrille(Position p) {
+		return positionEstSurGrille(p) ? getGrille()[p.getLigne()][p.getColonne()] : -1;
+	}
 
 	/**
 	 * Renvoie le coup sur lequel un choix d'aspiration ou percusion est ettendu.
