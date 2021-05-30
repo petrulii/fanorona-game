@@ -13,6 +13,10 @@ public class Position {
 		ligne = l;
 		colonne = c;
 	}
+	
+	public Position copy() {
+		return new Position(ligne, colonne);
+	}
 
 	public Position copy() {
 		return new Position(ligne, colonne);
