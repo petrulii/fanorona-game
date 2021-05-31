@@ -20,8 +20,8 @@ public class AleatoireIA extends IA {
 
     /**
      * Genere un entier aleatoire entre les entiers min et max
-	 * @param l'entier min
-	 * @param l'entier max
+	 * @param min :  l'entier min
+	 * @param max : l'entier max
      * @return un entier aleatoire entre min et max
      */
     public int randomInRange(int min, int max) {
@@ -31,6 +31,7 @@ public class AleatoireIA extends IA {
     
     /**
      * Genere un coup aleatoire.
+     * @param debut : la debut position d'un coup
      * @return un Coup valide
      */
     public Coup donneCoup(Position debut) {
@@ -53,7 +54,7 @@ public class AleatoireIA extends IA {
 
     /**
      * Choisit un coup aleatoirement dans la liste des coups possibles.
-     * @param la liste des coups possibles
+     * @param coupsPossibles : la liste des coups possibles
      * @return un Coup valide
      */
     public Coup donneCoup(ArrayList<Coup> coupsPossibles) {

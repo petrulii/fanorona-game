@@ -65,15 +65,19 @@ public class MinMaxIA extends IA {
 
     /**
      * Joue un tour (une sequence de coups).
+     * @param configuration : un grille qui represente un configuration d'un plateau de jeu
+     * @param tour_ia : liste de coups a jouer
      */
     private void jouerTour(AireJeu configuration, ArrayList<Coup> tour_ia) {
 		for (Coup coup_ia : tour_ia) {
 			configuration.joueCoup(coup_ia);
 		}
 	}
-
+  
     /**
      * Annule un tour (une sequence de coups).
+     * @param configuration : un grille qui represente un configuration d'un plateau de jeu
+     * @param tour_ia : liste de coups a annuler
      */
     private void annulerTour(AireJeu configuration, ArrayList<Coup> tour_ia) {
 		for (Coup coup_ia : tour_ia) {
@@ -110,7 +114,6 @@ public class MinMaxIA extends IA {
     /**
      * Evalue une configuration et l'assigne une valeur qui correspond a nombre de pions de certain couleur sur le plateau de jeu.
      * @param configuration : un grille qui represente un configuration d'un plateau de jeu
-     * @param couleur : un couleur d'un des joueurs (noir ou blanc)
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     protected int evaluation(AireJeu configuration) {
@@ -155,33 +158,33 @@ public class MinMaxIA extends IA {
 		}
 		return pions_diagonal;
 	}
-
+    
     /**
-     * Calcul les tours possibles recursivement.
+     * Calcul  recursivement.
+     * @param configuration : un grille qui represente un configuration d'un plateau de jeu
+     * @param coups_jouables : tous les listes des coups qui peuvent etre jouer
+     * @param joueur : Le joueur de ces tours
+     * @return les tours possibles
      */
     protected ArrayList<ArrayList<Coup>> toursPossibles(AireJeu configuration, ArrayList<Coup> coups_jouables, int joueur) {
-    	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<ArrayList<Coup>>();
+    	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<>();
     	// Ajout des coups avec choix.
     	Coup c_copie;
 		for (Coup c : coups_jouables) {
 			c_copie = c.copy();
 			// Ajout d'un coup avec choix d'aspiration different.
 			if (configuration.joueurDoitChoisir(c)) {
-				if (c_copie.getAspiration()) {
-					c_copie.setAspiration(false);
-				} else {
-					c_copie.setAspiration(true);
-				}
-				ArrayList<Coup> t1 = new ArrayList<Coup>();
+				c_copie.setAspiration(!c_copie.getAspiration());
+				ArrayList<Coup> t1 = new ArrayList<>();
 				t1.add(c_copie);
 				tours_jouables.add(t1);
 			}
 			// Ajout de tour (sequence de coups) avec un seul coup sans continuation.
-			ArrayList<Coup> t0 = new ArrayList<Coup>();
+			ArrayList<Coup> t0 = new ArrayList<>();
 			t0.add(c);
 			tours_jouables.add(t0);
 		}
-		ArrayList<ArrayList<Coup>> tours_jouables_final = new ArrayList<ArrayList<Coup>>();
+		ArrayList<ArrayList<Coup>> tours_jouables_final = new ArrayList<>();
 		for (ArrayList<Coup> tour : tours_jouables) {
 			// completer tour avec les coups percusion/aspiration
 			tours_jouables_final.add(tour);
@@ -191,11 +194,15 @@ public class MinMaxIA extends IA {
 	}
 
     /**
-     * Calcul les tours possibles recursivement.
+     * Fonction recurssive qui calcule les tours possibles recursivement.
+     * @param tour : les coups a jouer
+     * @param configuration : un grille qui represente un configuration d'un plateau de jeu
+     * @param joueur : Le joueur de ces tours
+     * @return les tours possibles
      */
     protected ArrayList<ArrayList<Coup>> toursPossiblesRec(ArrayList<Coup> tour, AireJeu configuration, int joueur) {
     	// Ajout des tours possibles dans la liste de tours jouables.
-    	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<ArrayList<Coup>>();
+    	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<>();
     	Coup c;
     	Coup c_possible;
 		//System.out.println(stringCoups(tour));
@@ -219,13 +226,11 @@ public class MinMaxIA extends IA {
 
     /**
      * Copie la liste des coups.
+     * @param coups : Les coups a copier
+     * @return liste des coups
      */
     public ArrayList<Coup> copyCoups(ArrayList<Coup> coups) {
-    	ArrayList<Coup> coups_copie = new ArrayList<Coup>();
-		for (Coup c : coups) {
-			coups_copie.add(c);
-		}
-		return coups_copie;
+		return new ArrayList<>(coups);
     }
 
 	/**
@@ -239,7 +244,7 @@ public class MinMaxIA extends IA {
         AireJeu aire = aire_jeu.copy();
         // Calcul des coups possibles.
     	ArrayList<Coup> coups_jouables_initials = aire.coupsPossibles(couleur_A);
-    	ArrayList<Coup> coups_jouables = new ArrayList<Coup>();
+    	ArrayList<Coup> coups_jouables = new ArrayList<>();
         if (debut != null) {
     		ArrayList<Position> voisins = aire.positionsAdjacents(debut);
     		Coup c;
@@ -258,14 +263,15 @@ public class MinMaxIA extends IA {
 		return meilleur_coup;
     }
 
-	/**
-	 * Transforme une liste de coups en chaine de charactere.
-	 */
+    /**
+     * Transforme une liste de coups en chaine de charactere.
+     * @param liste : liste des coups a transforme
+     * @return une chaine de caracteres avec les coups 
+     */
 	public String stringCoups(ArrayList<Coup> liste) {
-		String s = new String();
-		for(Coup c : liste) {
-    		s = s + c.toStringEspace();
-		}
+		String s = "";
+		for(Coup c : liste)
+    		s += c.toStringEspace();
 		return s;
 	}
 

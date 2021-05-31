@@ -1,13 +1,10 @@
 package Modele;
 
 import java.io.*;
-import java.sql.Date;
 import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Random;
 
 /**
  * Classe pour ecrire et lire dans un fichier une liste de coups.
@@ -26,31 +23,55 @@ public class HistoriqueCoups {
     
 	public HistoriqueCoups() {
 		// Initialisation d'un liste pour l'enregistrement des coups.
-		coups = new ArrayList<Coup>();
+		coups = new ArrayList<>();
 		// Initialisation d'un liste pour l'annulation des coups.
-		coups_annules = new ArrayList<Coup>();
+		coups_annules = new ArrayList<>();
 	}
 
+	/**
+	 * Ajoute un coup effectue dans la liste coups
+	 * @param coup : le coup a ajouter
+	 */
 	public void ajouterCoup(Coup coup) {
 		coups.add(coup);
 	}
 
+	/**
+	 * Ajoute un coup annule dans la liste coups_annules
+	 * @param coup : le coup a ajouter
+	 */
 	public void ajouterCoupAnnule(Coup coup) {
 		coups_annules.add(coup);
 	}
 
+	/**
+	 * Supprimer le dernier coup effectue de la liste quand utilisatuer annuler un coup
+	 * @return liste de coups sans le dernier coup
+	 */
 	public Coup enleveCoup() {
 		return coups.remove(coups.size() - 1);
 	}
 
+	/**
+	 * Supprimer le dernier coup annul�� de la liste quand utilisateur refaire le coup
+	 * @return liste de coups annul�� sans le dernier coup annul��
+	 */
 	public Coup enleveCoupAnnule() {
 		return coups_annules.remove(coups_annules.size() - 1);
 	}
 
+	/**
+	 * Donner le dernier coup effectue
+	 * @return le dernier coup effectue
+	 */
 	public Coup getDernierCoup() {
 		return coups.get(coups.size()-1);
 	}
 
+	/**
+	 * Donner le dernier coup annule
+	 * @return le dernier coup annule
+	 */
 	public Coup getDernierCoupAnnule() {
 		return coups_annules.get(coups_annules.size()-1);
 	}
@@ -73,8 +94,7 @@ public class HistoriqueCoups {
 	
     /**
      * Prend une liste des coups et l'ecrit dans un fichier
-     * @param la liste des coups
-     * @throws IOException
+     * @throws IOException : problem de creer le fichier
      */
     public void exporter() {
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
@@ -102,13 +122,13 @@ public class HistoriqueCoups {
     /**
      * Prend un nom de fichier et lit un liste de coups dans ce fichier
      * @param nom_fichier : nom de fichier
-     * @return la liste lu dans le fichier
-     * @throws IOException 
-     * @throws NumberFormatException 
+     * @throws FileNotFoundException : Le fichier n'existe pas
+     * @throws IOException : probleme de lire ou fermer le fichier
+     * @throws NumberFormatException : erreur que la chaine de caractere transforme en entier
      */
     public void importer(String nom_fichier) {
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
-    	coups = new ArrayList<Coup>();
+    	coups = new ArrayList<>();
     	try {
 			BufferedReader bf; 
 			bf = new BufferedReader(new FileReader("res"+File.separator+"Historiques"+File.separator+nom_fichier));
@@ -146,26 +166,31 @@ public class HistoriqueCoups {
 		}
     }
 	
+    /**
+     * Transforme le chaine de caracteres �� form d'un coup
+     * @param ligne_coup : la chaine de caracteres �� analyser
+     * @return un coup
+     */
 	private Coup construireCoup(String[] ligne_coup) {		// A CORRIGER
-		int l_debut = (int) Integer.parseInt(ligne_coup[0]);
+		int l_debut = Integer.parseInt(ligne_coup[0]);
 		System.out.println(ligne_coup[0]);
-		int c_debut = (int) Integer.parseInt(ligne_coup[1]);
+		int c_debut = Integer.parseInt(ligne_coup[1]);
 		System.out.println(ligne_coup[1]);
 		Position p_debut = new Position(l_debut, c_debut);
-		int l_fin = (int) Integer.parseInt(ligne_coup[2]);
+		int l_fin = Integer.parseInt(ligne_coup[2]);
 		System.out.println(ligne_coup[2]);
-		int c_fin = (int) Integer.parseInt(ligne_coup[3]);
+		int c_fin = Integer.parseInt(ligne_coup[3]);
 		System.out.println(ligne_coup[3]);
 		Position p_fin = new Position(l_fin, c_fin);
-		boolean aspiration = (boolean) Boolean.parseBoolean(ligne_coup[4]);
+		boolean aspiration = Boolean.parseBoolean(ligne_coup[4]);
 		System.out.println(ligne_coup[4]);
-		int joueur = (int) Integer.parseInt(ligne_coup[5]);
+		int joueur = Integer.parseInt(ligne_coup[5]);
 		System.out.println(ligne_coup[5]);
-		ArrayList<Position> pions_caputures = new ArrayList<Position>();
+		ArrayList<Position> pions_caputures = new ArrayList<>();
 		Position p;
 		try {
 			for (int i = 6; i < ligne_coup.length; i = i + 2) {
-				p = new Position((int) Integer.parseInt(ligne_coup[i]), (int) Integer.parseInt(ligne_coup[i+1]));
+				p = new Position(Integer.parseInt(ligne_coup[i]), Integer.parseInt(ligne_coup[i+1]));
 				// Ajouter la position dans la liste
 				pions_caputures.add(p);
 				System.out.println(ligne_coup[i]);
@@ -179,11 +204,13 @@ public class HistoriqueCoups {
 
 	/**
 	 * Transforme une liste de coups en chaine de charactere.
+	 * @param liste : liste de coups
+	 * @return : une chaine de caractere avec les coups
 	 */
 	public String stringCoups(ArrayList<Coup> liste) {
-		String s = new String();
+		String s = "";
 		for(Coup c : liste) {
-    		s = s + c.toStringEspace();
+    		s += c.toStringEspace();
 		}
 		return s;
 	}
@@ -201,27 +228,21 @@ public class HistoriqueCoups {
 	public void afficheCoupsAnnules() {
 		System.out.println(stringCoups(coups_annules));
 	}
-    
-    /**
-     * Copie la liste des coups joues pendant le jeu
-     */
+	
+	/**
+	 * Copie la liste des coups joues pendant le jeu
+	 * @return une liste de coups copi��
+	 */
     public ArrayList<Coup> copyCoups() {
-    	ArrayList<Coup> coups_copie = new ArrayList<Coup>();
-		for (Coup c : coups) {
-			coups_copie.add(c);
-		}
-		return coups_copie;
+		return new ArrayList<>(coups);
     }
-    
+
     /**
      * Copie la liste des coups annules pendant le jeu en cours d'annulation
+     * @return une liste de coups copi��
      */
     public ArrayList<Coup> copyCoupsAnnules() {
-    	ArrayList<Coup> coups_annules_copie = new ArrayList<Coup>();
-		for (Coup c : coups_annules) {
-			coups_annules_copie.add(c);
-		}
-		return coups_annules_copie;
+		return new ArrayList<>(coups_annules);
     }
     
     /**
@@ -242,7 +263,7 @@ public class HistoriqueCoups {
      * Assigne la liste des coups annules pendant le jeu en cours d'annulation
      */
     public void resetCoupsAnnules() {
-		this.coups_annules = new ArrayList<Coup>();
+		this.coups_annules = new ArrayList<>();
 	}
 	
     /**
@@ -261,6 +282,10 @@ public class HistoriqueCoups {
     	return coups_annules;
     }
 
+    /**
+     * Copier l'objet HistoriqueCoups
+     * @return un HistoriqueCoups
+     */
 	public HistoriqueCoups copy() {
 		HistoriqueCoups h = new HistoriqueCoups();
 		h.setCoups(copyCoups());

@@ -12,14 +12,13 @@ public class DynamicMinMaxIA extends MinMaxIA {
         super(a, joueur, niveau);
         System.out.println("Couleur pions A : " + couleur_A);
     }
-    
-    @Override
+
     /**
      * Evalue une configuration et l'assigne une valeur qui correspond a nombre de pions de certain couleur sur le plateau de jeu.
      * @param configuration : un grille qui represente un configuration d'un plateau de jeu
-     * @param couleur : un couleur d'un des joueurs (noir ou blanc)
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
+    @Override
     protected int evaluation(AireJeu configuration) {
     	int pions_A = comptePions(configuration, couleur_A);
     	// Strategie debut de partie, quand nombre de pions de joueur IA > 10.

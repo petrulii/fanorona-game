@@ -14,25 +14,32 @@ public class Position {
 		colonne = c;
 	}
 	
+	/**
+	 * Copier la position courant
+	 * @return une Position
+	 */
 	public Position copy() {
 		return new Position(ligne, colonne);
 	}
 
-	public Position copy() {
-		return new Position(ligne, colonne);
-	}
-
+	/**
+	 * Verifier si deux positions sont pareil
+	 * @param p : position a comparer
+	 * @return true si les deux positions sont egale,
+	 * 		   false sinon 
+	 */
 	public boolean equals(Position p) {
 		// L'adresse dans memoire pointe vers le meme objet.
 		if (this == p) {
 			return true;
-		// Les atttributs des positions sont egals.
-		} else if (this.ligne == p.getLigne() && this.colonne == p.getColonne()) {
-			return true;
-		}
-		return false;
+		// Les attributs des positions sont egals.
+		} else return this.ligne == p.getLigne() && this.colonne == p.getColonne();
 	}
 
+	/**
+	 * --?
+	 * @param p la position que l'on soustrait
+	 */
 	public Position soustraire(Position p) {
 		return new Position(ligne-p.getLigne(), colonne-p.getColonne());
 	}

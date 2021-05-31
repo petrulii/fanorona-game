@@ -11,10 +11,12 @@ public class Coup {
 	Position debut;
 	Position fin;
 	int joueur;
+	
 	/**
 	 * Aspiration vaut vrai seulement quand l'utilisateur a le choix et il choisit l'aspiration.
 	 */
 	ArrayList<Position> pions_captures;
+	
 	/**
 	 * Aspiration vaut vrai seulement quand l'utilisateur a le choix et il choisit l'aspiration.
 	 */
@@ -24,7 +26,7 @@ public class Coup {
 		this.debut = debut;
 		this.fin = fin;
 		this.joueur = joueur;
-		this.pions_captures = new ArrayList<Position>();
+		this.pions_captures = new ArrayList<>();
 	}
 
 	public Coup(Position debut, Position fin, boolean aspiration, int joueur, ArrayList<Position> pions) {
@@ -35,6 +37,10 @@ public class Coup {
 		this.pions_captures = pions;
 	}
 
+	/**
+	 * Copier un coup
+	 * @return un coup
+	 */
 	public Coup copy() {
 		Position d = (this.debut).copy();
 		Position f = (this.fin).copy();
@@ -44,37 +50,36 @@ public class Coup {
 		return new Coup(d, f, a, j, p_c);
 	}
 
-    /**
-     * Copie la liste des pions captures.
-     */
+	/**
+	 * Copie la liste des pions captures.
+	 * @return une liste des pions
+	 */
     public ArrayList<Position> copyPionsCaptures() {
-    	ArrayList<Position> pions_copie = new ArrayList<Position>();
-		for (Position p : this.pions_captures) {
-			pions_copie.add(p);
-		}
-		return pions_copie;
+		return new ArrayList<>(this.pions_captures);
     }
 
+    /**
+     * Verifier si deux coups sont egals
+     * @param coup : le coup a comparer
+     * @return vrai si les deux coup sont pareil, false sinon
+     */
 	public boolean equals(Coup coup) {
 		// L'adresse dans memoire pointe vers le meme objet.
 		if (this == coup) {
 			return true;
 		// Les attributs des coups sont egals.
-		} else if (debut.equals(coup.getDebut()) && fin.equals(coup.getFin()) && joueur==coup.getJoueur()) {
-			return true;
-		}
-		return false;
+		} else return debut.equals(coup.getDebut()) && fin.equals(coup.getFin()) && joueur == coup.getJoueur();
 	}
 
 	/**
 	 * Set l'attribut pions captures, qui designe tout pion capture pendant ce coup.
-	 * @param les pions captures
+	 * @param p les pions captures
 	 */
 	public void setPionsCaptures(ArrayList<Position> p) { this.pions_captures = p; }
 
 	/**
 	 * Set l'attribut aspiration, si vrai, on capture le pion devant, derriere sinon.
-	 * @param la valeur d'aspiration a set
+	 * @param aspiration la valeur d'aspiration a set
 	 */
 	public void setAspiration(boolean aspiration) { this.aspiration = aspiration; }
 
@@ -113,12 +118,10 @@ public class Coup {
 	 * @return une chaine de caracteres decrivant le coup.
 	 */
 	public String toString() {
-		String s = new String();
-		s = "Debut: "+debut+", fin: "+fin+" , aspiration: "+aspiration+" , joueur: "+joueur+", pions captures: [ ";
-		for (Position p : pions_captures) {
-			s = s + p + " ";
-		}
-		s = s + "].\n";
+		String s = "Debut: " + debut + ", fin: " + fin + " , aspiration: " + aspiration + " , joueur: " + joueur + ", pions captures: [ ";
+		for (Position p : pions_captures)
+			s += p + " ";
+		s += "].\n";
 		return s;
 	}
 
@@ -127,12 +130,10 @@ public class Coup {
 	 * @return une chaine de caracteres decrivant le coup.
 	 */
 	public String toStringEspace() {
-		String s = new String();
-		s = debut.getLigne()+" "+debut.getColonne()+" "+fin.getLigne()+" "+fin.getColonne()+" "+aspiration+" "+joueur+" ";
-		for (Position p : pions_captures) {
-			s = s + p.getLigne() + " " + p.getColonne() + " ";
-		}
-		s = s + "\n";
+		String s = debut.getLigne() + " " + debut.getColonne() + " " + fin.getLigne() + " " + fin.getColonne() + " " + aspiration + " " + joueur + " ";
+		for (Position p : pions_captures)
+			s += p.getLigne() + " " + p.getColonne() + " ";
+		s += "\n";
 		return s;
 	}
 	

@@ -1,5 +1,6 @@
 package Modele;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -168,7 +169,7 @@ public class AireJeu {
 	
 	/**
 	 * Execution d'un capture associe au coup.
-	 * @param coup le coup a jouer
+	 * @param coup : le coup a jouer
 	 * @return les pions captures pendant ce coup
 	 */
 	public ArrayList<Position> effectueCapture(Coup coup) {
@@ -208,7 +209,7 @@ public class AireJeu {
 
 	/**
 	 * Renvoie vrai si le coup fait une capture.
-	 * @param coup le coup a jouer
+	 * @param coup :  le coup a jouer
 	 * @return vrai si le coup fait une capture, faux sinon
 	 */
 	public boolean coupFaitCapture(Coup coup) {
@@ -232,7 +233,8 @@ public class AireJeu {
 	}
 
 	/**
-	 * @param joueur le numero de joueur
+	 * Mettre tous les coups possibles de ce joueur dans une liste
+	 * @param joueur :  le numero de joueur
 	 * @return la liste des coups possibles pour un joueur donné
 	 */
 	public ArrayList<Coup> coupsPossibles(int joueur) {
@@ -258,8 +260,9 @@ public class AireJeu {
 	}
 
 	/**
-	 * @param joueur le numero de joueur
-	 * @return la liste des positions de début des coups possibles pour un joueur donné
+	 * Mettre des positions de début des coups possibles pour un joueur donné dans une liste
+	 * @param joueur : le numero de joueur
+	 * @return la liste des positions de début 
 	 */
 	public ArrayList<Position> positionsDebutCoupsPossibles(int joueur) {
 		ArrayList<Position> positions_debut_coups_possibles = new ArrayList<>();
@@ -283,8 +286,10 @@ public class AireJeu {
 	}
 
 	/**
-	 * @param joueur le numero de joueur
-	 * @return la liste des positions de fin des coups possibles pour un joueur donné et une position de début donnée
+	 * Mettre des positions de fin des coups possibles pour un joueur donné et un pion debut dans une liste
+	 * @param joueur: le numero de joueur
+	 * @param debut: le debut d'un coup
+	 * @return la liste des positions de fin 
 	 */
 	public ArrayList<Position> positionsFinsCoupsPossibles(int joueur, Position debut) {
 		ArrayList<Position> positions_fin_coups_possibles = new ArrayList<>();
@@ -299,7 +304,7 @@ public class AireJeu {
 
 	/**
 	 * Renvoie vrai si dans la grille il y a des coups de ce joueur avec des captures possibles.
-	 * @param joueur le numero de joueur
+	 * @param joueur : le numero de joueur
 	 * @return vrai si dans la grille il y a des coups de ce joueur avec des captures possibles, faux sinon
 	 */
 	private boolean joueurPeutCapturer(int joueur) {
@@ -324,8 +329,8 @@ public class AireJeu {
 	}
 
 	/**
-	 * Renvoie vrai si le pion a des captures possibles.
-	 * @param debut la position de pion
+	 * Verifier si le pion a des captures possibles.
+	 * @param debut : la position de pion
 	 * @return vrai si le pion a des captures possibles, faux sinon
 	 */
 	public boolean joueurPeutContinuerTour(Position debut) {
@@ -345,7 +350,7 @@ public class AireJeu {
 
 	/**
 	 * Verifie si le joueur n'essaie pas de revenir vers la meme position dans sa suite des coups.
-	 * @param coup le coup a jouer
+	 * @param coup : le coup a jouer
 	 * @return vrai si le joueur essaie de revenir vers la meme position, faux sinon
 	 */
 	private boolean memePositionDansSuiteCoups(Coup coup) {
@@ -393,7 +398,7 @@ public class AireJeu {
 
 	/**
 	 * Renvoie vrai si le joueur a le choix d'aspiration ou de percusion, faux sinon.
-	 * @param coup un coup valide a verifier pour la possibilite de choix entre l'aspiration et la percusion
+	 * @param coup : un coup valide a verifier pour la possibilite de choix entre l'aspiration et la percusion
 	 * @return vrai si le joueur a le choix, faux sinon
 	 */
 	public boolean joueurDoitChoisir(Coup coup) {
@@ -432,7 +437,7 @@ public class AireJeu {
 	}
 
 	/**
-	 * Renvoie vrai si la colonne est sur la grille, faux sinon.
+	 * Verifier si la colonne est sur la grille.
 	 * @param colonne : la colonne a verifier
 	 * @return vrai si la colonne est sur la grille de jeu, faux sinon
 	 */
@@ -442,8 +447,8 @@ public class AireJeu {
 	
 	/**
 	 * Verifie si deux positions sont adjacentes.
-	 * @param debut position de départ
-	 * @param fin position de fin
+	 * @param debut : position de départ
+	 * @param fin : position de fin
 	 * @return vrai si le coup est adjacent vide sur la grille de jeu, faux sinon
 	 */
 	private boolean sontPositionsAdjacents(Position debut, Position fin) {
@@ -459,7 +464,7 @@ public class AireJeu {
 	
 	/**
 	 * Renvoie la liste des coups adjacents vides sur la grille de jeu.
-	 * @param p le coup
+	 * @param p : le coup
 	 * @return liste des coups adjacents vides sur la grille de jeu
 	 */
 	public ArrayList<Position> positionsAdjacents(Position p) {		// Factoriser ca (boucle?).
@@ -517,9 +522,9 @@ public class AireJeu {
 	}
 	
 	/**
-	 * Renvoie vrai si la case a verifier est l'adversaire de couleur donne, faux sinon.
-	 * @param couleur_joueur de joueur
-	 * @param case_a_verifier a verifier
+	 * Verifier si la case est l'adversaire de couleur donne.
+	 * @param couleur_joueur : de joueur
+	 * @param case_a_verifier :la position a verifier
 	 * @return vrai si la case l'adversaire, faux sinon
 	 */
 	public boolean estAdversaire(int couleur_joueur, Position case_a_verifier) {
@@ -529,11 +534,11 @@ public class AireJeu {
 	
 	/**
 	 * Capture les pions d'adversaire associes a la capture d'un coup.
-	 * @param depart case de premier pion a capturer
-	 * @param couleur de joueur
-	 * @param direction_l ligne de capture des pions
-	 * @param direction_c colonne de capture des pions
-	 * @param choix entre aspiration (1) et percusion (-1)
+	 * @param depart : case de premier pion a capturer
+	 * @param couleur : de joueur
+	 * @param direction_l : ligne de capture des pions
+	 * @param direction_c : colonne de capture des pions
+	 * @param choix : entre aspiration (1) et percusion (-1)
 	 * @return les pions d'adversaire capturees
 	 */
 	public ArrayList<Position> captureLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c, int choix) {
@@ -642,7 +647,7 @@ public class AireJeu {
 	/*------------------------*/
 	
 	/**
-	 * Dit si l'annulation d'un coup est possible coups annules
+	 * Verifier si l'annulation d'un coup est possible coups annules
 	 * @return vrai s'il y a des coups a annuler, faux sinon
 	 */
 	public boolean annulationCoupPossible() {
@@ -650,7 +655,7 @@ public class AireJeu {
 	}
 	
 	/**
-	 * Dit si c'est possible de refaire un coup
+	 * Verifier si c'est possible de refaire un coup
 	 * @return vrai s'il y a des coups annules, faux sinon
 	 */
 	public boolean refaireCoupPossible() {

@@ -1,7 +1,5 @@
 package Controleur;
 import Modele.AireJeu;
-import Modele.Coup;
-import Modele.Position;
 import Vue.AireGraphique;
 import Vue.MainGUI;
 
@@ -48,17 +46,15 @@ public class ControleurMediateur {
 					creerIA(niveau_IA1, AireJeu.NOIR),
 					creerIA(niveau_IA2, AireJeu.BLANC)
 			);
-
 		}
-
-
 	}
-	
-    /**
-     * Creer un jouer IA de certain niveau donne.
+
+	/**
+	 * Creer un jouer IA de certain niveau donne.
 	 * @param niveau : niveau d'IA demande
-	 * @return joueur IA
-     */
+	 * @param couleur : le couleur d'IA
+	 * @return : IA cree
+	 */
     public IA creerIA(int niveau, int couleur) {
     	// Initialisation de joueur IA.
 		return switch (niveau) {
@@ -70,10 +66,10 @@ public class ControleurMediateur {
 	}
 
     /**
-     * Effectue une instruction après un clic (ou un drag-and-drop) de la souris sur la grille
-	 * @param instruction l'instruction a effectuer
-	 * @param x l'abscisse de la coordonnée de la souris
-	 * @param y l'ordonnee de la coordonnée de la souris
+     * Effectue une instruction apr��s un clic (ou un drag-and-drop) de la souris sur la grille
+	 * @param instruction : l'instruction a effectuer
+	 * @param x : l'abscisse de la coordonn��e de la souris
+	 * @param y : l'ordonnee de la coordonn��e de la souris
      */
     public void instructionSouris(String instruction, int x, int y) {
 
@@ -85,12 +81,11 @@ public class ControleurMediateur {
 			case "Cliquer" -> automate_joueur.actionJoueur(AutomateControleur.T.CLIC, x, y);
 			default -> System.out.println("Le controleur ne connait pas cette instruction souris.");
 		}
-
 	}
 
 	/**
      * Effectue une instruction donne apres un click d'un touche clavier.
-	 * @param instruction l'instruction a effectuer
+	 * @param instruction : l'instruction a effectuer
      */
     public void instruction(String instruction) {
 		switch (instruction) {
