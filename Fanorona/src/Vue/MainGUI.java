@@ -5,10 +5,12 @@ import Modele.AireJeu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.Enumeration;
+import java.util.Objects;
 
 /**
- *
+ * La classe de la fenêtre principale du jeu.
  * @author Marin et Titouan
  */
 public class MainGUI extends javax.swing.JFrame {
@@ -16,18 +18,25 @@ public class MainGUI extends javax.swing.JFrame {
     private AireJeu aire_jeu;
     private ControleurMediateur controleur_mediateur;
     private AireGraphique aire_graphique;
+    private final ImageIcon icone_blanc;
+    private final ImageIcon icone_noir;
 
     /**
      * Creates new form MainGUI
      */
     public MainGUI() {
         initComponents();
+        icone_blanc = new javax.swing.ImageIcon(Objects.requireNonNull(getClass().getResource("/Images/icone_blanc.png")));
+        icone_noir = new javax.swing.ImageIcon(Objects.requireNonNull(getClass().getResource("/Images/icone_noir.png")));
+
         this.setVisible(true);
 
         changerPanneau("panneau_menu");
     }
 
+
     /**
+     * Bascule entre le panneau de menu et de jeu
      * @param nom_panneau panneau pour lequel on souhaite changer dans la fenêtre
      */
     private void changerPanneau(String nom_panneau) {
@@ -48,23 +57,37 @@ public class MainGUI extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * @param b le nouvel état d'activation du bouton terminé
+     */
     public void majBoutonTerminer(boolean b) {
         bouton_terminer.setEnabled(b);
     }
 
-    public void majBoutonHistorique() {
-        bouton_annuler.setEnabled(aire_jeu.annulationCoupPossible());
-        bouton_retablir.setEnabled(aire_jeu.refaireCoupPossible());
+    /**
+     * Active ou désactive les boutons Annuler et Rétablir selon l'historique actif
+     */
+    public void majBoutonHistorique(boolean veto) {
+        bouton_annuler.setEnabled(veto && aire_jeu.annulationCoupPossible());
+        bouton_retablir.setEnabled(veto && aire_jeu.refaireCoupPossible());
     }
 
+    /**
+     * Indique à qui c'est le tour
+     */
     public void majAffichageJoueurActif() {
-        label_joueur_actif.setText(
-            aire_jeu.getJoueur() == AireJeu.BLANC ?
-                    "C'est au tour de joueur blanc"
-                    : "C'est au tour de joueur noir"
+        label_joueur_actif.setText("C'est au tour de");
+
+        label_joueur_actif.setIcon(
+                aire_jeu.getJoueur() == AireJeu.BLANC ?
+                        icone_blanc
+                        : icone_noir
         );
     }
 
+    /**
+     * Affiche la pop-up qui indique que la partie est terminée.
+     */
     public void afficherGameOver() {
         label_joueur_actif.setText("Partie terminée.");
 
@@ -72,17 +95,19 @@ public class MainGUI extends javax.swing.JFrame {
         Object[] options = {"Relancer la partie", "Retourner au menu principal"};
 
         int n = JOptionPane.showOptionDialog(this,
-            "Joueur ? <- (à faire !) a gagné la partie !",
+            "a gagné la partie !",
             "Fin de la partie",
             JOptionPane.DEFAULT_OPTION,
             JOptionPane.PLAIN_MESSAGE,
-            null,
+            aire_jeu.getJoueur() == AireJeu.BLANC ?
+                icone_blanc
+                : icone_noir,
             options,
             options[0]
         );
 
         switch (n) {
-            case JOptionPane.YES_OPTION -> System.out.println("Joueur a cliqué sur 'Relancer la partie.'");
+            case JOptionPane.YES_OPTION -> rapatrierFormulaire();
             case JOptionPane.NO_OPTION, JOptionPane.CLOSED_OPTION -> changerPanneau("panneau_menu");
         }
     }
@@ -424,7 +449,7 @@ public class MainGUI extends javax.swing.JFrame {
                 .addComponent(radio_debut_noir)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(radio_debut_blanc)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
             .addGroup(panel_debutLayout.createSequentialGroup()
                 .addGap(23, 23, 23)
                 .addComponent(label_debut)
@@ -474,7 +499,7 @@ public class MainGUI extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel_flottantLayout.createSequentialGroup()
                         .addGroup(panel_flottantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(panel_debutant, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(panel_debut, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
+                            .addComponent(panel_debut, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
                         .addContainerGap())))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel_flottantLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -506,7 +531,6 @@ public class MainGUI extends javax.swing.JFrame {
 
         conteneur_principal.add(panneau_menu, "panneau_menu");
 
-        paneau_jeu.setForeground(new java.awt.Color(0, 0, 0));
         paneau_jeu.setToolTipText("");
 
         section_boutons_haut.setOpaque(false);
@@ -546,7 +570,10 @@ public class MainGUI extends javax.swing.JFrame {
         section_boutons_haut_panel2.setLayout(new java.awt.GridBagLayout());
 
         label_joueur_actif.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        label_joueur_actif.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Images/icone_blanc.png"))); // NOI18N
         label_joueur_actif.setText("Joueur courant");
+        label_joueur_actif.setToolTipText("");
+        label_joueur_actif.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
         section_boutons_haut_panel2.add(label_joueur_actif, new java.awt.GridBagConstraints());
 
         section_boutons_haut.add(section_boutons_haut_panel2);
@@ -717,30 +744,10 @@ public class MainGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void bouton_suggestionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_suggestionActionPerformed
-
-        if (bouton_suggestion.isSelected()) {
-            System.out.println("Suggestion est actif");
-        } else {
-            System.out.println("Suggestion est inactif");
-        }
-
-    }//GEN-LAST:event_bouton_suggestionActionPerformed
-
-    private void bouton_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_terminerActionPerformed
-        controleur_mediateur.instruction("Finir tour");
-    }//GEN-LAST:event_bouton_terminerActionPerformed
-
-    private void bouton_annulerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_annulerActionPerformed
-        controleur_mediateur.instruction("Annuler");
-    }//GEN-LAST:event_bouton_annulerActionPerformed
-
-    private void bouton_retablirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_retablirActionPerformed
-        controleur_mediateur.instruction("Refaire");
-    }//GEN-LAST:event_bouton_retablirActionPerformed
-
-    private void bouton_commencerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_commencerActionPerformed
-
+    /**
+     * Cette méthode lance une nouvelle partie en récupérant les infos du formulaire de menu
+     */
+    private void rapatrierFormulaire() {
         // le joueur qui commence
         int joueur_qui_commence = radio_debut_noir.isSelected() ? AireJeu.NOIR : AireJeu.BLANC;
 
@@ -774,11 +781,61 @@ public class MainGUI extends javax.swing.JFrame {
         aire_graphique.addMouseMotionListener(ecouteur_souris_aire);
         aire_graphique.afficherAides(mode_debutant);
         addKeyListener(new EcouteurClavier(controleur_mediateur));
+    }
 
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Suggestion
+     * @param evt ignored
+     */
+    private void bouton_suggestionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_suggestionActionPerformed
+
+        if (bouton_suggestion.isSelected()) {
+            System.out.println("Suggestion est actif");
+        } else {
+            System.out.println("Suggestion est inactif");
+        }
+    }//GEN-LAST:event_bouton_suggestionActionPerformed
+
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Terminer
+     * @param evt ignored
+     */
+    private void bouton_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_terminerActionPerformed
+        controleur_mediateur.instruction("Finir tour");
+    }//GEN-LAST:event_bouton_terminerActionPerformed
+
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Annuler
+     * @param evt
+     */
+    private void bouton_annulerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_annulerActionPerformed
+        controleur_mediateur.instruction("Annuler");
+    }//GEN-LAST:event_bouton_annulerActionPerformed
+
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Rétablir
+     * @param evt ignored
+     */
+    private void bouton_retablirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_retablirActionPerformed
+        controleur_mediateur.instruction("Refaire");
+    }//GEN-LAST:event_bouton_retablirActionPerformed
+
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton pour commencer la partie
+     * @param evt ignored
+     */
+    private void bouton_commencerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_commencerActionPerformed
+
+        rapatrierFormulaire();
+
+        // affiche l'aire de jeu (ce qui cache le menu)
         changerPanneau("panneau_jeu");
-
     }//GEN-LAST:event_bouton_commencerActionPerformed
 
+    /**
+     * Méthode qui active ou désactive les boutons radio de difficulté IA lorsque l'on change le type du joueur 1
+     * @param evt ignored
+     */
     private void radio_type_humain_j1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_humain_j1ActionPerformed
 
         Enumeration<AbstractButton> boutons = group_niveau_j1.getElements();
@@ -787,13 +844,20 @@ public class MainGUI extends javax.swing.JFrame {
         while(boutons.hasMoreElements()) {
             boutons.nextElement().setEnabled(activer_boutons);
         }
-
     }//GEN-LAST:event_radio_type_humain_j1ActionPerformed
 
+    /**
+     * Méthode qui active ou désactive les boutons radio de difficulté IA lorsque l'on change le type du joueur 1
+     * @param evt ignored
+     */
     private void radio_type_ia_j1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_ia_j1ActionPerformed
         radio_type_humain_j1ActionPerformed(evt);
     }//GEN-LAST:event_radio_type_ia_j1ActionPerformed
 
+    /**
+     * Méthode qui active ou désactive les boutons radio de difficulté IA lorsque l'on change le type du joueur 2
+     * @param evt ignored
+     */
     private void radio_type_humain_j2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_humain_j2ActionPerformed
 
         Enumeration<AbstractButton> boutons = group_niveau_j2.getElements();
@@ -802,26 +866,42 @@ public class MainGUI extends javax.swing.JFrame {
         while(boutons.hasMoreElements()) {
             boutons.nextElement().setEnabled(activer_boutons);
         }
-
     }//GEN-LAST:event_radio_type_humain_j2ActionPerformed
 
+    /**
+     * Méthode qui active ou désactive les boutons radio de difficulté IA lorsque l'on change le type du joueur 2
+     * @param evt ignored
+     */
     private void radio_type_ia_j2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radio_type_ia_j2ActionPerformed
         radio_type_humain_j2ActionPerformed(evt);
     }//GEN-LAST:event_radio_type_ia_j2ActionPerformed
 
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Charger une partie dans le menu
+     * @param evt ignored
+     */
     private void menu_chargerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_chargerActionPerformed
         controleur_mediateur.instruction("Importer");
     }//GEN-LAST:event_menu_chargerActionPerformed
 
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Sauvegarder la partie dans le menu
+     * @param evt ignored
+     */
     private void menu_sauvegarderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_sauvegarderActionPerformed
         controleur_mediateur.instruction("Exporter");
     }//GEN-LAST:event_menu_sauvegarderActionPerformed
 
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Arrêter la partie dans le menu
+     * @param evt ignored
+     */
     private void menu_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_terminerActionPerformed
 
         // affichage d’une boite de dialogue de confirmation
         Object[] options = {"Terminer et retourner au menu", "Revenir au jeu"};
 
+        // affiche une boite de dialogue et récupère le choix du joueur
         int n = JOptionPane.showOptionDialog(this,
             "Êtes-vous certain de vouloir terminer la partie ? Tous les changements seront perdus.",
             "Terminer la partie",
@@ -832,6 +912,7 @@ public class MainGUI extends javax.swing.JFrame {
             options[0]
         );
 
+        // agit en fonction du choix de l'utilisateur : ne fait une action que s'il clique sur Oui
         switch (n) {
             case JOptionPane.YES_OPTION:
                 changerPanneau("panneau_menu");
@@ -839,9 +920,12 @@ public class MainGUI extends javax.swing.JFrame {
             default:
                 break;
         }
-
     }//GEN-LAST:event_menu_terminerActionPerformed
 
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton Quitter dans le menu
+     * @param evt ignored
+     */
     private void menu_quitterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_quitterActionPerformed
 
         // affichage d’une boite de dialogue de confirmation
@@ -856,6 +940,7 @@ public class MainGUI extends javax.swing.JFrame {
             options[0]
         );
 
+        // si l'utilisateur a cliqué sur Oui, quitter le programme
         switch (n) {
             case JOptionPane.YES_OPTION:
                 System.exit(0);
@@ -863,9 +948,12 @@ public class MainGUI extends javax.swing.JFrame {
             default:
                 break;
         }
-
     }//GEN-LAST:event_menu_quitterActionPerformed
 
+    /**
+     * Méthode appelée lorsque l'on clique sur le bouton d'affichage des aides
+     * @param evt ignored
+     */
     private void menu_afficher_les_aidesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_afficher_les_aidesActionPerformed
 
         final String etat_inactif = "Afficher les aides";
@@ -878,7 +966,6 @@ public class MainGUI extends javax.swing.JFrame {
             menu_afficher_les_aides.setText(etat_actif);
             System.out.println("Les aides doivent être affichées.");
         }
-
     }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

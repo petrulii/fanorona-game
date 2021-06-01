@@ -782,13 +782,17 @@ public class AireJeu {
 		ArrayList<Coup> coups = historique.getCoups();
 		Coup c;
 		if(!coups.isEmpty()){
-			for(int i = (coups.size()-1); i >= 0; i--) {
-				c = coups.get(i);
-				if(c.getJoueur() == joueur) {
-					// Mettre la position debut dans la liste des positions de tour courant.
-					liste_positions.add(c.debut);
-				} else {
-					break;
+			c = coups.get(coups.size()-1);
+			if(c.getJoueur() == joueur) {
+				liste_positions.add(c.fin);
+				for(int i = (coups.size()-1); i >= 0; i--) {
+					c = coups.get(i);
+					if(c.getJoueur() == joueur) {
+						// Mettre la position debut dans la liste des positions de tour courant.
+						liste_positions.add(c.debut);
+					} else {
+						break;
+					}
 				}
 			}
 		}

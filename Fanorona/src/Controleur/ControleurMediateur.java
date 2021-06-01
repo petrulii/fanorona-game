@@ -26,6 +26,8 @@ public class ControleurMediateur {
 		this.aire_graphique = aire_graphique;
 		this.fenetre = fenetre;
 
+        System.out.println(niveau_IA1 + " " + niveau_IA2);
+
 		// si aucun des joueurs n'est une IA
 		if(niveau_IA1 == HUMAIN && niveau_IA2 == HUMAIN) {
 
@@ -95,6 +97,7 @@ public class ControleurMediateur {
 				break;
 			// Annule le dernier coup joue.
 			case "Annuler":
+				automate_joueur.annulerCoup();
 				/*if (aire_jeu.annulationCoupPossible()) {
 					aire_jeu.annulerCoup();
 					automate_joueur.passerTourPrecedent();
@@ -102,6 +105,7 @@ public class ControleurMediateur {
 				break;
 			// Refait le dernier coup annule.
 			case "Refaire":
+				automate_joueur.refaireCoup();
 				/*if (aire_jeu.refaireCoupPossible()) {
 					aire_jeu.refaireCoup();
 					automate_joueur.passerTourSuivant();

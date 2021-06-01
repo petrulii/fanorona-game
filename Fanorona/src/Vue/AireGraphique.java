@@ -71,7 +71,7 @@ public class AireGraphique extends JPanel {
 		curseur_survole_pion = false;
 		magnetisme_est_active = false;
 
-		chemin_joueur = new ArrayList<>();
+		chemin_joueur = null;
 		pions_deplacables = null;
 		cases_accessibles = null;
     }
@@ -107,15 +107,8 @@ public class AireGraphique extends JPanel {
     	magnetisme_est_active = b;
 	}
 
-	public void ajouterACheminJoueur(Position p) {
-    	chemin_joueur.add(p);
-	}
-	public void retirerDernierCheminJoueur() {
-    	if(chemin_joueur.size() > 0)
-    		chemin_joueur.remove(chemin_joueur.size() - 1);
-	}
-	public void emptyCheminJoueur() {
-    	chemin_joueur = new ArrayList<>();
+	public void setCheminJoueur(ArrayList<Position> p) {
+    	chemin_joueur = p;
 	}
 	public void afficherPionsDeplacables(ArrayList<Position> p) {
     	pions_deplacables = p;
@@ -265,9 +258,9 @@ public class AireGraphique extends JPanel {
     	//Image pion_ombre = aire.getCaseGrille(position_curseur) == AireJeu.BLANC ? pion_blanc_ombre : pion_noir_ombre;
 		dessinerUnElementPion(ctx, null, coordonnees_curseur.x + taille_pion/4, coordonnees_curseur.y + taille_pion/4);
 
-    	float[] dash_array = {10f, 10f};
+    	float[] dash_array = {10f, 7f};
     	ctx.setColor(new Color(60,150,220));
-    	ctx.setStroke(new BasicStroke(3, CAP_SQUARE, JOIN_MITER, 1,  dash_array, 0));
+    	ctx.setStroke(new BasicStroke(3, CAP_ROUND, JOIN_MITER, 1,  dash_array, 0));
     	ctx.draw(new Line2D.Float(
 				coordonnees_curseur.x, coordonnees_curseur.y,
     			taille_cellule*position_curseur.getColonne() + decalage_grille.x,
@@ -284,7 +277,7 @@ public class AireGraphique extends JPanel {
     	int taille_moitie = taille_pion/2;
 
 		ctx.setStroke(new BasicStroke(2));
-		ctx.setColor(new Color(255,0,0));
+		ctx.setColor(new Color(64, 221, 64));
     	positions.forEach((Position p) -> {
     		ctx.draw(new Ellipse2D.Float(
 				p.getColonne()*taille_cellule - taille_moitie,
@@ -301,7 +294,7 @@ public class AireGraphique extends JPanel {
     	int taille_moitie = taille_pion/2;
 
 		ctx.setStroke(new BasicStroke(2));
-		ctx.setColor(new Color(0,255,0));
+		ctx.setColor(new Color(64, 221, 64));
     	positions.forEach((Position p) -> {
     		ctx.draw(new Ellipse2D.Float(
 				p.getColonne()*taille_cellule - taille_moitie,
@@ -333,15 +326,34 @@ public class AireGraphique extends JPanel {
 	}
 
 	private void dessinerChemin(Graphics2D ctx, ArrayList<Position> positions) {
-		if(positions.size() == 0)
+		if(positions.size() == 0 && !pion_est_maintenu_temporairement)
 			return;
 
     	Path2D path = new Path2D.Float();
 
-    	path.moveTo(positions.get(0).getColonne()*taille_cellule, positions.get(0).getLigne()*taille_cellule);
-    	positions.forEach((Position p) -> path.lineTo(p.getColonne()*taille_cellule, p.getLigne()*taille_cellule));
+    	if(pion_est_maintenu_temporairement) {
+			path.moveTo(
+    				taille_cellule*position_curseur_temporaire.getColonne(),
+					taille_cellule*position_curseur_temporaire.getLigne()
+			);
+			if(positions.size() == 0) {
+				path.lineTo(
+						taille_cellule*position_curseur.getColonne(),
+						taille_cellule*position_curseur.getLigne()
+				);
+			} else {
+    			path.lineTo(positions.get(0).getColonne()*taille_cellule, positions.get(0).getLigne()*taille_cellule);
+			}
+		} else {
+    		path.moveTo(positions.get(0).getColonne()*taille_cellule, positions.get(0).getLigne()*taille_cellule);
+    		positions.forEach((Position p) -> path.lineTo(p.getColonne()*taille_cellule, p.getLigne()*taille_cellule));
+		}
 
-    	ctx.setStroke(new BasicStroke(3, CAP_SQUARE, JOIN_ROUND));
+
+    	if(pion_est_maintenu_temporairement) {
+		}
+
+    	ctx.setStroke(new BasicStroke(3, CAP_ROUND, JOIN_ROUND));
     	ctx.setColor(new Color(60,150,220));
     	ctx.draw(path);
 	}
@@ -438,12 +450,16 @@ public class AireGraphique extends JPanel {
 	}
 
 
-	public int positionVersX(Position p) {
-		return ((p.getColonne()*taille_cellule + decalage_plateau.x + decalage_grille.x)*taille_principale.x)/taille_dessin.x;
+	private double positionVersX(int colonne) {
+		return (((double)colonne*(double)taille_cellule + decalage_plateau.x + decalage_grille.x)*taille_principale.x)/taille_dessin.x;
 	}
 
-	public int positionVersY(Position p) {
-    	return ((p.getLigne()*taille_cellule + decalage_plateau.y + decalage_grille.y)*taille_principale.y)/taille_dessin.y;
+	private double positionVersY(int ligne) {
+    	return (((double)ligne*(double)taille_cellule + decalage_plateau.y + decalage_grille.y)*taille_principale.y)/taille_dessin.y;
+	}
+
+	public Point positionVersCoordonnees(Position p) {
+		return new Point((int)positionVersX(p.getColonne()), (int)positionVersY(p.getLigne()));
 	}
 
 }

@@ -8,6 +8,7 @@ import Vue.MainGUI;
 import Vue.AireGraphique;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class AutomateControleur {
 
@@ -19,7 +20,9 @@ public class AutomateControleur {
     protected int etat_courant = -1;
 
     // vaut vrai si le joueur a fait au moins un coup lors de son tour
-    protected Boolean premier_coup_est_effectue = false;
+    protected boolean premier_coup_est_effectue = false;
+    // vaut vrai si le premier coup a engendré une capture
+    protected boolean premier_coup_a_effectue_capture = false;
     // position cliquée en premier dans la grille (si état valide)
     protected Position position_debut;
     // dernier coup effectué, valeur valide seulement si : premier_coup_est_effectue == true
@@ -116,7 +119,16 @@ public class AutomateControleur {
 	 * Est appelée à chaque chancement d'état de l'automate
 	 */
 	protected void etatCourantAchange() {
-		fenetre.majBoutonTerminer(premier_coup_est_effectue);
+		fenetre.majBoutonTerminer(
+				premier_coup_est_effectue
+				&& etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
+		);
+		fenetre.majBoutonHistorique(etat_courant != E.ATTENTE_CHOIX_TYPE_COUP);
+	}
+
+
+	protected void changerEtat(int etat_suivant) {
+		changerEtat(etat_suivant, false);
 	}
 
 	/**
@@ -125,35 +137,42 @@ public class AutomateControleur {
 	 * Attention : ne devrait pas être appelé autre part que dans la méthode "action()"
 	 * @param etat_suivant un état suivant valide de la structure AutomateControleur.E
 	 */
-	protected void changerEtat(int etat_suivant) {
+	protected void changerEtat(int etat_suivant, boolean forcer_changement) {
 		boolean etat_a_change = etat_suivant != etat_courant;
 
 		etat_courant = etat_suivant;
 
-		if(etat_a_change) {
+		if(etat_a_change || forcer_changement) {
 
 			switch(etat_suivant) {
 
 				case E.INIT -> {
 					System.out.println("INIT");
 					premier_coup_est_effectue = false;
+					premier_coup_a_effectue_capture = false;
+					dernier_coup_effectue = null;
+					position_debut = null;
 					changerEtat(E.ATTENTE_ACTION);
 				}
 
 				case E.ATTENTE_ACTION -> {
 					System.out.println("ATTENTE_ACTION");
 					if(premier_coup_est_effectue) {
-						if(aire_jeu.joueurPeutContinuerTour(dernier_coup_effectue.getFin())) {
-							ArrayList<Position> p = new ArrayList<>();
-							p.add(dernier_coup_effectue.getFin());
-							aire_graphique.afficherPionsDeplacables(p);
+						if(
+								premier_coup_a_effectue_capture
+								&& aire_jeu.joueurPeutContinuerTour(dernier_coup_effectue.getFin())
+						) {
+							aire_graphique.afficherPionsDeplacables(
+									new ArrayList<>(Collections.singletonList(dernier_coup_effectue.getFin()))
+							);
 						}
 					} else {
 						aire_graphique.afficherPionsDeplacables(aire_jeu.positionsDebutCoupsPossibles(getJoueurActif()));
 					}
 					aire_graphique.setCurseurMaintienPion(false);
-					aire_graphique.afficherCasesAccessibles(null);
 					aire_graphique.setCurseurMaintienPionTemporaire(false);
+					aire_graphique.afficherCasesAccessibles(null);
+					aire_graphique.setCheminJoueur(aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()));
 				}
 
 				case E.RELACHEMENT_VALIDE_IMPOSSIBLE -> {
@@ -181,7 +200,6 @@ public class AutomateControleur {
 
 				case E.FIN_TOUR -> {
 					System.out.println("FIN_TOUR");
-					aire_graphique.emptyCheminJoueur();
 					passerTourSuivant();
 				}
 
@@ -190,6 +208,30 @@ public class AutomateControleur {
 			etatCourantAchange();
 		}
 
+	}
+
+	public void annulerCoup() {
+		actualiserAffichageHistorique(aire_jeu.annulerCoup());
+	}
+
+	public void refaireCoup() {
+		actualiserAffichageHistorique(aire_jeu.refaireCoup());
+	}
+
+	protected void actualiserAffichageHistorique(Coup coup_restaure) {
+		if(coup_restaure != null) {
+			fenetre.majAffichageJoueurActif();
+
+			int nb_coups_effectues = aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()).size();
+			premier_coup_est_effectue = nb_coups_effectues >= 1;
+			premier_coup_a_effectue_capture =
+						premier_coup_est_effectue
+						&& (nb_coups_effectues > 1 || coup_restaure.getPions().size() > 0);
+			dernier_coup_effectue = aire_jeu.getDernierCoup();
+
+			changerEtat(E.ATTENTE_ACTION, true);
+			aire_graphique.repaint();
+		}
 	}
 
 	/**
@@ -226,9 +268,9 @@ public class AutomateControleur {
                 		transition == T.PRESSION
                 		&& aire_graphique.collisionZonePion(x, y)
 						&& aire_jeu.getCaseGrille(position_curseur) == getJoueurActif()
+						&& (!premier_coup_est_effectue || aire_jeu.joueurPeutContinuerTour(position_curseur))
 						&& (!premier_coup_est_effectue || position_curseur.equals(dernier_coup_effectue.getFin()))
-						//&& (!premier_coup_est_effectue || aire_jeu.joueurPeutContinuerTour(dernier_coup_effectue.getFin()))
-						//|| (premier_coup_est_effectue && position_curseur.equals(dernier_coup_effectue.getFin()))
+						&& (!premier_coup_est_effectue || premier_coup_a_effectue_capture)
 				) {
                 	position_debut = position_curseur;
                 	changerEtat(E.RELACHEMENT_VALIDE_IMPOSSIBLE);
@@ -262,16 +304,7 @@ public class AutomateControleur {
 							aire_jeu.setChoixAspirationPercusion(coup_temp);
 							changerEtat(E.ATTENTE_CHOIX_TYPE_COUP);
 						} else {
-							aire_jeu.joueCoup(coup_temp);
-							dernier_coup_effectue = coup_temp;
-
-							if(!premier_coup_est_effectue) {
-								premier_coup_est_effectue = true;
-								aire_graphique.ajouterACheminJoueur(position_debut);
-							}
-							aire_graphique.ajouterACheminJoueur(dernier_coup_effectue.getFin());
-
-							changerEtat(E.ATTENTE_ACTION);
+							jouerCoup(coup_temp);
 						}
 					}
 				}
@@ -294,18 +327,7 @@ public class AutomateControleur {
 
 				if(choix_est_effectue && aire_jeu.coupValide(coup_temp)) {
 					aire_jeu.setChoixAspirationPercusion(null);
-
-					aire_jeu.joueCoup(coup_temp);
-					dernier_coup_effectue = coup_temp;
-
-					if(!premier_coup_est_effectue) {
-						premier_coup_est_effectue = true;
-						aire_graphique.ajouterACheminJoueur(position_debut);
-					}
-					aire_graphique.ajouterACheminJoueur(dernier_coup_effectue.getFin());
-
-					changerEtat(E.ATTENTE_ACTION);
-
+					jouerCoup(coup_temp);
 				}
 			}
 
@@ -313,6 +335,22 @@ public class AutomateControleur {
 
 		aire_graphique.setCurseur(position_debut, x, y);
 		aire_graphique.repaint();
+	}
+
+	private void jouerCoup(Coup coup_temp) {
+		aire_jeu.joueCoup(coup_temp);
+		dernier_coup_effectue = coup_temp;
+
+		if(!premier_coup_est_effectue) {
+			premier_coup_est_effectue = true;
+			premier_coup_a_effectue_capture = coup_temp.copyPionsCaptures().size() > 0;
+			//aire_graphique.ajouterACheminJoueur(position_debut);
+		}
+		//aire_graphique.ajouterACheminJoueur(dernier_coup_effectue.getFin());
+
+		//System.out.println(premier_coup_a_effectue_capture);
+
+		changerEtat(E.ATTENTE_ACTION);
 	}
 
 }

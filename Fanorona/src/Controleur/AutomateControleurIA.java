@@ -7,6 +7,7 @@ import Vue.AireGraphique;
 import Vue.MainGUI;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -36,7 +37,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
     }
 
     @Override
-    public void passerTourSuivant() {
+    protected void passerTourSuivant() {
 		if(!aire_jeu.gameOver()) {
 			changerJoueur();
 			initialiserTour();
@@ -63,7 +64,12 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 
 	@Override
 	protected void etatCourantAchange() {
-		fenetre.majBoutonTerminer(premier_coup_est_effectue && ia_courante == null);
+		fenetre.majBoutonTerminer(
+				ia_courante == null
+				&& premier_coup_est_effectue
+				&& etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
+		);
+		fenetre.majBoutonHistorique(etat_courant != E.ATTENTE_CHOIX_TYPE_COUP);
 	}
 
 	protected void actionIA(int transition) {
@@ -97,61 +103,52 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
     	return lerp(lerp(p1,a,t),lerp(a,p2,t),t);
 	}
 
+	private Point bezier(Point p1, Point p2, double t) {
+    	return new Point((int)bezier(p1.x, p2.x, t), (int)bezier(p1.y, p2.y, t));
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
 		switch (etat_courant) {
 			case E.ATTENTE_ACTION -> {
-				if(!premier_coup_est_effectue) {
+				if(
+						!premier_coup_est_effectue
+						|| (premier_coup_a_effectue_capture && aire_jeu.joueurPeutContinuerTour(coup_ia.getFin()))
+				) {
 					compteur_ia = 0;
-					coup_ia = ia_courante.donneCoup(null);
+					coup_ia = ia_courante.donneCoup(premier_coup_est_effectue ? coup_ia.getFin() : null);
 
-					int x_debut = aire_graphique.positionVersX(coup_ia.getDebut());
-					int y_debut = aire_graphique.positionVersY(coup_ia.getDebut());
+					Point coordonnees_debut = aire_graphique.positionVersCoordonnees(coup_ia.getDebut());
 
-					actionIA(T.PRESSION, x_debut, y_debut);
+					actionIA(T.PRESSION, coordonnees_debut.x, coordonnees_debut.y);
 					iaEtapeSuivante();
 				} else {
-					if(aire_jeu.joueurPeutContinuerTour(coup_ia.getFin())) {
-						compteur_ia = 0;
-						coup_ia = ia_courante.donneCoup(coup_ia.getFin());
-
-						int x_debut = aire_graphique.positionVersX(coup_ia.getDebut());
-						int y_debut = aire_graphique.positionVersY(coup_ia.getDebut());
-
-						actionIA(T.PRESSION, x_debut, y_debut);
-						iaEtapeSuivante();
-					} else {
-						actionIA(T.TERMINER_TOUR);
-					}
+					actionIA(T.TERMINER_TOUR);
 				}
 			}
 
 			case E.RELACHEMENT_VALIDE_IMPOSSIBLE -> {
-				int x_debut = aire_graphique.positionVersX(coup_ia.getDebut());
-				int y_debut = aire_graphique.positionVersY(coup_ia.getDebut());
-				int x_fin = aire_graphique.positionVersX(coup_ia.getFin());
-				int y_fin = aire_graphique.positionVersY(coup_ia.getFin());
+				Point coordonnees_debut = aire_graphique.positionVersCoordonnees(coup_ia.getDebut());
+				Point coordonnees_fin = aire_graphique.positionVersCoordonnees(coup_ia.getFin());
 
-				int x = (int)bezier(x_debut, x_fin, compteur_ia);
-				int y = (int)bezier(y_debut, y_fin, compteur_ia);
+				Point coordonnees_interpolees = bezier(coordonnees_debut, coordonnees_fin, compteur_ia);
 
 				if(compteur_ia < 1) {
 					compteur_ia += .125;
-					aire_graphique.setCurseur(position_debut, x, y);
+					aire_graphique.setCurseur(position_debut, coordonnees_interpolees.x, coordonnees_interpolees.y);
 					aire_graphique.repaint();
 					iaEtapeSuivanteCourte();
 				} else {
-					actionIA(T.DRAG, x, y);
+					actionIA(T.DRAG, coordonnees_interpolees.x, coordonnees_interpolees.y);
 					iaEtapeSuivante();
 				}
 			}
 
 			case E.RELACHEMENT_VALIDE_POSSIBLE -> {
-				int x_fin = aire_graphique.positionVersX(coup_ia.getFin());
-				int y_fin = aire_graphique.positionVersY(coup_ia.getFin());
+				Point coordonnees_fin = aire_graphique.positionVersCoordonnees(coup_ia.getFin());
 
-				actionIA(T.RELACHEMENT, x_fin, y_fin);
+				actionIA(T.RELACHEMENT, coordonnees_fin.x, coordonnees_fin.y);
 
 				iaEtapeSuivante();
 			}
