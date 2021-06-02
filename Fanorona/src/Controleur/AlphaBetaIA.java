@@ -1,5 +1,6 @@
 package Controleur;
 import java.util.ArrayList;
+import java.util.Random;
 
 import Modele.*;
 
@@ -37,10 +38,11 @@ public class AlphaBetaIA extends IA {
      */
     public int donneCoupRec(AireJeu configuration, int profondeur, ArrayList<Coup> coups_initials, int alpha, int beta, boolean maximiser) {
 		//System.out.println("Alpha: "+alpha+", beta: "+beta+", prof: "+profondeur);
-    	if (profondeur <= 0 || configuration.gameOver()) {
+    	if (profondeur < 0 || configuration.gameOver()) {
    			return evaluation(configuration);
    		}
 		profondeur = profondeur - 1;
+		// Si on maximise.
    		if (maximiser) {
    			int valeur = Integer.MIN_VALUE + 1;
    			int valeur_neoud;
@@ -55,18 +57,29 @@ public class AlphaBetaIA extends IA {
    			ArrayList<ArrayList<Coup>> tours_jouables = toursPossibles(configuration, coups_jouables, couleur_A);
    			// Fin calcul tours jouables.
 			for (ArrayList<Coup> tour_ia : tours_jouables) {
+				// On affiche le tour initial.
+	   	   		if ((coups_initials != null)) {
+	   	   			System.out.println("###### tour A prof 0 ######");
+		   	   		afficheTour(tour_ia);
+		   		}
+	   	   		//System.out.println("###### A ######");
 				// Debut calcul recursif.
 				jouerTour(configuration, tour_ia);
 				valeur_neoud = donneCoupRec(configuration, profondeur, null, alpha, beta, false);
-				// On trouve un des meilleurs coups.
-	   	   		if ((coups_initials != null) && valeur_neoud == meilleur_valeur) {
+		   		// On trouve un des meilleurs coups.
+				// Si profondeur est 0, factoriser avec joueur B (qui minimize).
+				// Pas d'attribut meilleure_valeur, au place comparer avec valeur.
+	   	   		/*if ((coups_initials != null) && valeur_neoud == meilleur_valeur) {
 	   	   			meilleurs_coups.add(tour_ia.get(0));
-		   		}
+		   		}*/
 	   	   		// On trouve le meilleur coup.
 	   	   		if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
+		   	   		afficheGrille(configuration.getGrille());
+		   	   		System.out.println("valeur_neoud: "+valeur_neoud);
 	   	   			meilleur_valeur = valeur_neoud;
 	   	   			meilleurs_coups.clear();
 	   	   			meilleurs_coups.add(tour_ia.get(0));
+		   	   		System.out.println("je clear er j'ajoute coup: "+tour_ia.get(0));
 		   		   	//meilleur_coup = tour_ia.get(0);
 		   		}
 				// Fin calcul recursif.
@@ -78,11 +91,19 @@ public class AlphaBetaIA extends IA {
 				}
 			}
 			return valeur;
+		// Si on minimise.
    		} else {
    			int valeur = Integer.MAX_VALUE - 1;
    	   		ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_B);
    	   		ArrayList<ArrayList<Coup>> tours_jouables = toursPossibles(configuration, coups_jouables, couleur_B);
 	   		for (ArrayList<Coup> tour_ia : tours_jouables) {
+	   	   		if ((profondeur == profondeur_max-2)) {
+	   	   			System.out.println("###### tour B prof 1 ######");
+		   	   		afficheTour(tour_ia);
+		   		}
+				// On affiche le tour initial.
+	   	   		//System.out.println("###### B ######");
+	   	   		//afficheTour(tour_ia);
 	   			// Debut calcul recursif.
 				jouerTour(configuration, tour_ia);
 				valeur = Math.min(valeur, donneCoupRec(configuration, profondeur, null, alpha, beta, true));
@@ -118,7 +139,7 @@ public class AlphaBetaIA extends IA {
 			configuration.annulerCoup();
 		}
 	}
-    
+
     /**
      * Evalue une configuration et l'assigne une valeur qui correspond a nombre de pions de certain couleur sur le plateau de jeu.
      * @param configuration : un grille qui represente un configuration d'un plateau de jeu
@@ -126,7 +147,29 @@ public class AlphaBetaIA extends IA {
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     protected int evaluation(AireJeu configuration) {
-    	return comptePions(configuration, couleur_A);
+    	int pions_A = comptePions(configuration, couleur_A);
+    	int pions_B = comptePions(configuration, couleur_B);
+    	// Strategie debut de partie, quand nombre de pions de joueur IA > 10.
+		if (pions_A > 7) {
+			//System.out.println("Difference pions A - pions B.");
+			//profondeur_max = 2;
+			return pions_A - pions_B;
+	    // Strategie fin de partie, quand il n'y a plus beacoup (<= changement_evaluation) de pions sur le plateau de jeu.
+		} else {
+			//System.out.println("Pions diagonals, pions A : " + pions_A+", couleur A : " + couleur_A);
+			return pions_A - pions_B;
+		}
+    }
+
+
+	private void afficheGrille(int[][] grille) {
+		System.out.println("Grille:");
+		for (int i = 0; i < AireJeu.NB_LIGNES; i++) {
+			for (int j = 0; j < AireJeu.NB_COLONNES; j++) {
+				System.out.print(grille[i][j]+" ");
+			}
+			System.out.println();
+		}
 	}
 
 	/**
@@ -218,10 +261,10 @@ public class AlphaBetaIA extends IA {
     	ArrayList<ArrayList<Coup>> tours_jouables = new ArrayList<ArrayList<Coup>>();
     	Coup c;
     	Coup c_possible;
-		//System.out.println(stringCoups(tour));
 		c = tour.get(tour.size()-1);
-		if (!c.getPions().isEmpty() && configuration.joueurPeutContinuerTour(c.getFin())) {
-			configuration.joueCoup(c);
+		configuration.joueCoup(c);
+		//System.out.println("Joueur: "+joueur+", peut continuer: "+configuration.joueurPeutContinuerTour(c.getFin()));
+		if (configuration.joueurPeutContinuerTour(c.getFin())) {
 			ArrayList<Position> positions_possibles = configuration.positionsAdjacents(c.getFin());
 			for (Position fin : positions_possibles) {
 				c_possible = new Coup(c.getFin(), fin, joueur);
@@ -232,6 +275,8 @@ public class AlphaBetaIA extends IA {
 					tours_jouables.addAll(toursPossiblesRec(tour_possible, configuration, joueur));
 				}
 			}
+			configuration.annulerCoup();
+		} else {
 			configuration.annulerCoup();
 		}
 		return tours_jouables;
@@ -258,6 +303,7 @@ public class AlphaBetaIA extends IA {
     public Coup donneCoup(Position debut) {
     	meilleur_valeur = Integer.MIN_VALUE;
     	meilleur_coup = null;
+  		meilleurs_coups.clear();
         AireJeu aire = aire_jeu.copy();
         // Calcul des coups possibles.
     	ArrayList<Coup> coups_jouables_initials = aire.coupsPossibles(couleur_A);
@@ -277,8 +323,34 @@ public class AlphaBetaIA extends IA {
         // Calcul des meilleurs coups.
     	donneCoupRec(aire, profondeur_max, coups_jouables, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, true);
         // Choisir un coup aleatoirement dans les meilleurs coups.
-		int index = (int)(Math.random() * meilleurs_coups.size());
+    	Random r = new Random(1);
+		int index = (int)(r.nextFloat() * meilleurs_coups.size());
+		System.out.println("MC: "+stringCoups(meilleurs_coups));
 		return meilleurs_coups.get(index);
     }
+
+	/**
+	 * Affiche une sequence de coups.
+	 * @param tour : sequence de coups
+	 * @return : une chaine de caractere avec les coups
+	 */
+	public void afficheTour(ArrayList<Coup> tour) {
+		System.out.println("Tour :");
+		System.out.println(stringCoups(tour));
+		System.out.println();
+	}
+
+	/**
+	 * Transforme une liste de coups en chaine de charactere.
+	 * @param liste : liste de coups
+	 * @return : une chaine de caractere avec les coups
+	 */
+	public String stringCoups(ArrayList<Coup> liste) {
+		String s = "";
+		for(Coup c : liste) {
+    		s += c.toStringEspace();
+		}
+		return s;
+	}
 
 }
