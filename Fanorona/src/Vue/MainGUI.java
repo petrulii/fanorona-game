@@ -14,13 +14,34 @@ import java.util.Objects;
  */
 public class MainGUI extends javax.swing.JFrame {
 
+    /**
+     * L'aire de jeu à qui demander des informations
+     */
     private AireJeu aire_jeu;
+    /**
+     * Le contrôleur à qui envoyer des instructions
+     */
     private ControleurMediateur controleur_mediateur;
+    /**
+     * L'aire graphique à afficher dans la zone de jeu
+     */
     private AireGraphique aire_graphique;
+    /**
+     * Icône représentant le joueur blanc
+     */
     private final ImageIcon icone_blanc;
+    /**
+     * Icône représentant le joueur noir
+     */
     private final ImageIcon icone_noir;
-
+    /**
+     * Classe servant à activer/désactiver le clignotement du bouton Terminer
+     */
     private final ClignotementBouton clignotement_terminer;
+    /**
+     * Fenêtre permettant de choisir une partie sauvegardée à charger
+     */
+    private final ChoixFichiersGUI fenetre_chargement;
 
     /**
      * Creates new form MainGUI
@@ -32,6 +53,8 @@ public class MainGUI extends javax.swing.JFrame {
         icone_noir = new javax.swing.ImageIcon(Objects.requireNonNull(getClass().getResource("/Images/icone_noir.png")));
 
         clignotement_terminer = new ClignotementBouton(bouton_terminer);
+        fenetre_chargement = new ChoixFichiersGUI(this);
+        fenetre_chargement.initListe();
 
         this.setVisible(true);
 
@@ -127,6 +150,14 @@ public class MainGUI extends javax.swing.JFrame {
                 changerPanneau("panneau_menu");
                 break;
         }
+    }
+    
+    /**
+     * Indique à la vue qu'il faut charger un fichier de nom donné
+     * @param nom nom du fichier à charger
+     */
+    public void chargeFichier(String nom) {
+        controleur_mediateur.instructionImporter(nom);
     }
 
     /**
@@ -898,7 +929,8 @@ public class MainGUI extends javax.swing.JFrame {
      * @param evt ignored
      */
     private void menu_chargerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_chargerActionPerformed
-        controleur_mediateur.instruction("Importer");
+        fenetre_chargement.initListe();
+        fenetre_chargement.setVisible(true);
     }//GEN-LAST:event_menu_chargerActionPerformed
 
     /**
@@ -907,6 +939,18 @@ public class MainGUI extends javax.swing.JFrame {
      */
     private void menu_sauvegarderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_sauvegarderActionPerformed
         controleur_mediateur.instruction("Exporter");
+        
+        Object[] options = {"OK"};
+        JOptionPane.showOptionDialog(this,
+            "La partie a été sauvegardé sous le nom TODO", // TODO : afficher le nom du fichier sauvegardé
+            "Partie sauvegardée",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[0]
+        );
+        
     }//GEN-LAST:event_menu_sauvegarderActionPerformed
 
     /**
