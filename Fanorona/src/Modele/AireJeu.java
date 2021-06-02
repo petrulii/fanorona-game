@@ -326,16 +326,34 @@ public class AireJeu {
 	}
 
 	/**
-	 * Verifier si le pion peut continuer le tour avec au moins une capture.
+	 * Verifier si le pion a des captures possibles.
 	 * @param debut : la position de pion
 	 * @return vrai si le pion a des captures possibles, faux sinon
 	 */
 	public boolean joueurPeutContinuerTour(Position debut) {
+		Coup dernier = historique.getDernierCoup();
+		if ((dernier.getPions()).isEmpty()) {// || dernier.getJoueur() != joueur) {
+			/*if ((dernier.getPions()).isEmpty()) {
+				System.out.println("Le dernier n'a rien capture.");
+			}
+			if (dernier.getJoueur() != joueur) {
+				System.out.println("Dernier joueur ne correspond pas.");
+			}*/
+			return false;
+		}
+		Coup coup;
 		int joueur = grille[debut.getLigne()][debut.getColonne()];
-		for (Position fin : positionsAdjacents(debut)) {
-			Coup coup = new Coup(debut, fin, joueur);
-			if (coupFaitCapture(coup) && coupValide(coup))
+		ArrayList<Position> voisins = positionsAdjacents(debut);
+		for (Position fin : voisins) {
+			coup = new Coup(debut, fin, joueur);
+			//System.out.println("Je test : "+coup.getDebut()+coup.getFin()+".");
+			if (coupFaitCapture(coup) && coupValide(coup)) {
+				//System.out.println("Ca passe : "+coup.getDebut()+coup.getFin()+".");
 				return true;
+			}
+		}
+		if (dernier.getJoueur() != joueur) {
+			System.out.println("Aucune position jouable avec capture.");
 		}
 		return false;
 	}
