@@ -5,7 +5,6 @@ import Modele.AireJeu;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.util.Enumeration;
 import java.util.Objects;
 
@@ -21,13 +20,18 @@ public class MainGUI extends javax.swing.JFrame {
     private final ImageIcon icone_blanc;
     private final ImageIcon icone_noir;
 
+    private final ClignotementBouton clignotement_terminer;
+
     /**
      * Creates new form MainGUI
      */
     public MainGUI() {
         initComponents();
+
         icone_blanc = new javax.swing.ImageIcon(Objects.requireNonNull(getClass().getResource("/Images/icone_blanc.png")));
         icone_noir = new javax.swing.ImageIcon(Objects.requireNonNull(getClass().getResource("/Images/icone_noir.png")));
+
+        clignotement_terminer = new ClignotementBouton(bouton_terminer);
 
         this.setVisible(true);
 
@@ -58,14 +62,22 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     /**
-     * @param b le nouvel état d'activation du bouton terminé
+     * @param b le nouvel état d'activation du bouton terminer
      */
     public void majBoutonTerminer(boolean b) {
         bouton_terminer.setEnabled(b);
     }
 
     /**
+     * @param b le nouvel état d'accent sur le bouton terminer
+     */
+    public void accentSurBoutonTerminer(boolean b) {
+        clignotement_terminer.setClignotementBouton(b);
+    }
+
+    /**
      * Active ou désactive les boutons Annuler et Rétablir selon l'historique actif
+     * @param veto si false, force la désactivation des boutons. Si true, leur activation dépend de l'historique
      */
     public void majBoutonHistorique(boolean veto) {
         bouton_annuler.setEnabled(veto && aire_jeu.annulationCoupPossible());
@@ -107,8 +119,13 @@ public class MainGUI extends javax.swing.JFrame {
         );
 
         switch (n) {
-            case JOptionPane.YES_OPTION -> rapatrierFormulaire();
-            case JOptionPane.NO_OPTION, JOptionPane.CLOSED_OPTION -> changerPanneau("panneau_menu");
+            case JOptionPane.YES_OPTION:
+                rapatrierFormulaire();
+                break;
+            case JOptionPane.NO_OPTION:
+            case JOptionPane.CLOSED_OPTION:
+                changerPanneau("panneau_menu");
+                break;
         }
     }
 
@@ -806,7 +823,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     /**
      * Méthode appelée lorsque l'on clique sur le bouton Annuler
-     * @param evt
+     * @param evt ignored
      */
     private void bouton_annulerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_annulerActionPerformed
         controleur_mediateur.instruction("Annuler");
@@ -915,6 +932,7 @@ public class MainGUI extends javax.swing.JFrame {
         // agit en fonction du choix de l'utilisateur : ne fait une action que s'il clique sur Oui
         switch (n) {
             case JOptionPane.YES_OPTION:
+                controleur_mediateur.instruction("Finir partie");
                 changerPanneau("panneau_menu");
             case JOptionPane.NO_OPTION:
             default:
@@ -961,10 +979,10 @@ public class MainGUI extends javax.swing.JFrame {
 
         if(menu_afficher_les_aides.getText().equals(etat_actif)) {
             menu_afficher_les_aides.setText(etat_inactif);
-            System.out.println("Les aides doivent être cachées.");
+            aire_graphique.afficherAides(false);
         } else {
             menu_afficher_les_aides.setText(etat_actif);
-            System.out.println("Les aides doivent être affichées.");
+            aire_graphique.afficherAides(true);
         }
     }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
 

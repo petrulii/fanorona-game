@@ -2,7 +2,6 @@ package Controleur;
 
 import Modele.AireJeu;
 import Modele.Coup;
-import Modele.Position;
 import Vue.AireGraphique;
 import Vue.MainGUI;
 
@@ -17,7 +16,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 	private IA ia_courante;
     private Coup coup_ia;
 
-    private final Timer timer_ia;
+    private final Timer timer_ia, timer_ia_court;
     private final int timing_ia = 500;
     private double compteur_ia;
 
@@ -30,10 +29,12 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 		timer_ia = new Timer(timing_ia, this);
 		timer_ia.setRepeats(false);
 
+		timer_ia_court = new Timer(16, this);
+
 		changerJoueur(joueur_commence);
 
 		if(ia_courante != null)
-			faireJouerIa(null);
+			faireJouerIa();
     }
 
     @Override
@@ -43,7 +44,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 			initialiserTour();
 
 			if (ia_courante != null)
-				faireJouerIa(null);
+				faireJouerIa();
 		} else {
 			fenetre.afficherGameOver();
 		}
@@ -80,18 +81,21 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 		action(transition, x, y);
 	}
 
-    private void iaEtapeSuivante() {
-		timer_ia.setInitialDelay(timing_ia);
-		timer_ia.start();
+	private void etapeSuivanteIA() {
+    	faireJouerIa();
 	}
 
-	private void iaEtapeSuivanteCourte() {
-		timer_ia.setInitialDelay(16);
-		timer_ia.start();
+	private void lancerAnimationIA() {
+		timer_ia_court.start();
+		compteur_ia = 0;
 	}
 
-	private void faireJouerIa(Position p) {
-		iaEtapeSuivante();
+	private void stopperAnimationIA() {
+		timer_ia_court.stop();
+	}
+
+	private void faireJouerIa() {
+		timer_ia.start();
 	}
 
 	private double lerp(double a, double b, double x) {
@@ -111,55 +115,56 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 	public void actionPerformed(ActionEvent e) {
 
 		switch (etat_courant) {
-			case E.ATTENTE_ACTION -> {
+			case E.ATTENTE_ACTION: {
 				if(
 						!premier_coup_est_effectue
 						|| (premier_coup_a_effectue_capture && aire_jeu.joueurPeutContinuerTour(coup_ia.getFin()))
 				) {
-					compteur_ia = 0;
 					coup_ia = ia_courante.donneCoup(premier_coup_est_effectue ? coup_ia.getFin() : null);
 
 					Point coordonnees_debut = aire_graphique.positionVersCoordonnees(coup_ia.getDebut());
 
 					actionIA(T.PRESSION, coordonnees_debut.x, coordonnees_debut.y);
-					iaEtapeSuivante();
+					lancerAnimationIA();
 				} else {
 					actionIA(T.TERMINER_TOUR);
 				}
 			}
+			break;
 
-			case E.RELACHEMENT_VALIDE_IMPOSSIBLE -> {
+			case E.RELACHEMENT_VALIDE_IMPOSSIBLE: {
 				Point coordonnees_debut = aire_graphique.positionVersCoordonnees(coup_ia.getDebut());
 				Point coordonnees_fin = aire_graphique.positionVersCoordonnees(coup_ia.getFin());
 
-				Point coordonnees_interpolees = bezier(coordonnees_debut, coordonnees_fin, compteur_ia);
-
 				if(compteur_ia < 1) {
-					compteur_ia += .125;
+					Point coordonnees_interpolees = bezier(coordonnees_debut, coordonnees_fin, compteur_ia);
+
 					aire_graphique.setCurseur(position_debut, coordonnees_interpolees.x, coordonnees_interpolees.y);
 					aire_graphique.repaint();
-					iaEtapeSuivanteCourte();
+					compteur_ia += .125;
 				} else {
-					actionIA(T.DRAG, coordonnees_interpolees.x, coordonnees_interpolees.y);
-					iaEtapeSuivante();
+					actionIA(T.DRAG, coordonnees_fin.x, coordonnees_fin.y);
+					stopperAnimationIA();
+					faireJouerIa();
 				}
 			}
+			break;
 
-			case E.RELACHEMENT_VALIDE_POSSIBLE -> {
+			case E.RELACHEMENT_VALIDE_POSSIBLE: {
 				Point coordonnees_fin = aire_graphique.positionVersCoordonnees(coup_ia.getFin());
 
 				actionIA(T.RELACHEMENT, coordonnees_fin.x, coordonnees_fin.y);
-
-				iaEtapeSuivante();
+				faireJouerIa();
 			}
+			break;
 
-			case E.ATTENTE_CHOIX_TYPE_COUP -> {
+			case E.ATTENTE_CHOIX_TYPE_COUP: {
 				coup_ia.setAspiration(ia_courante.faitChoixAspiration());
 
 				actionIA(T.CHOIX_ASPIRATION);
-
-				iaEtapeSuivante();
+				faireJouerIa();
 			}
+			break;
 		}
 
 	}

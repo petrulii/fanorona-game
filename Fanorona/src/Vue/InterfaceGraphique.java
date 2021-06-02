@@ -4,6 +4,10 @@ import javax.swing.*;
 /*import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;*/
 
+/**
+ * Classe créant la fenêtre de jeu
+ * @author Titouan et Marin
+ */
 public class InterfaceGraphique implements Runnable {
 
 	/*private Font chargerFont(String nom) {

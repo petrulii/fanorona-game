@@ -26,7 +26,7 @@ public class AutomateControleur {
     // position cliquée en premier dans la grille (si état valide)
     protected Position position_debut;
     // dernier coup effectué, valeur valide seulement si : premier_coup_est_effectue == true
-    protected Coup dernier_coup_effectue;
+    protected Coup coup_valide_possible, dernier_coup_effectue;
 
     /*
     	États de l'automate
@@ -44,7 +44,9 @@ public class AutomateControleur {
 			// état lorsque l'automate attend du joueur qu'il choissise un type de coup (percussion ou aspiration)
             ATTENTE_CHOIX_TYPE_COUP = 4,
 			// état lorsque le joueur souhaite terminer son tour (état final)
-            FIN_TOUR = 5;
+            FIN_TOUR = 5,
+			// état final bloquant pour forcer la fin d'une partie
+			FIN_PARTIE = 6;
 	}
 
 	/*
@@ -69,6 +71,13 @@ public class AutomateControleur {
 
 		changerJoueur(joueur_commence);
 		initialiserTour();
+	}
+
+	/**
+	 * Permet d'assurer la fin de la partie courante (action irréversible pour l'instance !)
+	 */
+	public void terminerPartieDeForce() {
+		changerEtat(E.FIN_PARTIE);
 	}
 
 	/**
@@ -146,61 +155,71 @@ public class AutomateControleur {
 
 			switch(etat_suivant) {
 
-				case E.INIT -> {
+				case E.INIT: {
 					System.out.println("INIT");
 					premier_coup_est_effectue = false;
 					premier_coup_a_effectue_capture = false;
+					coup_valide_possible = null;
 					dernier_coup_effectue = null;
 					position_debut = null;
 					changerEtat(E.ATTENTE_ACTION);
+					break;
 				}
 
-				case E.ATTENTE_ACTION -> {
+				case E.ATTENTE_ACTION: {
 					System.out.println("ATTENTE_ACTION");
 					if(premier_coup_est_effectue) {
 						if(
 								premier_coup_a_effectue_capture
 								&& aire_jeu.joueurPeutContinuerTour(dernier_coup_effectue.getFin())
 						) {
-							aire_graphique.afficherPionsDeplacables(
-									new ArrayList<>(Collections.singletonList(dernier_coup_effectue.getFin()))
-							);
+							aire_graphique.setPionsDeplacables(new ArrayList<>(Collections.singletonList(dernier_coup_effectue.getFin())));
+						} else {
+							fenetre.accentSurBoutonTerminer(true);
 						}
 					} else {
-						aire_graphique.afficherPionsDeplacables(aire_jeu.positionsDebutCoupsPossibles(getJoueurActif()));
+						aire_graphique.setPionsDeplacables(aire_jeu.positionsDebutCoupsPossibles());
 					}
+					aire_graphique.setPionsSupprimables(null);
+					aire_graphique.setCasesAccessibles(null);
 					aire_graphique.setCurseurMaintienPion(false);
 					aire_graphique.setCurseurMaintienPionTemporaire(false);
-					aire_graphique.afficherCasesAccessibles(null);
 					aire_graphique.setCheminJoueur(aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()));
+					break;
 				}
 
-				case E.RELACHEMENT_VALIDE_IMPOSSIBLE -> {
+				case E.RELACHEMENT_VALIDE_IMPOSSIBLE: {
 					System.out.println("RELACHEMENT_VALIDE_IMPOSSIBLE");
-					aire_graphique.afficherPionsDeplacables(null);
-					//aire_graphique.afficherPionsSupprimables(null);
+					aire_graphique.setPionsDeplacables(null);
+					aire_graphique.setPionsSupprimables(null);
 					aire_graphique.setCurseurMaintienPion(true);
-					aire_graphique.afficherCasesAccessibles(aire_jeu.positionsFinsCoupsPossibles(getJoueurActif(), position_debut));
+					aire_graphique.setCasesAccessibles(aire_jeu.positionsFinsCoupsPossibles(getJoueurActif(), position_debut));
 					aire_graphique.setCurseurMagnetisme(false);
+					break;
 				}
 
-				case E.RELACHEMENT_VALIDE_POSSIBLE -> {
+				case E.RELACHEMENT_VALIDE_POSSIBLE: {
 					System.out.println("RELACHEMENT_VALIDE_POSSIBLE");
-					//aire_graphique.afficherPionsSupprimables(aire_jeu.get);
+					aire_graphique.setPionsSupprimables(aire_jeu.listeCapturesCoup(coup_valide_possible));
 					aire_graphique.setCurseurMagnetisme(true);
+					break;
 				}
 
-				case E.ATTENTE_CHOIX_TYPE_COUP -> {
+				case E.ATTENTE_CHOIX_TYPE_COUP: {
 					System.out.println("ATTENTE_CHOIX_TYPE_COUP");
 					aire_graphique.setCurseurMaintienPion(false);
 					aire_graphique.setCurseurMaintienPionTemporaire(true);
-					// aire_graphique.afficherCasesAccessibles(false, null);
-					// aire_graphique.afficherPionsSupprimables(false, liste);
+					aire_graphique.setPionsSupprimables(null);
+					aire_graphique.setCasesAccessibles(null);
+					// aire_graphique.setPionsSupprimables(false, liste);
+					break;
 				}
 
-				case E.FIN_TOUR -> {
+				case E.FIN_TOUR: {
 					System.out.println("FIN_TOUR");
+					fenetre.accentSurBoutonTerminer(false);
 					passerTourSuivant();
+					break;
 				}
 
 			}
@@ -263,12 +282,15 @@ public class AutomateControleur {
 
 		switch(etat_courant) {
 
-			case E.ATTENTE_ACTION -> {
+			case E.ATTENTE_ACTION: {
                 if (
                 		transition == T.PRESSION
                 		&& aire_graphique.collisionZonePion(x, y)
 						&& aire_jeu.getCaseGrille(position_curseur) == getJoueurActif()
-						&& (!premier_coup_est_effectue || aire_jeu.joueurPeutContinuerTour(position_curseur))
+						&& (
+								aire_jeu.joueurPeutContinuerTour(position_curseur)
+								|| (!aire_jeu.joueurPeutFaireCoup() && aire_jeu.joueurPeutContinuerTourSansCapture(position_curseur))
+						)
 						&& (!premier_coup_est_effectue || position_curseur.equals(dernier_coup_effectue.getFin()))
 						&& (!premier_coup_est_effectue || premier_coup_a_effectue_capture)
 				) {
@@ -277,26 +299,32 @@ public class AutomateControleur {
                 } else if (transition == T.TERMINER_TOUR && premier_coup_est_effectue) {
                 	changerEtat(E.FIN_TOUR);
 				}
+				break;
             }
 
-			case E.RELACHEMENT_VALIDE_IMPOSSIBLE -> {
+			case E.RELACHEMENT_VALIDE_IMPOSSIBLE: {
 				if (transition == T.RELACHEMENT) {
 					changerEtat(E.ATTENTE_ACTION);
 				} else if (transition == T.DRAG) {
+					Coup coup_temp = new Coup(position_debut, position_curseur, getJoueurActif());
+					coup_valide_possible = coup_temp;
 					if (
 							aire_graphique.collisionZonePion(x, y)
-							&& aire_jeu.coupValide(new Coup(position_debut, position_curseur, getJoueurActif()))
+							&& aire_jeu.coupValide(coup_temp)
 					) {
 						changerEtat(E.RELACHEMENT_VALIDE_POSSIBLE);
 					}
 				}
+				break;
 			}
 
-			case E.RELACHEMENT_VALIDE_POSSIBLE -> {
+			case E.RELACHEMENT_VALIDE_POSSIBLE: {
 				Coup coup_temp = new Coup(position_debut, position_curseur, getJoueurActif());
+
 				boolean coup_est_valide = aire_jeu.coupValide(coup_temp);
+
 				if(transition == T.DRAG) {
-					if(!coup_est_valide)
+					if(!coup_est_valide || !aire_graphique.collisionZonePion(x, y))
 						changerEtat(E.RELACHEMENT_VALIDE_IMPOSSIBLE);
 				} else if(transition == T.RELACHEMENT) {
 					if(coup_est_valide) {
@@ -308,10 +336,12 @@ public class AutomateControleur {
 						}
 					}
 				}
+				break;
 			}
 
-			case E.ATTENTE_CHOIX_TYPE_COUP -> {
+			case E.ATTENTE_CHOIX_TYPE_COUP: {
 				Coup coup_temp = aire_jeu.getChoixAspirationPercusion();
+
 				boolean choix_est_effectue = true;
 
 				if(transition == T.CHOIX_ASPIRATION) {
@@ -329,6 +359,7 @@ public class AutomateControleur {
 					aire_jeu.setChoixAspirationPercusion(null);
 					jouerCoup(coup_temp);
 				}
+				break;
 			}
 
 		}

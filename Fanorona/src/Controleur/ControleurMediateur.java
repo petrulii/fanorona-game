@@ -26,25 +26,11 @@ public class ControleurMediateur {
 		this.aire_graphique = aire_graphique;
 		this.fenetre = fenetre;
 
-        System.out.println(niveau_IA1 + " " + niveau_IA2);
-
 		// si aucun des joueurs n'est une IA
-		if(niveau_IA1 == HUMAIN && niveau_IA2 == HUMAIN) {
-
-			this.automate_joueur = new AutomateControleur(
-					aire_jeu,
-					aire_graphique,
-					fenetre,
-					joueur_commence
-			);
-
-		} else {
-
-			this.automate_joueur = new AutomateControleurIA(
-					aire_jeu,
-					aire_graphique,
-					fenetre,
-					joueur_commence,
+		if(niveau_IA1 == HUMAIN && niveau_IA2 == HUMAIN)
+			this.automate_joueur = new AutomateControleur(aire_jeu, aire_graphique, fenetre, joueur_commence);
+		else {
+			this.automate_joueur = new AutomateControleurIA(aire_jeu, aire_graphique, fenetre, joueur_commence,
 					creerIA(niveau_IA1, AireJeu.NOIR),
 					creerIA(niveau_IA2, AireJeu.BLANC)
 			);
@@ -59,12 +45,16 @@ public class ControleurMediateur {
 	 */
     public IA creerIA(int niveau, int couleur) {
     	// Initialisation de joueur IA.
-		return switch (niveau) {
-			case FACILE -> new AleatoireIA(aire_jeu, couleur);
-			case MOYEN -> new StaticMinMaxIA(aire_jeu, couleur, 5);
-			case DIFFICILE -> new DynamicMinMaxIA(aire_jeu, couleur, 5);
-			default -> null;
-		};
+		switch (niveau) {
+			case FACILE:
+				return new AleatoireIA(aire_jeu, couleur);
+			case MOYEN:
+				return new StatiqueIA(aire_jeu, couleur, 5);
+			case DIFFICILE:
+				return new DynamiqueIA(aire_jeu, couleur, 5);
+			default:
+				return null;
+		}
 	}
 
     /**
@@ -76,12 +66,24 @@ public class ControleurMediateur {
     public void instructionSouris(String instruction, int x, int y) {
 
 		switch (instruction) {
-			case "Survoler" -> automate_joueur.actionJoueur(AutomateControleur.T.SURVOL, x, y);
-			case "Presser" -> automate_joueur.actionJoueur(AutomateControleur.T.PRESSION, x, y);
-			case "Glisser" -> automate_joueur.actionJoueur(AutomateControleur.T.DRAG, x, y);
-			case "Relacher" -> automate_joueur.actionJoueur(AutomateControleur.T.RELACHEMENT, x, y);
-			case "Cliquer" -> automate_joueur.actionJoueur(AutomateControleur.T.CLIC, x, y);
-			default -> System.out.println("Le controleur ne connait pas cette instruction souris.");
+			case "Survoler":
+				automate_joueur.actionJoueur(AutomateControleur.T.SURVOL, x, y);
+				break;
+			case "Presser":
+				automate_joueur.actionJoueur(AutomateControleur.T.PRESSION, x, y);
+				break;
+			case "Glisser":
+				automate_joueur.actionJoueur(AutomateControleur.T.DRAG, x, y);
+				break;
+			case "Relacher":
+				automate_joueur.actionJoueur(AutomateControleur.T.RELACHEMENT, x, y);
+				break;
+			case "Cliquer":
+				automate_joueur.actionJoueur(AutomateControleur.T.CLIC, x, y);
+				break;
+			default:
+				System.out.println("Le controleur ne connait pas cette instruction souris.");
+				break;
 		}
 	}
 
@@ -90,41 +92,31 @@ public class ControleurMediateur {
 	 * @param instruction : l'instruction a effectuer
      */
     public void instruction(String instruction) {
+		// Charger un historique de jeu.
 		switch (instruction) {
-			// Le joueur choisit de finir son tour.
 			case "Finir tour":
 				automate_joueur.actionJoueur(AutomateControleur.T.TERMINER_TOUR);
 				break;
-			// Annule le dernier coup joue.
+			case "Finir partie":
+				automate_joueur.terminerPartieDeForce();
+				break;
 			case "Annuler":
 				automate_joueur.annulerCoup();
-				/*if (aire_jeu.annulationCoupPossible()) {
-					aire_jeu.annulerCoup();
-					automate_joueur.passerTourPrecedent();
-				}*/
 				break;
-			// Refait le dernier coup annule.
 			case "Refaire":
 				automate_joueur.refaireCoup();
-				/*if (aire_jeu.refaireCoupPossible()) {
-					aire_jeu.refaireCoup();
-					automate_joueur.passerTourSuivant();
-				}*/
 				break;
-			// Sauvegarde l'historique actuel de jeu.
 			case "Exporter":
 				aire_jeu.sauvegarderHistoriqueCoups();
 				System.out.println("Demande export d'hisorique.");
 				break;
-			// Charger un historique de jeu.
 			case "Importer":
 				aire_jeu.chargeHistoriqueCoups("historique-05_25_2021-15_09_32.txt");
-				aire_graphique.repaint();
-				//fenetre.mettreAjour();
 				System.out.println("Demande import d'historique.");
 				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction.");
+				break;
 		}
 	}
     

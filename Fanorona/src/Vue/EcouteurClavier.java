@@ -14,8 +14,12 @@ public class EcouteurClavier extends KeyAdapter {
 	@Override
 	public void keyPressed(KeyEvent event) {
 		switch (event.getKeyCode()) {
-			case KeyEvent.VK_DOWN -> control.instruction("Percussion");
-			case KeyEvent.VK_UP -> control.instruction("Aspiration");
+			case KeyEvent.VK_DOWN:
+				control.instruction("Percussion");
+				break;
+			case KeyEvent.VK_UP:
+				control.instruction("Aspiration");
+				break;
 		}
 	}
 }

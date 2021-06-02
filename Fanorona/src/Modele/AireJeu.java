@@ -259,20 +259,19 @@ public class AireJeu {
 
 	/**
 	 * Mettre des positions de début des coups possibles pour un joueur donné dans une liste
-	 * @param joueur : le numero de joueur
 	 * @return la liste des positions de début 
 	 */
-	public ArrayList<Position> positionsDebutCoupsPossibles(int joueur) {
+	public ArrayList<Position> positionsDebutCoupsPossibles() {
 		ArrayList<Position> positions_debut_coups_possibles = new ArrayList<>();
 		Position debut;
 		// Verifie si dans la grille il y a des coups de ce joueur avec des captures possibles.
 		for (int l = 0; l < NB_LIGNES; l++) {
 			for (int c = 0; c < NB_COLONNES; c++) {
-				if (grille[l][c] == joueur) {
+				if (grille[l][c] == getJoueur()) {
 					debut = new Position(l, c);
 					ArrayList<Position> voisins = positionsAdjacents(debut);
 					for (Position fin : voisins) {
-						if (coupValide(new Coup(debut, fin, joueur))) {
+						if (coupValide(new Coup(debut, fin, getJoueur()))) {
 							positions_debut_coups_possibles.add(debut);
 							break;
 						}
@@ -327,22 +326,41 @@ public class AireJeu {
 	}
 
 	/**
-	 * Verifier si le pion a des captures possibles.
+	 * Verifier si le pion peut continuer le tour avec au moins une capture.
 	 * @param debut : la position de pion
 	 * @return vrai si le pion a des captures possibles, faux sinon
 	 */
 	public boolean joueurPeutContinuerTour(Position debut) {
-		Coup coup;
 		int joueur = grille[debut.getLigne()][debut.getColonne()];
-		ArrayList<Position> voisins = positionsAdjacents(debut);
-		for (Position fin : voisins) {
-			coup = new Coup(debut, fin, joueur);
-			//System.out.println("Je test : "+coup.getDebut()+coup.getFin()+".");
-			if (coupFaitCapture(coup) && coupValide(coup)) {
-				//System.out.println("Ca passe : "+coup.getDebut()+coup.getFin()+".");
+		for (Position fin : positionsAdjacents(debut)) {
+			Coup coup = new Coup(debut, fin, joueur);
+			if (coupFaitCapture(coup) && coupValide(coup))
 				return true;
-			}
 		}
+		return false;
+	}
+
+	/**
+	 * Verifier si le pion peut continuer le tour avec ou sans capture.
+	 * @param debut : la position de pion
+	 * @return vrai si le pion a un coup possible (sans forcément de capture), faux sinon
+	 */
+	public boolean joueurPeutContinuerTourSansCapture(Position debut) {
+		int joueur = grille[debut.getLigne()][debut.getColonne()];
+		for (Position fin : positionsAdjacents(debut))
+			if (coupValide(new Coup(debut, fin, joueur)))
+				return true;
+		return false;
+	}
+
+	/**
+	 * @return vrai si le joueur courant peut faire un coup valide (avec ou sans capture)
+	 */
+	public boolean joueurPeutFaireCoup() {
+		ArrayList<Position> positions_debut_possibles = positionsDebutCoupsPossibles();
+		for (Position position_debut : positions_debut_possibles)
+			if(joueurPeutContinuerTour(position_debut))
+				return true;
 		return false;
 	}
 
@@ -413,6 +431,21 @@ public class AireJeu {
 		Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
 		return (estAdversaire(couleur, capture_devant) && estAdversaire(couleur, capture_derriere));
 	}
+
+	/**
+     * Renvoie la liste des positions des pions qui vont etre capturees en executant le coup.
+     * @param coup : Le coup pour lequel on veut inferer les pions capturees
+     * @return une liste des positions des pions capturees en executant le coup
+     */
+    public ArrayList<Position> listeCapturesCoup(Coup coup) {
+        ArrayList<Position> pions;
+        // On execute le coup pour recuperer la liste des pions capturees.
+        executeCoup(coup);
+        pions = coup.getPions();
+        annulerCoup();
+        historique.enleveCoupAnnule();
+        return pions;
+    }
 
 	/**
 	 * Renvoie vrai si la position est sur la grille, faux sinon.
