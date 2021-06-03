@@ -108,7 +108,7 @@ public class ControleurMediateur {
 				break;
 			case "Exporter":
 				aire_jeu.sauvegarderHistoriqueCoups();
-				System.out.println("Demande export d'hisorique.");
+				System.out.println("Demande export d'historique.");
 				break;
 			case "Importer":
 				aire_jeu.chargeHistoriqueCoups("historique-05_25_2021-15_09_32.txt");

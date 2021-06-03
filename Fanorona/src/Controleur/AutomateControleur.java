@@ -27,6 +27,8 @@ public class AutomateControleur {
     protected Position position_debut;
     // dernier coup effectué, valeur valide seulement si : premier_coup_est_effectue == true
     protected Coup coup_valide_possible, dernier_coup_effectue;
+    // listes des positions cliquables dans le cas où un choix de type de coup est attendu
+	protected ArrayList<ArrayList<Position>> listes_positions_choix_type_coup;
 
     /*
     	États de l'automate
@@ -168,6 +170,7 @@ public class AutomateControleur {
 
 				case E.ATTENTE_ACTION: {
 					System.out.println("ATTENTE_ACTION");
+					fenetre.accentSurBoutonTerminer(false);
 					if(premier_coup_est_effectue) {
 						if(
 								premier_coup_a_effectue_capture
@@ -184,6 +187,7 @@ public class AutomateControleur {
 					aire_graphique.setCasesAccessibles(null);
 					aire_graphique.setCurseurMaintienPion(false);
 					aire_graphique.setCurseurMaintienPionTemporaire(false);
+					aire_graphique.setChoixTypeCoups(null);
 					aire_graphique.setCheminJoueur(aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()));
 					break;
 				}
@@ -201,6 +205,7 @@ public class AutomateControleur {
 				case E.RELACHEMENT_VALIDE_POSSIBLE: {
 					System.out.println("RELACHEMENT_VALIDE_POSSIBLE");
 					aire_graphique.setPionsSupprimables(aire_jeu.listeCapturesCoup(coup_valide_possible));
+					//aire_graphique.setPionsSupprimables(aire_jeu.listeCapturesCoup(coup_valide_possible));
 					aire_graphique.setCurseurMagnetisme(true);
 					break;
 				}
@@ -211,6 +216,7 @@ public class AutomateControleur {
 					aire_graphique.setCurseurMaintienPionTemporaire(true);
 					aire_graphique.setPionsSupprimables(null);
 					aire_graphique.setCasesAccessibles(null);
+					aire_graphique.setChoixTypeCoups(listes_positions_choix_type_coup);
 					// aire_graphique.setPionsSupprimables(false, liste);
 					break;
 				}
@@ -230,14 +236,14 @@ public class AutomateControleur {
 	}
 
 	public void annulerCoup() {
-		actualiserAffichageHistorique(aire_jeu.annulerCoup());
+		majApresChangementHistorique(aire_jeu.annulerCoup());
 	}
 
 	public void refaireCoup() {
-		actualiserAffichageHistorique(aire_jeu.refaireCoup());
+		majApresChangementHistorique(aire_jeu.refaireCoup());
 	}
 
-	protected void actualiserAffichageHistorique(Coup coup_restaure) {
+	protected void majApresChangementHistorique(Coup coup_restaure) {
 		if(coup_restaure != null) {
 			fenetre.majAffichageJoueurActif();
 
@@ -330,6 +336,7 @@ public class AutomateControleur {
 					if(coup_est_valide) {
 						if(aire_jeu.joueurDoitChoisir(coup_temp)) {
 							aire_jeu.setChoixAspirationPercusion(coup_temp);
+							listes_positions_choix_type_coup = aire_jeu.listeCapturesCoup(coup_temp);
 							changerEtat(E.ATTENTE_CHOIX_TYPE_COUP);
 						} else {
 							jouerCoup(coup_temp);
@@ -349,8 +356,12 @@ public class AutomateControleur {
 				} else if(transition == T.CHOIX_PERCUSSION) {
 					coup_temp.setAspiration(false);
 				} else if(transition == T.CLIC) {
-					// TODO : détection type coup
-					coup_temp.setAspiration(true);
+					if(position_curseur.estDansListePositions(listes_positions_choix_type_coup.get(0)))
+						coup_temp.setAspiration(false);
+					else if(position_curseur.estDansListePositions(listes_positions_choix_type_coup.get(1)))
+						coup_temp.setAspiration(true);
+					else
+						choix_est_effectue = false;
 				} else {
 					choix_est_effectue = false;
 				}
@@ -375,11 +386,7 @@ public class AutomateControleur {
 		if(!premier_coup_est_effectue) {
 			premier_coup_est_effectue = true;
 			premier_coup_a_effectue_capture = coup_temp.copyPionsCaptures().size() > 0;
-			//aire_graphique.ajouterACheminJoueur(position_debut);
 		}
-		//aire_graphique.ajouterACheminJoueur(dernier_coup_effectue.getFin());
-
-		//System.out.println(premier_coup_a_effectue_capture);
 
 		changerEtat(E.ATTENTE_ACTION);
 	}

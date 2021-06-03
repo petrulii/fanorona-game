@@ -53,14 +53,12 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 	@Override
 	protected void changerJoueur(int j) {
 		aire_jeu.setJoueur(j);
-		ia_courante = j == AireJeu.BLANC ? ia_blanc : ia_noir;
+		miseAjourJoueurIA();
 		fenetre.majAffichageJoueurActif();
 	}
 
-	@Override
-	public void actionJoueur(int transition, int x, int y) {
-		if(ia_courante == null)
-			action(transition, x, y);
+	protected void miseAjourJoueurIA() {
+		ia_courante = getJoueurActif() == AireJeu.BLANC ? ia_blanc : ia_noir;
 	}
 
 	@Override
@@ -70,7 +68,58 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 				&& premier_coup_est_effectue
 				&& etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
 		);
-		fenetre.majBoutonHistorique(etat_courant != E.ATTENTE_CHOIX_TYPE_COUP);
+		fenetre.majBoutonHistorique(
+				etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
+				&& ia_courante == null
+		);
+	}
+
+	@Override
+	public void annulerCoup() {
+    	while(aire_jeu.annulationCoupPossible()) {
+			majApresChangementHistorique(aire_jeu.annulerCoup());
+			if(ia_courante == null)
+				break;
+		}
+    	repriseApresChangementHistorique();
+	}
+
+	@Override
+	public void refaireCoup() {
+    	while(aire_jeu.refaireCoupPossible()) {
+			majApresChangementHistorique(aire_jeu.refaireCoup());
+			if(ia_courante == null)
+				break;
+		}
+    	repriseApresChangementHistorique();
+	}
+
+	protected void repriseApresChangementHistorique() {
+		fenetre.majAffichageJoueurActif();
+		changerEtat(E.ATTENTE_ACTION, true);
+		aire_graphique.repaint();
+		if(ia_courante != null)
+			faireJouerIa();
+	}
+
+	@Override
+	protected void majApresChangementHistorique(Coup coup_restaure) {
+		if(coup_restaure != null) {
+			miseAjourJoueurIA();
+
+			int nb_coups_effectues = aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()).size();
+			premier_coup_est_effectue = nb_coups_effectues >= 1;
+			premier_coup_a_effectue_capture =
+						premier_coup_est_effectue
+						&& (nb_coups_effectues > 1 || coup_restaure.getPions().size() > 0);
+			dernier_coup_effectue = aire_jeu.getDernierCoup();
+		}
+	}
+
+	@Override
+	public void actionJoueur(int transition, int x, int y) {
+		if(ia_courante == null)
+			action(transition, x, y);
 	}
 
 	protected void actionIA(int transition) {

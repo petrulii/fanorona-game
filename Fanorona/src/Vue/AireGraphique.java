@@ -40,7 +40,8 @@ public class AireGraphique extends JPanel {
     private boolean aides_sont_affichees, pion_est_maintenu, pion_est_maintenu_temporairement, curseur_survole_pion, magnetisme_est_active;
     private final DoubleAnimable facteur_decalage;
 
-    private ArrayList<Position> chemin_cases, pions_deplacables, cases_accessibles, pions_supprimables;
+    private ArrayList<Position> chemin_cases, pions_deplacables, cases_accessibles;
+    private ArrayList<ArrayList<Position>> pions_supprimables, pions_supprimables_choix_type_coup;
 
     /**
      * Constructeur
@@ -85,6 +86,7 @@ public class AireGraphique extends JPanel {
     	pions_deplacables = null;
     	cases_accessibles = null;
     	pions_supprimables = null;
+    	pions_supprimables_choix_type_coup = null;
     }
 
     /**
@@ -171,8 +173,12 @@ public class AireGraphique extends JPanel {
     	cases_accessibles = p;
     }
 
-    public void setPionsSupprimables(ArrayList<Position> p) {
+    public void setPionsSupprimables(ArrayList<ArrayList<Position>> p) {
     	pions_supprimables = p;
+	}
+
+	public void setChoixTypeCoups(ArrayList<ArrayList<Position>> p) {
+    	pions_supprimables_choix_type_coup = p;
 	}
 
     /**
@@ -180,7 +186,7 @@ public class AireGraphique extends JPanel {
      * @return une Image chargée à partir d'un fichier PNG du dossier Images
      */
     private Image chargerTexture(String nom) {
-		Image img = null; // ClassLoader.getSystemClassLoader()
+		Image img = null;
 		InputStream in = getClass().getClassLoader().getResourceAsStream("Images/" + nom + ".png");
 
 		try {
@@ -250,6 +256,8 @@ public class AireGraphique extends JPanel {
 			dessinerIndicationPionsSupprimables(ctx, pions_supprimables);
 			dessinerIndicationPionsJouables(ctx, pions_deplacables);
 		}
+
+		dessinerIndicationChoixTypeCoup(ctx, pions_supprimables_choix_type_coup);
 
 		// dessin du pion en drag and drop
 		ctx.setTransform(transformation_copy);
@@ -361,11 +369,44 @@ public class AireGraphique extends JPanel {
         ctx.setColor(new Color(64, 221, 64));
 		for (Position p : positions) {
 			ctx.draw(new Ellipse2D.Float(
-					p.getColonne() * taille_cellule - taille_moitie,
-					p.getLigne() * taille_cellule - taille_moitie,
+					p.getColonne()*taille_cellule - taille_moitie,
+					p.getLigne()*taille_cellule - taille_moitie,
 					taille_pion, taille_pion
 			));
 		}
+	}
+
+	private void dessinerIndicationChoixTypeCoup(Graphics2D ctx, ArrayList<ArrayList<Position>> listes_positions) {
+    	if(pions_supprimables_choix_type_coup == null)
+    		return;
+
+        int taille_double = taille_pion*2;
+
+    	ArrayList<Position> liste_positions_aspiration = listes_positions.get(0);
+
+    	Position position_min = Position.getPositionMin(liste_positions_aspiration);
+    	Position position_taille = Position.getPositionMax(liste_positions_aspiration).soustraire(position_min);
+        float[] dash_array = {10f, 7f};
+    	ctx.setStroke(new BasicStroke(2, CAP_ROUND, JOIN_ROUND, 1, dash_array, 0));
+        ctx.setColor(new Color(119, 64, 221));
+    	ctx.draw(new Rectangle2D.Float(
+			position_min.getColonne()*taille_cellule - taille_pion,
+			position_min.getLigne()*taille_cellule - taille_pion,
+			position_taille.getColonne()*taille_cellule + taille_double,
+			position_taille.getLigne()*taille_cellule + taille_double
+		));
+
+    	ArrayList<Position> liste_positions_percussion = listes_positions.get(1);
+
+    	position_min = Position.getPositionMin(liste_positions_percussion);
+    	position_taille = Position.getPositionMax(liste_positions_percussion).soustraire(position_min);
+    	ctx.draw(new Rectangle2D.Float(
+			position_min.getColonne()*taille_cellule - taille_pion,
+			position_min.getLigne()*taille_cellule - taille_pion,
+			position_taille.getColonne()*taille_cellule + taille_double,
+			position_taille.getLigne()*taille_cellule + taille_double
+		));
+
 	}
 
     private void dessinerIndicationCasesAccessibles(Graphics2D ctx, ArrayList<Position> positions) {
@@ -383,28 +424,32 @@ public class AireGraphique extends JPanel {
 		)));
     }
 
-    private void dessinerIndicationPionsSupprimables(Graphics2D ctx, ArrayList<Position> positions) {
-    	if(positions == null)
+    private void dessinerIndicationPionsSupprimables(Graphics2D ctx, ArrayList<ArrayList<Position>> liste_positions) {
+    	if(liste_positions == null)
     		return;
 
         int taille_moitie = taille_pion/2;
 
         ctx.setStroke(new BasicStroke(3));
         ctx.setColor(new Color(255,0,0));
-        for(Position position : positions) {
-            ctx.draw(new Line2D.Float(
-                position.getColonne()*taille_cellule - taille_moitie,
-                position.getLigne()*taille_cellule - taille_moitie,
-                position.getColonne()*taille_cellule + taille_moitie,
-                position.getLigne()*taille_cellule + taille_moitie
-            ));
-            ctx.draw(new Line2D.Float(
-                position.getColonne()*taille_cellule + taille_moitie,
-                position.getLigne()*taille_cellule - taille_moitie,
-                position.getColonne()*taille_cellule - taille_moitie,
-                position.getLigne()*taille_cellule + taille_moitie
-            ));
+
+        for(ArrayList<Position> positions : liste_positions) {
+        	for(Position position : positions) {
+				ctx.draw(new Line2D.Float(
+					position.getColonne()*taille_cellule - taille_moitie,
+					position.getLigne()*taille_cellule - taille_moitie,
+					position.getColonne()*taille_cellule + taille_moitie,
+					position.getLigne()*taille_cellule + taille_moitie
+				));
+				ctx.draw(new Line2D.Float(
+					position.getColonne()*taille_cellule + taille_moitie,
+					position.getLigne()*taille_cellule - taille_moitie,
+					position.getColonne()*taille_cellule - taille_moitie,
+					position.getLigne()*taille_cellule + taille_moitie
+				));
+			}
         }
+
     }
 
     private void dessinerChemin(Graphics2D ctx, ArrayList<Position> positions) {

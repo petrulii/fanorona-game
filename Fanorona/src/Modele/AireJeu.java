@@ -237,16 +237,13 @@ public class AireJeu {
 	 */
 	public ArrayList<Coup> coupsPossibles(int joueur) {
 		ArrayList<Coup> coups_possibles = new ArrayList<>();
-		Position debut;
-		Coup coup;
 		// Verifie si dans la grille il y a des coups de ce joueur avec des captures possibles.
 		for (int l = 0; l < NB_LIGNES; l++) {
 			for (int c = 0; c < NB_COLONNES; c++) {
 				if (grille[l][c] == joueur) {
-					debut = new Position(l, c);
-					ArrayList<Position> voisins = positionsAdjacents(debut);
-					for (Position fin : voisins) {
-						coup = new Coup(debut, fin, joueur);
+					Position debut = new Position(l, c);
+					for (Position fin : positionsAdjacents(debut)) {
+						Coup coup = new Coup(debut, fin, joueur);
 						if (coupValide(coup)) {
 							coups_possibles.add(coup);
 						}
@@ -263,14 +260,12 @@ public class AireJeu {
 	 */
 	public ArrayList<Position> positionsDebutCoupsPossibles() {
 		ArrayList<Position> positions_debut_coups_possibles = new ArrayList<>();
-		Position debut;
 		// Verifie si dans la grille il y a des coups de ce joueur avec des captures possibles.
 		for (int l = 0; l < NB_LIGNES; l++) {
 			for (int c = 0; c < NB_COLONNES; c++) {
 				if (grille[l][c] == getJoueur()) {
-					debut = new Position(l, c);
-					ArrayList<Position> voisins = positionsAdjacents(debut);
-					for (Position fin : voisins) {
+					Position debut = new Position(l, c);
+					for (Position fin : positionsAdjacents(debut)) {
 						if (coupValide(new Coup(debut, fin, getJoueur()))) {
 							positions_debut_coups_possibles.add(debut);
 							break;
@@ -437,13 +432,30 @@ public class AireJeu {
      * @param coup : Le coup pour lequel on veut inferer les pions capturees
      * @return une liste des positions des pions capturees en executant le coup
      */
-    public ArrayList<Position> listeCapturesCoup(Coup coup) {
-        ArrayList<Position> pions;
-        // On execute le coup pour recuperer la liste des pions capturees.
-        executeCoup(coup);
-        pions = coup.getPions();
-        annulerCoup();
-        historique.enleveCoupAnnule();
+    public ArrayList<ArrayList<Position>> listeCapturesCoup(Coup coup) {
+        ArrayList<ArrayList<Position>> pions = new ArrayList<>(2);
+		pions.add(new ArrayList<>());
+		pions.add(new ArrayList<>());
+
+		Position debut = coup.getDebut();
+		Position fin = coup.getFin();
+
+		// Direction dans la ligne.
+		int direction_l = fin.getLigne()-debut.getLigne();
+		// Direction dans la colonne.
+		int direction_c = fin.getColonne()-debut.getColonne();
+
+		// Joueur du pion dans la case de debut de coup.
+		int joueur = grille[debut.getLigne()][debut.getColonne()];
+
+		Position capture_devant = new Position((fin.getLigne()+direction_l), (fin.getColonne()+direction_c));
+		Position capture_derriere = new Position((debut.getLigne()-direction_l), (debut.getColonne()-direction_c));
+
+		// aspirations
+		pions.get(0).addAll(capturePasLigneAdversaire(capture_derriere, joueur, direction_l, direction_c, -1));
+		// percussions
+		pions.get(1).addAll(capturePasLigneAdversaire(capture_devant, joueur, direction_l, direction_c, 1));
+
         return pions;
     }
 
@@ -577,11 +589,36 @@ public class AireJeu {
 		ArrayList<Position> pions = new ArrayList<>();
 		int l = depart.getLigne();
 		int c = depart.getColonne();
-		while ((l >= 0 && l < NB_LIGNES) && (c >= 0 && c < NB_COLONNES)) {
-			position = new Position(l, c);
+		while (positionEstSurGrille(position = new Position(l, c))) {
 			if (estAdversaire(couleur, position)) {
 				pions.add(position);
 				grille[l][c] = 0;
+			} else {
+				break;
+			}
+			c = c + direction_c * choix;
+			l = l + direction_l * choix;
+		}
+		return pions;
+	}
+
+	/**
+	 * Donne les pions d'adversaire associes a la capture d'un coup.
+	 * @param depart : case de premier pion a capturer
+	 * @param couleur : de joueur
+	 * @param direction_l : ligne de capture des pions
+	 * @param direction_c : colonne de capture des pions
+	 * @param choix : entre aspiration (1) et percusion (-1)
+	 * @return les pions d'adversaire possiblement captures
+	 */
+	public ArrayList<Position> capturePasLigneAdversaire(Position depart, int couleur, int direction_l, int direction_c, int choix) {
+		Position position;
+		ArrayList<Position> pions = new ArrayList<>();
+		int l = depart.getLigne();
+		int c = depart.getColonne();
+		while (positionEstSurGrille(position = new Position(l, c))) {
+			if (estAdversaire(couleur, position)) {
+				pions.add(position);
 			} else {
 				break;
 			}
