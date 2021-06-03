@@ -17,7 +17,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
     private Coup coup_ia;
 
     private final Timer timer_ia, timer_ia_court;
-    private final int timing_ia = 100;
+    private final int timing_ia = 1000;
     private double compteur_ia;
 
     private Point coordonnees_souris;
