@@ -12,9 +12,10 @@ import Modele.*;
 public class AlphaBetaIA extends IA {
     AireJeu aire_jeu;
     protected int profondeur_max;
-    protected int meilleur_valeur;
     protected int couleur_A;
     protected int couleur_B;
+    protected int meilleur_valeur;
+    protected Coup meilleur_coup;
     protected ArrayList<Coup> meilleurs_coups;
 
     public AlphaBetaIA(AireJeu a, int joueur, int niveau) {
@@ -36,18 +37,18 @@ public class AlphaBetaIA extends IA {
      * @return la valeur de la branche dans l'arbre qui amene au configuration qui maximise le nombre de pions de joueur A
      */
     public int donneCoupRec(AireJeu configuration, int profondeur, ArrayList<Coup> coups_initials, int alpha, int beta, boolean maximiser) {
-		if (profondeur < 0 || configuration.gameOver()) {
+		//System.out.println("Alpha: "+alpha+", beta: "+beta+", prof: "+profondeur);
+    	if (profondeur < 0 || configuration.gameOver()) {
    			return evaluation(configuration);
    		}
 		profondeur = profondeur - 1;
-		
-		// JOUEUR A : maximise.
+		// Si on maximise.
    		if (maximiser) {
    			int valeur = Integer.MIN_VALUE + 1;
    			int valeur_neoud;
-   			
    			// Calcul tours jouables.
    			ArrayList<Coup> coups_jouables;
+   			// Cas de premier coup dans les tours possibles.
    			if (coups_initials != null) {
    				coups_jouables = coups_initials;
    			} else {
@@ -55,54 +56,60 @@ public class AlphaBetaIA extends IA {
    			}
    			ArrayList<ArrayList<Coup>> tours_jouables = toursPossibles(configuration, coups_jouables, couleur_A);
    			// Fin calcul tours jouables.
-   			
 			for (ArrayList<Coup> tour_ia : tours_jouables) {
-				
+				// On affiche le tour initial.
+	   	   		/*if ((coups_initials != null)) {
+	   	   			System.out.println("###### tour A prof 0 ######");
+		   	   		afficheTour(tour_ia);
+		   		}*/
+	   	   		//System.out.println("###### A ######");
+				// Debut calcul recursif.
 				jouerTour(configuration, tour_ia);
-				
 				valeur_neoud = donneCoupRec(configuration, profondeur, null, alpha, beta, false);
-				
 		   		// On trouve un des meilleurs coups.
-				if ((coups_initials != null) && valeur_neoud == meilleur_valeur) {
+				// Si profondeur est 0, factoriser avec joueur B (qui minimize).
+				// Pas d'attribut meilleure_valeur, au place comparer avec valeur.
+	   	   		/*if ((coups_initials != null) && valeur_neoud == meilleur_valeur) {
 	   	   			meilleurs_coups.add(tour_ia.get(0));
-		   		}
+		   		}*/
 	   	   		// On trouve le meilleur coup.
-   	   			if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {;
-   	   				meilleur_valeur = valeur_neoud;
+	   	   		if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
+		   	   		//afficheGrille(configuration.getGrille());
+		   	   		//System.out.println("valeur_neoud: "+valeur_neoud);
+	   	   			meilleur_valeur = valeur_neoud;
 	   	   			meilleurs_coups.clear();
 	   	   			meilleurs_coups.add(tour_ia.get(0));
+		   	   		//System.out.println("je clear er j'ajoute coup: "+tour_ia.get(0));
+		   		   	//meilleur_coup = tour_ia.get(0);
 		   		}
-   	   			
+				// Fin calcul recursif.
 	   			valeur = Math.max(valeur, valeur_neoud);
 	   			alpha = Math.max(alpha, valeur);
-	   			
 				annulerTour(configuration, tour_ia);
-				
 				if (alpha >= beta) {
 					break;
 				}
 			}
 			return valeur;
-			
-		// JOUEUR B : minimise.
+		// Si on minimise.
    		} else {
-   			
    			int valeur = Integer.MAX_VALUE - 1;
-   			
-   			// Calcul tours jouables.
    	   		ArrayList<Coup> coups_jouables = configuration.coupsPossibles(couleur_B);
    	   		ArrayList<ArrayList<Coup>> tours_jouables = toursPossibles(configuration, coups_jouables, couleur_B);
-   	   		// Fin calcul tours jouables.
-   	   		
 	   		for (ArrayList<Coup> tour_ia : tours_jouables) {
-	   			
+	   	   		/*if ((profondeur == profondeur_max-2)) {
+	   	   			System.out.println("###### tour B prof 1 ######");
+		   	   		afficheTour(tour_ia);
+		   		}*/
+				// On affiche le tour initial.
+	   	   		//System.out.println("###### B ######");
+	   	   		//afficheTour(tour_ia);
+	   			// Debut calcul recursif.
 				jouerTour(configuration, tour_ia);
-				
 				valeur = Math.min(valeur, donneCoupRec(configuration, profondeur, null, alpha, beta, true));
+				// Fin calcul recursif.
 				beta = Math.min(beta, valeur);
-				
 				annulerTour(configuration, tour_ia);
-				
 				if (beta <= alpha) {
 					break;
 				}
@@ -142,8 +149,29 @@ public class AlphaBetaIA extends IA {
     protected int evaluation(AireJeu configuration) {
     	int pions_A = comptePions(configuration, couleur_A);
     	int pions_B = comptePions(configuration, couleur_B);
-		return pions_A - pions_B;
+    	return pions_A - pions_B;
+    	// Strategie debut de partie, quand nombre de pions de joueur IA > 10.
+		//if (pions_A > 7) {
+			//System.out.println("Difference pions A - pions B.");
+			//profondeur_max = 2;
+			//return pions_A - pions_B;
+	    // Strategie fin de partie, quand il n'y a plus beacoup (<= changement_evaluation) de pions sur le plateau de jeu.
+		//} else {
+			//System.out.println("Pions diagonals, pions A : " + pions_A+", couleur A : " + couleur_A);
+			//return pions_A - pions_B;
+		//}
     }
+
+
+	private void afficheGrille(int[][] grille) {
+		System.out.println("Grille:");
+		for (int i = 0; i < AireJeu.NB_LIGNES; i++) {
+			for (int j = 0; j < AireJeu.NB_COLONNES; j++) {
+				System.out.print(grille[i][j]+" ");
+			}
+			System.out.println();
+		}
+	}
 
 	/**
      * Compte le nombre de pions d'un joueur donne sur le plateau de jeu.
@@ -236,6 +264,7 @@ public class AlphaBetaIA extends IA {
     	Coup c_possible;
 		c = tour.get(tour.size()-1);
 		configuration.joueCoup(c);
+		//System.out.println("Joueur: "+joueur+", peut continuer: "+configuration.joueurPeutContinuerTour(c.getFin()));
 		if (configuration.joueurPeutContinuerTour(c.getFin())) {
 			ArrayList<Position> positions_possibles = configuration.positionsAdjacents(c.getFin());
 			for (Position fin : positions_possibles) {
@@ -274,6 +303,7 @@ public class AlphaBetaIA extends IA {
      */
     public Coup donneCoup(Position debut) {
     	meilleur_valeur = Integer.MIN_VALUE;
+    	meilleur_coup = null;
   		meilleurs_coups.clear();
         AireJeu aire = aire_jeu.copy();
         // Calcul des coups possibles.
@@ -294,8 +324,9 @@ public class AlphaBetaIA extends IA {
         // Calcul des meilleurs coups.
     	donneCoupRec(aire, profondeur_max, coups_jouables, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, true);
         // Choisir un coup aleatoirement dans les meilleurs coups.
-    	Random r = new Random();
+    	Random r = new Random(1);
 		int index = (int)(r.nextFloat() * meilleurs_coups.size());
+		//System.out.println("MC: "+stringCoups(meilleurs_coups));
 		return meilleurs_coups.get(index);
     }
 
@@ -321,20 +352,6 @@ public class AlphaBetaIA extends IA {
     		s += c.toStringEspace();
 		}
 		return s;
-	}
-
-	/**
-	 * Affiche la configuration de plateau de jeu.
-	 * @param grille : grille de plateau de jeu
-	 */
-	private void afficheGrille(int[][] grille) {
-		System.out.println("Grille:");
-		for (int i = 0; i < AireJeu.NB_LIGNES; i++) {
-			for (int j = 0; j < AireJeu.NB_COLONNES; j++) {
-				System.out.print(grille[i][j]+" ");
-			}
-			System.out.println();
-		}
 	}
 
 }
