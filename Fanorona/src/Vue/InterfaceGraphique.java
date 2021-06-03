@@ -1,8 +1,8 @@
 package Vue;
 
 import javax.swing.*;
-import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
+/*import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;*/
 
 /**
  * Classe créant la fenêtre de jeu
@@ -29,11 +29,11 @@ public class InterfaceGraphique implements Runnable {
 	@Override
 	public void run() {
 
-		try {
+		/*try {
 			UIManager.setLookAndFeel(new FlatLightLaf());
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
-		}
+		}*/
 
 		new MainGUI();
 
