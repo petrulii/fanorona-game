@@ -259,14 +259,14 @@ public class HistoriqueCoups {
     }
     
     /**
-     * Assigne la liste des coups joues pendant le jeu
+     * @param coups_copie Assigne la liste des coups joues pendant le jeu
      */
     public void setCoups(ArrayList<Coup> coups_copie) {
 		this.coups = coups_copie;
 	}
     
     /**
-     * Assigne la liste des coups annules pendant le jeu en cours d'annulation
+     * @param coups_annules_copie Assigne la liste des coups annules pendant le jeu en cours d'annulation
      */
     public void setCoupsAnnules(ArrayList<Coup> coups_annules_copie) {
 		this.coups_annules = coups_annules_copie;

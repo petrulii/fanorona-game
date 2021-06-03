@@ -332,7 +332,7 @@ public class AireJeu {
 	 */
 	public boolean joueurPeutContinuerTour(Position debut) {
 		Coup dernier = historique.getDernierCoup();
-		if ((dernier.getPions()).isEmpty()) {// || dernier.getJoueur() != joueur) {
+		if (dernier != null && (dernier.getPions()).isEmpty()) {// || dernier.getJoueur() != joueur) {
 			/*if ((dernier.getPions()).isEmpty()) {
 				System.out.println("Le dernier n'a rien capture.");
 			}
@@ -342,17 +342,17 @@ public class AireJeu {
 			return false;
 		}
 		Coup coup;
-		int joueur = grille[debut.getLigne()][debut.getColonne()];
+		int joueur_courant = grille[debut.getLigne()][debut.getColonne()];
 		ArrayList<Position> voisins = positionsAdjacents(debut);
 		for (Position fin : voisins) {
-			coup = new Coup(debut, fin, joueur);
+			coup = new Coup(debut, fin, joueur_courant);
 			//System.out.println("Je test : "+coup.getDebut()+coup.getFin()+".");
 			if (coupFaitCapture(coup) && coupValide(coup)) {
 				//System.out.println("Ca passe : "+coup.getDebut()+coup.getFin()+".");
 				return true;
 			}
 		}
-		if (dernier.getJoueur() != joueur) {
+		if (dernier.getJoueur() != joueur_courant) {
 			System.out.println("Aucune position jouable avec capture.");
 		}
 		return false;
@@ -364,9 +364,9 @@ public class AireJeu {
 	 * @return vrai si le pion a un coup possible (sans forcément de capture), faux sinon
 	 */
 	public boolean joueurPeutContinuerTourSansCapture(Position debut) {
-		int joueur = grille[debut.getLigne()][debut.getColonne()];
+		int joueur_courant = grille[debut.getLigne()][debut.getColonne()];
 		for (Position fin : positionsAdjacents(debut))
-			if (coupValide(new Coup(debut, fin, joueur)))
+			if (coupValide(new Coup(debut, fin, joueur_courant)))
 				return true;
 		return false;
 	}
@@ -713,6 +713,7 @@ public class AireJeu {
 
 	/**
 	 * Annulation d'un coup.
+         * @return le coup annulé
 	 */
 	public Coup annulerCoup() {
 		Coup coup = null;
@@ -740,7 +741,7 @@ public class AireJeu {
 	
 	/**
 	 * Execution d'un coup qui etait le dernier a etre annule.
-	 * @return 
+	 * @return le coup refait
 	 */
 	public Coup refaireCoup() {
 		Coup coup = null;
@@ -769,7 +770,7 @@ public class AireJeu {
 	/*-------------*/
 	
 	/**
-	 * Renvoie la copie de la classe AireJeu.
+         * @return Renvoie la copie de la classe AireJeu.
 	 */
 	public AireJeu copy() {
 		int[][] copie_grille = copyGrille();

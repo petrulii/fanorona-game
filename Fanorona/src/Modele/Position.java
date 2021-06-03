@@ -39,6 +39,7 @@ public class Position {
 	/**
 	 * --?
 	 * @param p la position que l'on soustrait
+         * @return 
 	 */
 	public Position soustraire(Position p) {
 		return new Position(ligne-p.getLigne(), colonne-p.getColonne());
@@ -60,6 +61,7 @@ public class Position {
 	 * Affichage d'unu position
 	 * @return une chaine de caracteres decrivant la position
 	 */
+        @Override
 	public String toString() { return "( "+ligne+", "+colonne+" )"; }
 
 }

@@ -1,4 +1,3 @@
-import Modele.AireJeu;
 import Vue.InterfaceGraphique;
 
 public class Jeu {

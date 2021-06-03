@@ -143,7 +143,6 @@ public class AlphaBetaIA extends IA {
     /**
      * Evalue une configuration et l'assigne une valeur qui correspond a nombre de pions de certain couleur sur le plateau de jeu.
      * @param configuration : un grille qui represente un configuration d'un plateau de jeu
-     * @param couleur : un couleur d'un des joueurs (noir ou blanc)
      * @return nombre de pions de certain couleur sur le plateau de jeu
      */
     protected int evaluation(AireJeu configuration) {
@@ -300,6 +299,7 @@ public class AlphaBetaIA extends IA {
      * @param debut : un position debut d'un coup d'IA
      * @return un Coup valide
      */
+    @Override
     public Coup donneCoup(Position debut) {
     	meilleur_valeur = Integer.MIN_VALUE;
     	meilleur_coup = null;
@@ -332,7 +332,6 @@ public class AlphaBetaIA extends IA {
 	/**
 	 * Affiche une sequence de coups.
 	 * @param tour : sequence de coups
-	 * @return : une chaine de caractere avec les coups
 	 */
 	public void afficheTour(ArrayList<Coup> tour) {
 		System.out.println("Tour :");

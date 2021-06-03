@@ -34,6 +34,7 @@ public class AleatoireIA extends IA {
      * @param debut : la debut position d'un coup
      * @return un Coup valide
      */
+    @Override
     public Coup donneCoup(Position debut) {
     	boolean debut_null = false;
     	if (debut == null) {

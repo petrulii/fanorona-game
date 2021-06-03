@@ -117,6 +117,7 @@ public class Coup {
 	 * Affichage d'un coup
 	 * @return une chaine de caracteres decrivant le coup.
 	 */
+        @Override
 	public String toString() {
 		String s = "Debut: " + debut + ", fin: " + fin + " , aspiration: " + aspiration + " , joueur: " + joueur + ", pions captures: [ ";
 		for (Position p : pions_captures)

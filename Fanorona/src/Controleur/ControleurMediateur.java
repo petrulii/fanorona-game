@@ -49,9 +49,9 @@ public class ControleurMediateur {
 			case FACILE:
 				return new AleatoireIA(aire_jeu, couleur);
 			case MOYEN:
-				return new StatiqueIA(aire_jeu, couleur, 5);
+				return new AlphaBetaIA(aire_jeu, couleur, 2);
 			case DIFFICILE:
-				return new DynamiqueIA(aire_jeu, couleur, 5);
+				return new AlphaBetaIA(aire_jeu, couleur, 4);
 			default:
 				return null;
 		}
