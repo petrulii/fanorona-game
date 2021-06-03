@@ -24,7 +24,23 @@ public class AireGraphique extends JPanel {
     /**
      * Textures utilisées pour l'affichage
      */
-    private final Image plateau; //, pion_blanc, pion_noir, pion_blanc_ombre, pion_noir_ombre;
+    private final Image plateau;
+
+    private final Color
+		NOIR = new Color(0),
+		VERT = new Color(64,221,64),
+		ROUGE = new Color(237, 49, 36),
+		BLEU = new Color(60,150,220)
+	;
+
+    private final BasicStroke
+		BORD_PION = new BasicStroke(2),
+		SELECTION_PION = new BasicStroke(2, CAP_ROUND, JOIN_ROUND, 1, new float[]{4f, 6f}, 0),
+		SELECTION_CELLULE = new BasicStroke(2),
+		SELECTION_CHOIX_TYPE_COUP = new BasicStroke(2, CAP_ROUND, JOIN_ROUND, 1, new float[]{5f, 3f}, 0),
+		CHEMIN = new BasicStroke(3, CAP_ROUND, JOIN_ROUND),
+		FICELLE = new BasicStroke(3, CAP_ROUND, JOIN_MITER, 1, new float[]{10f, 7f}, 0)
+	;
 
     /**
      * Tailles des éléments affichés et décalages de placement (marges)
@@ -39,9 +55,11 @@ public class AireGraphique extends JPanel {
     private Position position_curseur, position_curseur_temporaire;
     private final Point coordonnees_curseur, coordonnees_curseur_temporaire;
     private boolean aides_sont_affichees, pion_est_maintenu, pion_est_maintenu_temporairement, curseur_survole_pion, magnetisme_est_active;
-    private final DoubleAnimable facteur_decalage;
 
-    private ArrayList<Position> chemin_cases, pions_deplacables, cases_accessibles;
+    private final DoubleAnimable animation_ombre, animation_supression;
+    private int joueur_pions_supprimes;
+
+    private ArrayList<Position> chemin_cases, pions_deplacables, cases_accessibles, pions_supprimes;
     private ArrayList<ArrayList<Position>> pions_supprimables, pions_supprimables_choix_type_coup;
 
     /**
@@ -53,10 +71,6 @@ public class AireGraphique extends JPanel {
 
         // textures utiles
         plateau = chargerTexture("plateau");
-        /*pion_blanc = chargerTexture("pion_blanc");
-        pion_noir = chargerTexture("pion_noir");
-        pion_blanc_ombre = chargerTexture("pion_blanc_ombre");
-        pion_noir_ombre = chargerTexture("pion_noir_ombre");*/
 
 		// dimensions relatives entre les éléments
         taille_cellule = 32;
@@ -80,12 +94,14 @@ public class AireGraphique extends JPanel {
     	pion_est_maintenu_temporairement = false;
     	curseur_survole_pion = false;
     	magnetisme_est_active = false;
-    	facteur_decalage = new DoubleAnimable(this, 0., 60, 50);
+    	animation_ombre = new DoubleAnimable(this, 0., 60, 50);
+    	animation_supression = new DoubleAnimable(this, 1., 60, 100);
 
 		// listes de positions pour l'affichage
     	chemin_cases = null;
     	pions_deplacables = null;
     	cases_accessibles = null;
+    	pions_supprimes = null;
     	pions_supprimables = null;
     	pions_supprimables_choix_type_coup = null;
     }
@@ -130,9 +146,9 @@ public class AireGraphique extends JPanel {
     public void setCurseurMaintienPion(boolean b) {
         pion_est_maintenu = b;
         if(b)
-        	facteur_decalage.transitionVersUn();
+        	animation_ombre.transitionVersUn();
         else
-        	facteur_decalage.transitionVersZero();
+        	animation_ombre.transitionVersZero();
     }
 
     /**
@@ -174,10 +190,29 @@ public class AireGraphique extends JPanel {
     	cases_accessibles = p;
     }
 
+	/**
+	 * Met à jour les pions supprimes et lance l'animation de suppression
+	 * @param p setter pour pions_supprimes
+	 * @param j le joueur des pions supprimés
+	 */
+    public void setPionsSupprimes(ArrayList<Position> p, int j) {
+    	pions_supprimes = p;
+    	joueur_pions_supprimes = j;
+    	animation_supression.transitionVersZero();
+	}
+
+	/**
+	 * Met à jour les pions supprimables pour affichage
+	 * @param p setter pour pions_supprimables
+	 */
     public void setPionsSupprimables(ArrayList<ArrayList<Position>> p) {
     	pions_supprimables = p;
 	}
 
+	/**
+	 * Met à jour les pions à entourer pour le choix du type de coup
+	 * @param p setter pour pions_supprimables_choix_type_coup
+	 */
 	public void setChoixTypeCoups(ArrayList<ArrayList<Position>> p) {
     	pions_supprimables_choix_type_coup = p;
 	}
@@ -249,6 +284,7 @@ public class AireGraphique extends JPanel {
 
         // dessin des pions à l'écran
     	dessinerPions(ctx);
+    	dessinerPionsSupprimes(ctx, pions_supprimes);
     	dessinerPionTemporaire(ctx);
 
     	// dessin des indications
@@ -270,42 +306,34 @@ public class AireGraphique extends JPanel {
     }
 
     private void dessinerUnPion(Graphics2D ctx, Position position, int joueur) {
-        dessinerUnPion(
-            ctx,
-            position.getColonne()*taille_cellule,
-            position.getLigne()*taille_cellule,
-            joueur
-		);
+        dessinerUnPion(ctx, position.getColonne()*taille_cellule, position.getLigne()*taille_cellule, joueur, 1.);
     }
-
+    private void dessinerUnPion(Graphics2D ctx, Position position, int joueur, double facteur_suppression) {
+        dessinerUnPion(ctx, position.getColonne()*taille_cellule, position.getLigne()*taille_cellule, joueur, facteur_suppression);
+    }
     private void dessinerUnPion(Graphics2D ctx, int x, int y, int joueur) {
-        /*dessinerUnElementPion(
-            ctx,
-            joueur == AireJeu.BLANC ? pion_blanc : pion_noir,
-            x,
-            y
-	);*/
-        int taille_pion_moitie = taille_pion/2;
-        Ellipse2D cercle = new Ellipse2D.Double(x - taille_pion_moitie, y - taille_pion_moitie, taille_pion, taille_pion);
-        ctx.setColor(joueur == AireJeu.BLANC ? new Color(255, 255, 255) : new Color(50, 50, 50));
+    	dessinerUnPion(ctx, x, y, joueur, 1.);
+	}
+    private void dessinerUnPion(Graphics2D ctx, int x, int y, int joueur, double facteur_suppression) {
+    	int taille_pion_temp = (int)(taille_pion);
+        int taille_pion_moitie = taille_pion_temp/2;
+        Ellipse2D cercle = new Ellipse2D.Double(x - taille_pion_moitie, y - taille_pion_moitie, taille_pion_temp, taille_pion_temp);
+
+        int alpha = (int)(255.*facteur_suppression);
+
+        ctx.setColor(joueur == AireJeu.BLANC ? new Color(255,255,255, alpha) : new Color(70,70,70, alpha));
         ctx.fill(cercle);
-        ctx.setStroke(new BasicStroke(2));
-        ctx.setColor(new Color(0));
+        ctx.setStroke(BORD_PION);
+        ctx.setColor(new Color(0,0,0,alpha));
         ctx.draw(cercle);
     }
 
-    private void dessinerUnElementPion(Graphics2D ctx, Image image, int x, int y) {
+    private void dessinerOmbrePion(Graphics2D ctx, int x, int y, int decalage) {
     	int taille_pionnn = taille_pion + 1;
         int taille_pion_moitie = taille_pionnn/2;
-        /*ctx.drawImage(
-            image,
-            x - taille_pion_moitie,
-            y - taille_pion_moitie,
-            taille_pion, taille_pion, null
-        );*/
 
-        ctx.setColor(new Color(50, 50, 50, 150));
-        ctx.fill(new Ellipse2D.Double(x - taille_pion_moitie, y - taille_pion_moitie, taille_pionnn, taille_pionnn));
+        ctx.setColor(new Color(5, 5, 5, 100));
+        ctx.fill(new Ellipse2D.Double(x - taille_pion_moitie + decalage, y - taille_pion_moitie + decalage, taille_pionnn, taille_pionnn));
     }
 
     private void dessinerPions(Graphics2D ctx) {
@@ -329,35 +357,18 @@ public class AireGraphique extends JPanel {
         }
     }
 
+    private void dessinerPionsSupprimes(Graphics2D ctx, ArrayList<Position> positions) {
+    	if(positions == null)
+    		return;
+
+		for (Position position : positions)
+    		dessinerUnPion(ctx, position, joueur_pions_supprimes, animation_supression.getValeur());
+	}
+
     private void dessinerPionTemporaire(Graphics2D ctx) {
         if(!pion_est_maintenu_temporairement)
             return;
         dessinerUnPion(ctx, position_curseur_temporaire, aire.getCaseGrille(position_curseur));
-    }
-
-    private void dessinerPionDeplacable(Graphics2D ctx) {
-        if(!pion_est_maintenu)
-            return;
-
-    	//Image pion_ombre = aire.getCaseGrille(position_curseur) == AireJeu.BLANC ? pion_blanc_ombre : pion_noir_ombre;
-        int decalage_ombre = (int)(((double)taille_pion/4)*facteur_decalage.getValeur());
-		dessinerUnElementPion(
-        		ctx,
-				null,
-				coordonnees_curseur.x + decalage_ombre,
-				coordonnees_curseur.y + decalage_ombre
-		);
-
-    	float[] dash_array = {10f, 7f};
-    	ctx.setColor(new Color(60,150,220));
-    	ctx.setStroke(new BasicStroke(3, CAP_ROUND, JOIN_MITER, 1,  dash_array, 0));
-    	ctx.draw(new Line2D.Float(
-            coordonnees_curseur.x, coordonnees_curseur.y,
-            taille_cellule*position_curseur.getColonne() + decalage_grille.x,
-            taille_cellule*position_curseur.getLigne() + decalage_grille.y
-        ));
-
-        dessinerUnPion(ctx, coordonnees_curseur.x, coordonnees_curseur.y, aire.getCaseGrille(position_curseur));
     }
 
     private void dessinerIndicationPionsJouables(Graphics2D ctx, ArrayList<Position> positions) {
@@ -366,48 +377,58 @@ public class AireGraphique extends JPanel {
 
         int taille_moitie = taille_pion/2;
 
-        ctx.setStroke(new BasicStroke(2));
-        ctx.setColor(new Color(64, 221, 64));
+        ctx.setStroke(SELECTION_PION);
+        ctx.setColor(VERT);
 		for (Position p : positions) {
-			ctx.draw(new Ellipse2D.Float(
-					p.getColonne()*taille_cellule - taille_moitie,
-					p.getLigne()*taille_cellule - taille_moitie,
-					taille_pion, taille_pion
-			));
+			ctx.draw(new Ellipse2D.Float(p.getColonne()*taille_cellule - taille_moitie - 2, p.getLigne()*taille_cellule - taille_moitie - 2, taille_pion + 4, taille_pion + 4));
 		}
 	}
 
+	private Shape formeChoixDroite(ArrayList<Position> positions, int taille) {
+        Position min = Position.getPositionMin(positions);
+    	Position taille_rect = Position.getPositionMax(positions).soustraire(min);
+    	return new Rectangle2D.Float(
+			min.getColonne()*taille_cellule - taille/2,
+			min.getLigne()*taille_cellule - taille/2,
+			taille_rect.getColonne()*taille_cellule + taille,
+			taille_rect.getLigne()*taille_cellule + taille
+		);
+	}
+
+	private Shape formeChoixDiagonale(ArrayList<Position> positions, int taille, Position signe_direction) {
+        int taille_diagonale = (int)(taille*0.707106);
+        ArrayList<Position> extremites = Position.getExtremites(positions);
+    	Position min = extremites.get(0), max = extremites.get(1);
+    	Path2D path = new Path2D.Float();
+    	path.moveTo(max.getColonne()*taille_cellule + taille_diagonale, max.getLigne()*taille_cellule);
+		path.lineTo(max.getColonne()*taille_cellule, max.getLigne()*taille_cellule - taille_diagonale*signe_direction.getLigne());
+		path.lineTo(min.getColonne()*taille_cellule - taille_diagonale, min.getLigne()*taille_cellule);
+		path.lineTo(min.getColonne()*taille_cellule, min.getLigne()*taille_cellule + taille_diagonale*signe_direction.getLigne());
+		path.closePath();
+		return path;
+	}
+
 	private void dessinerIndicationChoixTypeCoup(Graphics2D ctx, ArrayList<ArrayList<Position>> listes_positions) {
-    	if(pions_supprimables_choix_type_coup == null)
+    	if(listes_positions == null)
     		return;
 
-        int taille_double = taille_pion*2;
+    	Shape forme_aspiration, forme_percussion;
+    	ArrayList<Position> positions_aspiration = listes_positions.get(0);
+    	ArrayList<Position> positions_percussion = listes_positions.get(1);
 
-    	ArrayList<Position> liste_positions_aspiration = listes_positions.get(0);
+    	Position signe_direction = positions_aspiration.get(0).getSigne(positions_percussion.get(0));
+    	if(signe_direction.getColonne() == 0 || signe_direction.getLigne() == 0) {
+    		forme_aspiration = formeChoixDroite(positions_aspiration, taille_cellule);
+    		forme_percussion = formeChoixDroite(positions_percussion, taille_cellule);
+		} else {
+    		forme_aspiration = formeChoixDiagonale(positions_aspiration, taille_cellule, signe_direction);
+    		forme_percussion = formeChoixDiagonale(positions_percussion, taille_cellule, signe_direction);
+		}
 
-    	Position position_min = Position.getPositionMin(liste_positions_aspiration);
-    	Position position_taille = Position.getPositionMax(liste_positions_aspiration).soustraire(position_min);
-        float[] dash_array = {10f, 7f};
-    	ctx.setStroke(new BasicStroke(2, CAP_ROUND, JOIN_ROUND, 1, dash_array, 0));
-        ctx.setColor(new Color(119, 64, 221));
-    	ctx.draw(new Rectangle2D.Float(
-			position_min.getColonne()*taille_cellule - taille_pion,
-			position_min.getLigne()*taille_cellule - taille_pion,
-			position_taille.getColonne()*taille_cellule + taille_double,
-			position_taille.getLigne()*taille_cellule + taille_double
-		));
-
-    	ArrayList<Position> liste_positions_percussion = listes_positions.get(1);
-
-    	position_min = Position.getPositionMin(liste_positions_percussion);
-    	position_taille = Position.getPositionMax(liste_positions_percussion).soustraire(position_min);
-    	ctx.draw(new Rectangle2D.Float(
-			position_min.getColonne()*taille_cellule - taille_pion,
-			position_min.getLigne()*taille_cellule - taille_pion,
-			position_taille.getColonne()*taille_cellule + taille_double,
-			position_taille.getLigne()*taille_cellule + taille_double
-		));
-
+    	ctx.setStroke(SELECTION_CHOIX_TYPE_COUP);
+    	ctx.setColor(VERT);
+        ctx.draw(forme_aspiration);
+        ctx.draw(forme_percussion);
 	}
 
     private void dessinerIndicationCasesAccessibles(Graphics2D ctx, ArrayList<Position> positions) {
@@ -416,14 +437,11 @@ public class AireGraphique extends JPanel {
 
     	int taille_moitie = taille_pion/2;
 
-        ctx.setStroke(new BasicStroke(2));
-        ctx.setColor(new Color(64, 221, 64));
-    	positions.forEach(p -> ctx.draw(new Ellipse2D.Float(
-			p.getColonne()*taille_cellule - taille_moitie,
-			p.getLigne()*taille_cellule - taille_moitie,
-			taille_pion, taille_pion
-		)));
-    }
+        ctx.setStroke(SELECTION_CELLULE);
+        ctx.setColor(VERT);
+		for (Position p : positions)
+			ctx.draw(new Ellipse2D.Float(p.getColonne()*taille_cellule - taille_moitie, p.getLigne()*taille_cellule - taille_moitie, taille_pion, taille_pion));
+	}
 
     private void dessinerIndicationPionsSupprimables(Graphics2D ctx, ArrayList<ArrayList<Position>> liste_positions) {
     	if(liste_positions == null)
@@ -432,22 +450,12 @@ public class AireGraphique extends JPanel {
         int taille_moitie = taille_pion/2;
 
         ctx.setStroke(new BasicStroke(3));
-        ctx.setColor(new Color(255,0,0));
+        ctx.setColor(ROUGE);
 
         for(ArrayList<Position> positions : liste_positions) {
         	for(Position position : positions) {
-				ctx.draw(new Line2D.Float(
-					position.getColonne()*taille_cellule - taille_moitie,
-					position.getLigne()*taille_cellule - taille_moitie,
-					position.getColonne()*taille_cellule + taille_moitie,
-					position.getLigne()*taille_cellule + taille_moitie
-				));
-				ctx.draw(new Line2D.Float(
-					position.getColonne()*taille_cellule + taille_moitie,
-					position.getLigne()*taille_cellule - taille_moitie,
-					position.getColonne()*taille_cellule - taille_moitie,
-					position.getLigne()*taille_cellule + taille_moitie
-				));
+				ctx.draw(new Line2D.Float(position.getColonne()*taille_cellule - taille_moitie, position.getLigne()*taille_cellule - taille_moitie, position.getColonne()*taille_cellule + taille_moitie, position.getLigne()*taille_cellule + taille_moitie));
+				ctx.draw(new Line2D.Float(position.getColonne()*taille_cellule + taille_moitie, position.getLigne()*taille_cellule - taille_moitie, position.getColonne()*taille_cellule - taille_moitie, position.getLigne()*taille_cellule + taille_moitie));
 			}
         }
 
@@ -477,9 +485,27 @@ public class AireGraphique extends JPanel {
             positions.forEach((Position p) -> path.lineTo(p.getColonne()*taille_cellule, p.getLigne()*taille_cellule));
         }
 
-    	ctx.setStroke(new BasicStroke(3, CAP_ROUND, JOIN_ROUND));
-    	ctx.setColor(new Color(60,150,220));
+    	ctx.setStroke(CHEMIN);
+    	ctx.setColor(BLEU);
     	ctx.draw(path);
+    }
+
+    private void dessinerPionDeplacable(Graphics2D ctx) {
+        if(!pion_est_maintenu)
+            return;
+
+        int decalage_ombre = (int)(((double)taille_pion/3)*animation_ombre.getValeur());
+		dessinerOmbrePion(ctx, coordonnees_curseur.x, coordonnees_curseur.y, decalage_ombre);
+
+    	ctx.setColor(BLEU);
+    	ctx.setStroke(FICELLE);
+    	ctx.draw(new Line2D.Float(
+            coordonnees_curseur.x, coordonnees_curseur.y,
+            taille_cellule*position_curseur.getColonne() + decalage_grille.x,
+            taille_cellule*position_curseur.getLigne() + decalage_grille.y
+        ));
+
+        dessinerUnPion(ctx, coordonnees_curseur.x, coordonnees_curseur.y, aire.getCaseGrille(position_curseur));
     }
 
     /**

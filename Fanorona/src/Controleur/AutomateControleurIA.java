@@ -17,8 +17,10 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
     private Coup coup_ia;
 
     private final Timer timer_ia, timer_ia_court;
-    private final int timing_ia = 500;
+    private final int timing_ia = 100;
     private double compteur_ia;
+
+    private Point coordonnees_souris;
 
     public AutomateControleurIA(AireJeu aj, AireGraphique ag, MainGUI f, int joueur_commence, IA ia_n, IA ia_b) {
         super(aj, ag, f, joueur_commence);
@@ -33,9 +35,12 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 
 		changerJoueur(joueur_commence);
 
-		if(ia_courante != null)
-			faireJouerIa();
+		faireJouerIa();
     }
+
+    private boolean iaCourantePeutJouer() {
+    	return ia_courante != null;
+	}
 
     @Override
     protected void passerTourSuivant() {
@@ -43,8 +48,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 			changerJoueur();
 			initialiserTour();
 
-			if (ia_courante != null)
-				faireJouerIa();
+			faireJouerIa();
 		} else {
 			fenetre.afficherGameOver();
 		}
@@ -64,61 +68,45 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 	@Override
 	protected void etatCourantAchange() {
 		fenetre.majBoutonTerminer(
-				ia_courante == null
+				!iaCourantePeutJouer()
 				&& premier_coup_est_effectue
 				&& etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
 		);
 		fenetre.majBoutonHistorique(
 				etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
-				&& ia_courante == null
+				&& !iaCourantePeutJouer()
 		);
 	}
 
 	@Override
 	public void annulerCoup() {
+    	Coup coup_restaure = null;
     	while(aire_jeu.annulationCoupPossible()) {
-			majApresChangementHistorique(aire_jeu.annulerCoup());
-			if(ia_courante == null)
+			coup_restaure = aire_jeu.annulerCoup();
+			miseAjourJoueurIA();
+			if(!iaCourantePeutJouer())
 				break;
 		}
-    	repriseApresChangementHistorique();
+    	majApresChangementHistorique(coup_restaure);
+		faireJouerIa();
 	}
 
 	@Override
 	public void refaireCoup() {
+    	Coup coup_restaure = null;
     	while(aire_jeu.refaireCoupPossible()) {
-			majApresChangementHistorique(aire_jeu.refaireCoup());
-			if(ia_courante == null)
+			coup_restaure = aire_jeu.refaireCoup();
+			miseAjourJoueurIA();
+			if(!iaCourantePeutJouer())
 				break;
 		}
-    	repriseApresChangementHistorique();
-	}
-
-	protected void repriseApresChangementHistorique() {
-		fenetre.majAffichageJoueurActif();
-		changerEtat(E.ATTENTE_ACTION, true);
-		aire_graphique.repaint();
-		if(ia_courante != null)
-			faireJouerIa();
-	}
-
-	@Override
-	protected void majApresChangementHistorique(Coup coup_restaure) {
-		if(coup_restaure != null) {
-			miseAjourJoueurIA();
-
-			int nb_coups_effectues = aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()).size();
-			premier_coup_est_effectue = nb_coups_effectues >= 1;
-			premier_coup_a_effectue_capture =
-						premier_coup_est_effectue
-						&& (nb_coups_effectues > 1 || coup_restaure.getPions().size() > 0);
-			dernier_coup_effectue = aire_jeu.getDernierCoup();
-		}
+    	majApresChangementHistorique(coup_restaure);
+		faireJouerIa();
 	}
 
 	@Override
 	public void actionJoueur(int transition, int x, int y) {
-		if(ia_courante == null)
+		if(!iaCourantePeutJouer())
 			action(transition, x, y);
 	}
 
@@ -128,10 +116,6 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 
 	protected void actionIA(int transition, int x, int y) {
 		action(transition, x, y);
-	}
-
-	private void etapeSuivanteIA() {
-    	faireJouerIa();
 	}
 
 	private void lancerAnimationIA() {
@@ -144,7 +128,8 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 	}
 
 	private void faireJouerIa() {
-		timer_ia.start();
+		if(iaCourantePeutJouer())
+    		timer_ia.start();
 	}
 
 	private double lerp(double a, double b, double x) {
@@ -208,12 +193,23 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 			break;
 
 			case E.ATTENTE_CHOIX_TYPE_COUP: {
-				coup_ia.setAspiration(ia_courante.faitChoixAspiration());
+				boolean choix_aspiration = ia_courante.faitChoixAspiration();
+				coup_ia.setAspiration(choix_aspiration);
 
-				actionIA(T.CHOIX_ASPIRATION);
+				coordonnees_souris = aire_graphique.positionVersCoordonnees(listes_positions_choix_type_coup.get(choix_aspiration ? 1 : 0).get(0));
+
+				actionIA(T.SURVOL, coordonnees_souris.x, coordonnees_souris.y);
 				faireJouerIa();
 			}
 			break;
+
+			case E.ATTENTE_CHOIX_TYPE_COUP_POSSIBLE: {
+				actionIA(T.CLIC, coordonnees_souris.x, coordonnees_souris.y);
+
+				faireJouerIa();
+			}
+			break;
+
 		}
 
 	}

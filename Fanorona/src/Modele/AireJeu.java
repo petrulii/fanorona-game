@@ -34,6 +34,21 @@ public class AireJeu {
 		historique = new HistoriqueCoups();
 		// Initialisation d'une grille de jeu.
 		this.grille = new int[NB_LIGNES][NB_COLONNES];
+
+		/*for (int i = 0; i < NB_LIGNES; i++) {
+			for (int j = 0; j < NB_COLONNES; j++) {
+				grille[i][j] = 0;
+			}
+		}
+
+		this.grille[0] = new int[]{0,0,1,0,1,0,1,0,0};
+		this.grille[1] = new int[]{0,0,0,1,0,0,0,0,0};
+		this.grille[2] = new int[]{0,0,0,0,2,0,0,0,0};
+		this.grille[3] = new int[]{0,0,0,1,1,0,0,0,0};
+		this.grille[4] = new int[]{0,0,1,0,1,0,1,0,0};*/
+
+
+
 		// Remplissage initial d'une grille de jeu.
 		for (int i = 0; i < NB_LIGNES; i++) {
 			for (int j = 0; j < NB_COLONNES; j++) {

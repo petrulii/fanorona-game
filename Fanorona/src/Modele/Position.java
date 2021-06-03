@@ -10,10 +10,13 @@ import java.util.ArrayList;
 public class Position {
 	int ligne;
 	int colonne;
-	
+
 	public Position(int l, int c) {
-		ligne = l;
-		colonne = c;
+		set(l, c);
+	}
+
+	public Position(Position p) {
+		set(p.getLigne(), p.getColonne());
 	}
 	
 	/**
@@ -58,32 +61,56 @@ public class Position {
 		return false;
 	}
 
-	/**
-	 * @param positions une ArrayList de positions
-	 * @return une position avec la ligne et la colonne les plus petites de celles des positions données en entrée
-	 */
-	static public Position getPositionMin(ArrayList<Position> positions) {
-		int ligne_min = positions.get(0).getLigne();
-		int colonne_min = positions.get(0).getColonne();
-		for (Position position : positions) {
-			ligne_min = Math.min(ligne_min, position.getLigne());
-			colonne_min = Math.min(colonne_min, position.getColonne());
-		}
-		return new Position(ligne_min, colonne_min);
+	public Position getSigne(Position position) {
+		Position position_dir = soustraire(position);
+		return new Position(
+				Integer.signum(position_dir.getLigne()),
+				Integer.signum(position_dir.getColonne())
+		);
 	}
 
 	/**
 	 * @param positions une ArrayList de positions
-	 * @return une position avec la ligne et la colonne les plus grandes de celles des positions données en entrée
+	 * @return la position la plus en haut ou la plus à gauche
+	 */
+	static public Position getPositionMin(ArrayList<Position> positions) {
+		Position position_min = new Position(positions.get(0));
+		for (Position position : positions)
+			if(position_min.getLigne() > position.getLigne() || position_min.getColonne() > position.getColonne())
+				position_min.set(position);
+		return position_min;
+	}
+
+	/**
+	 * @param positions une ArrayList de positions
+	 * @return la position la plus en bas ou la plus à droite
 	 */
 	static public Position getPositionMax(ArrayList<Position> positions) {
-		int ligne_max = positions.get(0).getLigne();
-		int colonne_max = positions.get(0).getColonne();
+		Position position_max = new Position(positions.get(0));
+		for (Position position : positions)
+			if(position_max.getLigne() < position.getLigne() || position_max.getColonne() < position.getColonne())
+				position_max.set(position);
+		return position_max;
+	}
+
+	/**
+	 *
+	 * @param positions une ArrayList de positions alignées
+	 * @return les deux positions les plus éloignées
+	 */
+	static public ArrayList<Position> getExtremites(ArrayList<Position> positions) {
+		ArrayList<Position> extremites = new ArrayList<>(2);
+		Position p_min = new Position(positions.get(0));
+		Position p_max = new Position(positions.get(0));
 		for (Position position : positions) {
-			ligne_max = Math.max(ligne_max, position.getLigne());
-			colonne_max = Math.max(colonne_max, position.getColonne());
+			if(p_min.getColonne() > position.getColonne())
+				p_min.set(position);
+			if(p_max.getColonne() < position.getColonne())
+				p_max.set(position);
 		}
-		return new Position(ligne_max, colonne_max);
+		extremites.add(p_min);
+		extremites.add(p_max);
+		return extremites;
 	}
 
 	/**
@@ -104,5 +131,23 @@ public class Position {
 	 */
         @Override
 	public String toString() { return "( "+ligne+", "+colonne+" )"; }
+
+	/**
+	 *
+	 * @param p la position vers laquelle on veut set la position courante
+	 */
+	public void set(Position p) {
+		set(p.getLigne(), p.getColonne());
+	}
+
+	/**
+	 *
+	 * @param l la nouvelle ligne de la position courante
+	 * @param c la nouvelle colonne de la position courante
+	 */
+	public void set(int l, int c) {
+		ligne = l;
+		colonne = c;
+	}
 
 }

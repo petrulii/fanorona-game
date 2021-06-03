@@ -51,7 +51,7 @@ public class ControleurMediateur {
 			case MOYEN:
 				return new AlphaBetaIA(aire_jeu, couleur, 2);
 			case DIFFICILE:
-				return new AlphaBetaIA(aire_jeu, couleur, 4);
+				return new AlphaBetaIA(aire_jeu, couleur, 6);
 			default:
 				return null;
 		}
@@ -108,7 +108,6 @@ public class ControleurMediateur {
 				break;
 			case "Exporter":
 				aire_jeu.sauvegarderHistoriqueCoups();
-				System.out.println("Demande export d'historique.");
 				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction.");
@@ -121,8 +120,8 @@ public class ControleurMediateur {
      * @param nom le nom du fichier de sauvegarde à charger.
      */
     public void instructionImporter(String nom) {
-        System.out.println("Demande import d'historique.");
         aire_jeu.chargeHistoriqueCoups(nom);
+        automate_joueur.majApresChangementHistorique(aire_jeu.getDernierCoup());
     }
     
 }
