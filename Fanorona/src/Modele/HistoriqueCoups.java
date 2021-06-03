@@ -20,6 +20,11 @@ public class HistoriqueCoups {
 	* Liste pour se souvenir des coups annules en cours d'annulation.
 	*/
 	ArrayList<Coup> coups_annules;
+        
+        /**
+        * Nom du dossier où sauvegarder les parties
+        */
+        private static final String DOSSIER_SAUVEGARDE = ".fanorona";
     
 	public HistoriqueCoups() {
 		// Initialisation d'un liste pour l'enregistrement des coups.
@@ -102,7 +107,7 @@ public class HistoriqueCoups {
 	
     /**
      * Prend une liste des coups et l'ecrit dans un fichier
-     * @throws IOException : problem de creer le fichier
+     * TODO : indiquer le nom sous lequel la partie a été sauvegardée pour que la Vue l'affiche (voir MainGUI.menu_sauvegarderActionPerformed)
      */
     public void exporter() {
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
@@ -111,7 +116,7 @@ public class HistoriqueCoups {
     		DateFormat df = new SimpleDateFormat(pattern);
     		java.util.Date today = Calendar.getInstance().getTime();
     		String todayAsString = df.format(today);
-    		String nom_fichier = "res"+File.separator+"Historiques"+File.separator+"historique"+todayAsString+".txt";
+    		String nom_fichier = System.getProperty("user.home")+File.separator+DOSSIER_SAUVEGARDE+File.separator+"historique"+todayAsString+".txt";
     		File file = new File(nom_fichier);
             BufferedWriter f = new BufferedWriter(new FileWriter(file));
             if (coups.isEmpty()) {
@@ -130,16 +135,16 @@ public class HistoriqueCoups {
     /**
      * Prend un nom de fichier et lit un liste de coups dans ce fichier
      * @param nom_fichier : nom de fichier
-     * @throws FileNotFoundException : Le fichier n'existe pas
-     * @throws IOException : probleme de lire ou fermer le fichier
      * @throws NumberFormatException : erreur que la chaine de caractere transforme en entier
      */
     public void importer(String nom_fichier) {
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
     	coups = new ArrayList<>();
     	try {
-			BufferedReader bf; 
-			bf = new BufferedReader(new FileReader("res"+File.separator+"Historiques"+File.separator+nom_fichier));
+			BufferedReader bf;
+			bf = new BufferedReader(new FileReader(
+                                System.getProperty("user.home") + File.separator + DOSSIER_SAUVEGARDE + File.separator + nom_fichier
+                        ));
 			String text_coup;
 			// On parcours le fichier ligne par ligne pour lire les coups de jeu.
 			while ((text_coup = bf.readLine()) != null){
@@ -254,14 +259,14 @@ public class HistoriqueCoups {
     }
     
     /**
-     * Assigne la liste des coups joues pendant le jeu
+     * @param coups_copie Assigne la liste des coups joues pendant le jeu
      */
     public void setCoups(ArrayList<Coup> coups_copie) {
 		this.coups = coups_copie;
 	}
     
     /**
-     * Assigne la liste des coups annules pendant le jeu en cours d'annulation
+     * @param coups_annules_copie Assigne la liste des coups annules pendant le jeu en cours d'annulation
      */
     public void setCoupsAnnules(ArrayList<Coup> coups_annules_copie) {
 		this.coups_annules = coups_annules_copie;

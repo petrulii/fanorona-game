@@ -49,9 +49,9 @@ public class ControleurMediateur {
 			case FACILE:
 				return new AleatoireIA(aire_jeu, couleur);
 			case MOYEN:
-				return new StatiqueIA(aire_jeu, couleur, 5);
+				return new AlphaBetaIA(aire_jeu, couleur, 2);
 			case DIFFICILE:
-				return new DynamiqueIA(aire_jeu, couleur, 5);
+				return new AlphaBetaIA(aire_jeu, couleur, 4);
 			default:
 				return null;
 		}
@@ -110,14 +110,19 @@ public class ControleurMediateur {
 				aire_jeu.sauvegarderHistoriqueCoups();
 				System.out.println("Demande export d'historique.");
 				break;
-			case "Importer":
-				aire_jeu.chargeHistoriqueCoups("historique-05_25_2021-15_09_32.txt");
-				System.out.println("Demande import d'historique.");
-				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction.");
 				break;
 		}
 	}
+    
+    /**
+     * Demande au contrôleur de charger une partie. Est séparé des autres instructions car demande un paramètre en plus.
+     * @param nom le nom du fichier de sauvegarde à charger.
+     */
+    public void instructionImporter(String nom) {
+        System.out.println("Demande import d'historique.");
+        aire_jeu.chargeHistoriqueCoups(nom);
+    }
     
 }

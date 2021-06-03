@@ -12,6 +12,7 @@ import java.awt.geom.*;
 import java.util.ArrayList;
 
 import static java.awt.BasicStroke.*;
+import java.io.IOException;
 
 /**
  * Cette classe affiche la zone de jeu. Elle est intégrée à MainGUI
@@ -192,7 +193,7 @@ public class AireGraphique extends JPanel {
 		try {
 			assert in != null;
 			img = ImageIO.read(in);
-		} catch (Exception e) {
+		} catch (IOException e) {
             System.err.println("Erreur au chargement de l'image : " + "Images" + File.separator + nom + ".png");
             System.err.println(e);
             System.exit(1);

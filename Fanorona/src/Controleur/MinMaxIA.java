@@ -27,6 +27,7 @@ public class MinMaxIA extends IA {
      * Joue le coup de joueur A en essayant de maximiser le nombre de pions de joueur A dans la configuration.
      * @param configuration : un grille qui represente un configuration d'un plateau de jeu
      * @param profondeur : le profondeur que l'IA explore dans l'arbre des configurations de jeu possibles
+     * @param coups_initials
      * @return la valeur de la branche dans l'arbre qui amene au configuration qui maximise le nombre de pions de joueur A
      */
     public int donneCoupRecA(AireJeu configuration, int profondeur, ArrayList<Coup> coups_initials) {
@@ -238,6 +239,7 @@ public class MinMaxIA extends IA {
      * @param debut : un position debut d'un coup d'IA
      * @return un Coup valide
      */
+    @Override
     public Coup donneCoup(Position debut) {
     	meilleur_valeur = Integer.MIN_VALUE;
     	meilleur_coup = null;

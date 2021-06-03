@@ -144,9 +144,9 @@ public class AutomateControleur {
 
 	/**
 	 * Permet de changer de changer d'état dans la machine et d'appliquer toutes les
-	 * modifications nécessaires à la vue suite à ce changement.
-	 * Attention : ne devrait pas être appelé autre part que dans la méthode "action()"
+	 * modifications nécessaires à la vue suite à ce changement.Attention : ne devrait pas être appelé autre part que dans la méthode "action()"
 	 * @param etat_suivant un état suivant valide de la structure AutomateControleur.E
+         * @param forcer_changement si le changement est forcé et indépendant de l’état de la machine
 	 */
 	protected void changerEtat(int etat_suivant, boolean forcer_changement) {
 		boolean etat_a_change = etat_suivant != etat_courant;
