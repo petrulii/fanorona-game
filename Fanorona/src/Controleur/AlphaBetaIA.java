@@ -142,9 +142,6 @@ public class AlphaBetaIA extends IA {
     protected int evaluation(AireJeu configuration) {
     	int pions_A = comptePions(configuration, couleur_A);
     	int pions_B = comptePions(configuration, couleur_B);
-    	if (pions_A < 7) {
-    		profondeur_max = 2;
-    	}
 		return pions_A - pions_B;
     }
 
