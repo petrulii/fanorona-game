@@ -315,7 +315,7 @@ public class AireGraphique extends JPanel {
     	dessinerUnPion(ctx, x, y, joueur, 1.);
 	}
     private void dessinerUnPion(Graphics2D ctx, int x, int y, int joueur, double facteur_suppression) {
-    	int taille_pion_temp = (int)(taille_pion);
+    	int taille_pion_temp = taille_pion;
         int taille_pion_moitie = taille_pion_temp/2;
         Ellipse2D cercle = new Ellipse2D.Double(x - taille_pion_moitie, y - taille_pion_moitie, taille_pion_temp, taille_pion_temp);
 
@@ -387,22 +387,28 @@ public class AireGraphique extends JPanel {
 	private Shape formeChoixDroite(ArrayList<Position> positions, int taille) {
         Position min = Position.getPositionMin(positions);
     	Position taille_rect = Position.getPositionMax(positions).soustraire(min);
+    	int taille_moitie = (int)(taille/2.);
     	return new Rectangle2D.Float(
-			min.getColonne()*taille_cellule - taille/2,
-			min.getLigne()*taille_cellule - taille/2,
+			min.getColonne()*taille_cellule - taille_moitie,
+			min.getLigne()*taille_cellule - taille_moitie,
 			taille_rect.getColonne()*taille_cellule + taille,
 			taille_rect.getLigne()*taille_cellule + taille
 		);
 	}
 
-	private Shape formeChoixDiagonale(ArrayList<Position> positions, int taille, Position signe_direction) {
+	private Shape formeChoixDiagonale(ArrayList<Position> positions, int taille) {
         int taille_diagonale = (int)(taille*0.707106);
         ArrayList<Position> extremites = Position.getExtremites(positions);
     	Position min = extremites.get(0), max = extremites.get(1);
+
+    	Position signe_direction = min.getSigne(max);
+    	if(signe_direction.getColonne() == 0 && signe_direction.getLigne() == 0)
+    		signe_direction.set(1,1);
+
     	Path2D path = new Path2D.Float();
-    	path.moveTo(max.getColonne()*taille_cellule + taille_diagonale, max.getLigne()*taille_cellule);
+    	path.moveTo(max.getColonne()*taille_cellule - taille_diagonale*signe_direction.getColonne(), max.getLigne()*taille_cellule);
 		path.lineTo(max.getColonne()*taille_cellule, max.getLigne()*taille_cellule - taille_diagonale*signe_direction.getLigne());
-		path.lineTo(min.getColonne()*taille_cellule - taille_diagonale, min.getLigne()*taille_cellule);
+		path.lineTo(min.getColonne()*taille_cellule + taille_diagonale*signe_direction.getColonne(), min.getLigne()*taille_cellule);
 		path.lineTo(min.getColonne()*taille_cellule, min.getLigne()*taille_cellule + taille_diagonale*signe_direction.getLigne());
 		path.closePath();
 		return path;
@@ -421,8 +427,8 @@ public class AireGraphique extends JPanel {
     		forme_aspiration = formeChoixDroite(positions_aspiration, taille_cellule);
     		forme_percussion = formeChoixDroite(positions_percussion, taille_cellule);
 		} else {
-    		forme_aspiration = formeChoixDiagonale(positions_aspiration, taille_cellule, signe_direction);
-    		forme_percussion = formeChoixDiagonale(positions_percussion, taille_cellule, signe_direction);
+    		forme_aspiration = formeChoixDiagonale(positions_aspiration, taille_cellule);
+    		forme_percussion = formeChoixDiagonale(positions_percussion, taille_cellule);
 		}
 
     	ctx.setStroke(SELECTION_CHOIX_TYPE_COUP);

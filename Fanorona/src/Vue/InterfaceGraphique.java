@@ -1,6 +1,9 @@
 package Vue;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.InputStream;
 /*import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;*/
 
@@ -10,20 +13,21 @@ import com.formdev.flatlaf.FlatLightLaf;*/
  */
 public class InterfaceGraphique implements Runnable {
 
-	/*private Font chargerFont(String nom) {
+	private Font chargerFont(String nom) {
 		Font font = null;
-		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("Fonts" + File.separator + nom + ".ttf");
+		InputStream in = ClassLoader.getSystemClassLoader().getResourceAsStream("Fonts/" + nom + ".ttf");
 
 		try {
+			assert in != null;
 			font = Font.createFont(Font.TRUETYPE_FONT, in);
 		} catch (Exception e) {
-			System.out.println("Erreur au chargement de la font  : " + "Fonts" + File.separator + nom + ".ttf");
+			System.out.println("Erreur au chargement de la font  : " + "Fonts/" + nom + ".ttf");
 			System.exit(1);
 		}
 		//fenetre_jeu.ajouterFont(chargerFont("nokiafc22").deriveFont(20f));
 
 		return font;
-	}*/
+	}
 
 
         /**
@@ -38,7 +42,10 @@ public class InterfaceGraphique implements Runnable {
 			e.printStackTrace();
 		}*/
 
-		new MainGUI().setVisible(true);
+		MainGUI fenetre = new MainGUI();
+
+		//fenetre.appliquerFont(chargerFont("FredokaOne-Regular").deriveFont(16f));
+		fenetre.setVisible(true);
 
 	}
 

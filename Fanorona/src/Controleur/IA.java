@@ -9,8 +9,4 @@ import Modele.Position;
  */
 public abstract class IA {
 	public Coup donneCoup(Position debut) { return null; }
-	/**
-     * Genere un choix d'aspiration en utilisant la strategie d'IA
-     * @return un choix d'aspiration
-     */
 }

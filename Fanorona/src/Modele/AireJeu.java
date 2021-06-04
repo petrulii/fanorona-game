@@ -14,8 +14,7 @@ public class AireJeu {
 	// 0 - case vide, 1 - case blanc, 2 - case noir.
 	private final int[][] grille;
 	private final HistoriqueCoups historique;
-	// 0 - case vide, 1 - case blanc, 2 - case noir.
-	int joueur;
+
 	/**
 	* Ce attribut n'est pas null si l'utilisateur doit choisir entre l'aspiration et percusion.
 	*/
@@ -34,20 +33,6 @@ public class AireJeu {
 		historique = new HistoriqueCoups();
 		// Initialisation d'une grille de jeu.
 		this.grille = new int[NB_LIGNES][NB_COLONNES];
-
-		/*for (int i = 0; i < NB_LIGNES; i++) {
-			for (int j = 0; j < NB_COLONNES; j++) {
-				grille[i][j] = 0;
-			}
-		}
-
-		this.grille[0] = new int[]{0,0,1,0,1,0,1,0,0};
-		this.grille[1] = new int[]{0,0,0,1,0,0,0,0,0};
-		this.grille[2] = new int[]{0,0,0,0,2,0,0,0,0};
-		this.grille[3] = new int[]{0,0,0,1,1,0,0,0,0};
-		this.grille[4] = new int[]{0,0,1,0,1,0,1,0,0};*/
-
-
 
 		// Remplissage initial d'une grille de jeu.
 		for (int i = 0; i < NB_LIGNES; i++) {
@@ -70,6 +55,7 @@ public class AireJeu {
 		grille[NB_LIGNES/2][8] = 1;
 		// La position au centre est vide.
 		grille[NB_LIGNES/2][NB_COLONNES/2] = 0;
+
 		choix_aspiration_percusion = null;
 	}
 
@@ -273,15 +259,15 @@ public class AireJeu {
 	 * Mettre des positions de début des coups possibles pour un joueur donné dans une liste
 	 * @return la liste des positions de début 
 	 */
-	public ArrayList<Position> positionsDebutCoupsPossibles() {
+	public ArrayList<Position> positionsDebutCoupsPossibles(int joueur) {
 		ArrayList<Position> positions_debut_coups_possibles = new ArrayList<>();
 		// Verifie si dans la grille il y a des coups de ce joueur avec des captures possibles.
 		for (int l = 0; l < NB_LIGNES; l++) {
 			for (int c = 0; c < NB_COLONNES; c++) {
-				if (grille[l][c] == getJoueur()) {
+				if (grille[l][c] == joueur) {
 					Position debut = new Position(l, c);
 					for (Position fin : positionsAdjacents(debut)) {
-						if (coupValide(new Coup(debut, fin, getJoueur()))) {
+						if (coupValide(new Coup(debut, fin, joueur))) {
 							positions_debut_coups_possibles.add(debut);
 							break;
 						}
@@ -384,8 +370,8 @@ public class AireJeu {
 	/**
 	 * @return vrai si le joueur courant peut faire un coup valide (avec ou sans capture)
 	 */
-	public boolean joueurPeutFaireCoup() {
-		ArrayList<Position> positions_debut_possibles = positionsDebutCoupsPossibles();
+	public boolean joueurPeutFaireCoup(int joueur) {
+		ArrayList<Position> positions_debut_possibles = positionsDebutCoupsPossibles(joueur);
 		for (Position position_debut : positions_debut_possibles)
 			if(joueurPeutContinuerTour(position_debut))
 				return true;
@@ -693,12 +679,6 @@ public class AireJeu {
 	/*-----------*/
 	
 	/**
-	 * Renvoie le joueur actuel (noir ou blanc).
-	 * @return le joueur actuel
-	 */
-	public int getJoueur() { return joueur; }
-	
-	/**
 	 * Renvoie la grille de jeu.
 	 * @return grille de jeu
 	 */
@@ -725,14 +705,6 @@ public class AireJeu {
 	/*-----------*/
 	/*- SETTERS -*/
 	/*-----------*/
-
-	/**
-	 * Met a jour le joueur actuel.
-	 * @param j : le joueur actuel
-	 */
-	public void setJoueur(int j) {
-		this.joueur = j;
-	}
 
 	/**
 	 * Met a jour le coup sur lequel un choix d'aspiration ou percusion est ettendu.
@@ -772,8 +744,6 @@ public class AireJeu {
 		if (annulationCoupPossible()) {
 			// On recupere le dernier coup dans la liste des coups de jeu.
 			coup = historique.enleveCoup();
-			// Changement de joueur avec le joueur de coup annule.
-			setJoueur(coup.getJoueur());
 			// La case de fin devient vide.
 			Position fin = coup.getFin();
 			grille[fin.getLigne()][fin.getColonne()] = 0;
@@ -800,22 +770,11 @@ public class AireJeu {
 		if (refaireCoupPossible()) {
 			coup = historique.enleveCoupAnnule();
 			// Changement de joueur avec le joueur de coup refait.
-			setJoueur(coup.getJoueur());
-			System.out.println("Coup refait: "+coup);
+			//System.out.println("Coup refait: "+coup);
 			executeCoup(coup);
-			if (!joueurPeutContinuerTour(coup.getFin())) {
-				changeJoueur();
-			}
 		}
 		return coup;
 	}
-    
-    /**
-     * Change de joueur.
-     */
-    public void changeJoueur() {
-		if (this.joueur == AireJeu.BLANC) { this.joueur = AireJeu.NOIR; } else { this.joueur = AireJeu.BLANC; }
-    }
 
 	/*-------------*/
 	/*- DEEP COPY -*/
@@ -912,7 +871,7 @@ public class AireJeu {
 	}
 
         /**
-         * @return 
+         * @return  le dernier coup annulé
          */
 	public Coup getDernierCoupAnnule() {
 		return historique.getDernierCoupAnnule();

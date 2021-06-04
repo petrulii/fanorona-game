@@ -111,14 +111,15 @@ public class MainGUI extends javax.swing.JFrame {
 
     /**
      * Indique à qui c'est le tour
+     * @param j le numéro du joueur
      * @param b true si le joueur actif est une IA, false sinon
      */
-    public void majAffichageJoueurActif(boolean b) {
+    public void majAffichageJoueurActif(int j, boolean b) {
         
         label_joueur_actif.setText(b ? "L'IA réfléchit..." : "C'est au tour de");
         
         label_joueur_actif.setIcon(
-                aire_jeu.getJoueur() == AireJeu.BLANC ?
+                j == AireJeu.BLANC ?
                         icone_blanc
                         : icone_noir
         );
@@ -126,8 +127,9 @@ public class MainGUI extends javax.swing.JFrame {
 
     /**
      * Affiche la pop-up qui indique que la partie est terminée.
+     * @param j le numéro du joueur
      */
-    public void afficherGameOver() {
+    public void afficherGameOver(int j) {
         label_joueur_actif.setText("Partie terminée.");
 
         // affichage d’une boite de dialogue de confirmation
@@ -138,7 +140,7 @@ public class MainGUI extends javax.swing.JFrame {
             "Fin de la partie",
             JOptionPane.DEFAULT_OPTION,
             JOptionPane.PLAIN_MESSAGE,
-            aire_jeu.getJoueur() == AireJeu.BLANC ?
+            j == AireJeu.BLANC ?
                 icone_blanc
                 : icone_noir,
             options,
