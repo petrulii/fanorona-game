@@ -20,8 +20,8 @@ public class AleatoireIA extends IA {
 
     /**
      * Genere un entier aleatoire entre les entiers min et max
-	 * @param min :  l'entier min
-	 * @param max : l'entier max
+	 * @param l'entier min
+	 * @param l'entier max
      * @return un entier aleatoire entre min et max
      */
     public int randomInRange(int min, int max) {
@@ -31,10 +31,8 @@ public class AleatoireIA extends IA {
     
     /**
      * Genere un coup aleatoire.
-     * @param debut : la debut position d'un coup
      * @return un Coup valide
      */
-    @Override
     public Coup donneCoup(Position debut) {
     	boolean debut_null = false;
     	if (debut == null) {
@@ -55,19 +53,20 @@ public class AleatoireIA extends IA {
 
     /**
      * Choisit un coup aleatoirement dans la liste des coups possibles.
-     * @param coupsPossibles : la liste des coups possibles
+     * @param la liste des coups possibles
      * @return un Coup valide
      */
     public Coup donneCoup(ArrayList<Coup> coupsPossibles) {
 		int index = randomInRange(0, coupsPossibles.size()-1);
-		return coupsPossibles.get(index);
+		Coup coup = coupsPossibles.get(index);
+		coup.setAspiration(faitChoixAspiration());
+		return coup;
 	}
 
 	/**
      * Fait un choix aleatoire entre l'aspiration et percusion.
      * @return vrai si choix d'aspiration, faux sinon
      */
-    @Override
 	public boolean faitChoixAspiration() {
 		Random r = new Random();
 		return r.nextBoolean();

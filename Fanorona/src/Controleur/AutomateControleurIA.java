@@ -195,11 +195,8 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 			break;
 
 			case E.ATTENTE_CHOIX_TYPE_COUP: {
-				boolean choix_aspiration = ia_courante.faitChoixAspiration();
-				coup_ia.setAspiration(choix_aspiration);
-
-				coordonnees_souris = aire_graphique.positionVersCoordonnees(listes_positions_choix_type_coup.get(choix_aspiration ? 1 : 0).get(0));
-
+				coordonnees_souris = aire_graphique.positionVersCoordonnees(listes_positions_choix_type_coup.get(coup_ia.getAspiration() ? 1 : 0).get(0));
+				System.out.println(" >>>>> " + coup_ia.getAspiration());
 				actionIA(T.SURVOL, coordonnees_souris.x, coordonnees_souris.y);
 				faireJouerIa();
 			}

@@ -303,12 +303,21 @@ public class AutomateControleur {
 						&& aire_jeu.getCaseGrille(position_curseur) == getJoueurActif()
 						&& (
 								aire_jeu.joueurPeutContinuerTour(position_curseur)
-								|| (!aire_jeu.joueurPeutFaireCoup() && aire_jeu.joueurPeutContinuerTourSansCapture(position_curseur))
+								|| (!aire_jeu.joueurPeutContinuerTour(position_curseur) && aire_jeu.joueurPeutContinuerTourSansCapture(position_curseur))
 						)
-						&& (!premier_coup_est_effectue || position_curseur.equals(dernier_coup_effectue.getFin()))
-						&& (!premier_coup_est_effectue || premier_coup_a_effectue_capture)
+						&& (
+								!premier_coup_est_effectue || (
+									premier_coup_a_effectue_capture
+									&& position_curseur.equals(dernier_coup_effectue.getFin())
+								)
+						)
 				) {
+
+                	/*premier_coup_a_effectue_capture
+					&& aire_jeu.joueurPeutContinuerTour(dernier_coup_effectue.getFin())*/
+                	//System.out.println(aire_jeu.joueurPeutContinuerTour(position_curseur) + " " + aire_jeu.joueurPeutContinuerTourSansCapture(position_curseur));
                 	position_debut = position_curseur;
+
                 	changerEtat(E.RELACHEMENT_VALIDE_IMPOSSIBLE);
                 } else if (transition == T.TERMINER_TOUR && premier_coup_est_effectue) {
                 	changerEtat(E.FIN_TOUR);
