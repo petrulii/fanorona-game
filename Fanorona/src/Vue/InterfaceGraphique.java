@@ -26,6 +26,9 @@ public class InterfaceGraphique implements Runnable {
 	}*/
 
 
+        /**
+         * Ne pas appeler cette fonction. Appeler plutôt <code>demarrer</code> qui est thread-safe
+         */
 	@Override
 	public void run() {
 
@@ -39,6 +42,9 @@ public class InterfaceGraphique implements Runnable {
 
 	}
 
+        /**
+         * Appeler cette fonction pour lancer l'interface graphique. Ne pas appeler le constructeur ni <code>run()</code>, car ils ne sont pas thread-safe.
+         */
 	public static void demarrer() {
 		SwingUtilities.invokeLater(new InterfaceGraphique());
 	}

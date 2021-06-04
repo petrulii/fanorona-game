@@ -12,6 +12,10 @@ public class EcouteurSourisAire extends MouseInputAdapter {
 
     private final ControleurMediateur control;
 
+    /**
+     * Constructeur
+     * @param c le contrôleur à qui envoyer les events
+     */
     public EcouteurSourisAire(ControleurMediateur c) {
         control = c;
     }

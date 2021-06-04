@@ -69,16 +69,20 @@ public class MainGUI extends javax.swing.JFrame {
 
         if(nom_panneau.equals("panneau_menu")) {
             menu_sauvegarder.setVisible(false);
+            menu_charger.setVisible(false);
             menu_separator_2.setVisible(false);
             menu_afficher_les_aides.setVisible(false);
             menu_separator_3.setVisible(false);
             menu_terminer.setVisible(false);
+            menu_separator_1.setVisible(false);
         } else if(nom_panneau.equals("panneau_jeu")) {
             menu_sauvegarder.setVisible(true);
+            menu_charger.setVisible(true);
             menu_separator_2.setVisible(true);
             menu_afficher_les_aides.setVisible(true);
             menu_separator_3.setVisible(true);
             menu_terminer.setVisible(true);
+            menu_separator_1.setVisible(true);
         }
     }
 
@@ -205,7 +209,7 @@ public class MainGUI extends javax.swing.JFrame {
         paneau_jeu = new javax.swing.JPanel();
         section_boutons_haut = new javax.swing.JPanel();
         section_boutons_haut_panel1 = new javax.swing.JPanel();
-        bouton_suggestion = new javax.swing.JToggleButton();
+        bouton_suggestion = new javax.swing.JButton();
         section_boutons_haut_panel2 = new javax.swing.JPanel();
         label_joueur_actif = new javax.swing.JLabel();
         zone_de_jeu = new javax.swing.JPanel();
@@ -495,7 +499,7 @@ public class MainGUI extends javax.swing.JFrame {
                 .addComponent(radio_debut_noir)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(radio_debut_blanc)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
             .addGroup(panel_debutLayout.createSequentialGroup()
                 .addGap(23, 23, 23)
                 .addComponent(label_debut)
@@ -516,6 +520,11 @@ public class MainGUI extends javax.swing.JFrame {
         checkbox_debutant.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         checkbox_debutant.setText("Afficher les aides");
         checkbox_debutant.setFocusable(false);
+        checkbox_debutant.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkbox_debutantActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout panel_debutantLayout = new javax.swing.GroupLayout(panel_debutant);
         panel_debutant.setLayout(panel_debutantLayout);
@@ -545,7 +554,7 @@ public class MainGUI extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel_flottantLayout.createSequentialGroup()
                         .addGroup(panel_flottantLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(panel_debutant, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(panel_debut, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                            .addComponent(panel_debut, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE))
                         .addContainerGap())))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panel_flottantLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -584,9 +593,7 @@ public class MainGUI extends javax.swing.JFrame {
 
         section_boutons_haut_panel1.setOpaque(false);
 
-        bouton_suggestion.setText("Mode suggestion");
-        bouton_suggestion.setToolTipText("Si actif, affiche une suggestion de coup.");
-        bouton_suggestion.setFocusable(false);
+        bouton_suggestion.setText("Suggestion");
         bouton_suggestion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bouton_suggestionActionPerformed(evt);
@@ -598,14 +605,14 @@ public class MainGUI extends javax.swing.JFrame {
         section_boutons_haut_panel1Layout.setHorizontalGroup(
             section_boutons_haut_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, section_boutons_haut_panel1Layout.createSequentialGroup()
-                .addContainerGap(788, Short.MAX_VALUE)
+                .addContainerGap(829, Short.MAX_VALUE)
                 .addComponent(bouton_suggestion)
                 .addContainerGap())
         );
         section_boutons_haut_panel1Layout.setVerticalGroup(
             section_boutons_haut_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, section_boutons_haut_panel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .addComponent(bouton_suggestion)
                 .addContainerGap())
         );
@@ -826,21 +833,7 @@ public class MainGUI extends javax.swing.JFrame {
         aire_graphique.addMouseListener(ecouteur_souris_aire);
         aire_graphique.addMouseMotionListener(ecouteur_souris_aire);
         aire_graphique.afficherAides(mode_debutant);
-        addKeyListener(new EcouteurClavier(controleur_mediateur));
     }
-
-    /**
-     * Méthode appelée lorsque l'on clique sur le bouton Suggestion
-     * @param evt ignored
-     */
-    private void bouton_suggestionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_suggestionActionPerformed
-
-        if (bouton_suggestion.isSelected()) {
-            System.out.println("Suggestion est actif");
-        } else {
-            System.out.println("Suggestion est inactif");
-        }
-    }//GEN-LAST:event_bouton_suggestionActionPerformed
 
     /**
      * Méthode appelée lorsque l'on clique sur le bouton Terminer
@@ -848,6 +841,7 @@ public class MainGUI extends javax.swing.JFrame {
      */
     private void bouton_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_terminerActionPerformed
         controleur_mediateur.instruction("Finir tour");
+        bouton_suggestion.setEnabled(true); // TODO désactiver ce bouton si le joueur est IA
     }//GEN-LAST:event_bouton_terminerActionPerformed
 
     /**
@@ -1021,19 +1015,41 @@ public class MainGUI extends javax.swing.JFrame {
 
         if(menu_afficher_les_aides.getText().equals(etat_actif)) {
             menu_afficher_les_aides.setText(etat_inactif);
-            aire_graphique.afficherAides(false);
+            if (aire_graphique != null)
+                aire_graphique.afficherAides(false);
         } else {
             menu_afficher_les_aides.setText(etat_actif);
-            aire_graphique.afficherAides(true);
+            if (aire_graphique != null)
+                aire_graphique.afficherAides(true);
         }
+        
+        if (aire_graphique != null)
+            aire_graphique.repaint();
     }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
+
+    /**
+     * Met à jour le menu pour rester cohérent avec l'état actuel des aides
+     * @param evt ignored
+     */
+    private void checkbox_debutantActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkbox_debutantActionPerformed
+        menu_afficher_les_aidesActionPerformed(evt);
+    }//GEN-LAST:event_checkbox_debutantActionPerformed
+
+    /**
+     * Affiche une suggestion pour le tour courant
+     * @param evt ignored
+     */
+    private void bouton_suggestionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_suggestionActionPerformed
+        bouton_suggestion.setEnabled(false);
+        // TODO afficher suggestion pour ce tour
+    }//GEN-LAST:event_bouton_suggestionActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuBar barre_menu;
     private javax.swing.JButton bouton_annuler;
     private javax.swing.JButton bouton_commencer;
     private javax.swing.JButton bouton_retablir;
-    private javax.swing.JToggleButton bouton_suggestion;
+    private javax.swing.JButton bouton_suggestion;
     private javax.swing.JButton bouton_terminer;
     private javax.swing.JCheckBox checkbox_debutant;
     private javax.swing.JPanel conteneur_principal;

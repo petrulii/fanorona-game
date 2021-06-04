@@ -904,10 +904,16 @@ public class AireJeu {
 		return liste_positions;
 	}
 
+        /**
+         * @return le dernier coup de l'historique
+         */
 	public Coup getDernierCoup() {
 		return historique.getDernierCoup();
 	}
 
+        /**
+         * @return 
+         */
 	public Coup getDernierCoupAnnule() {
 		return historique.getDernierCoupAnnule();
 	}

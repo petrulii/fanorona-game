@@ -87,7 +87,7 @@ public class ChoixFichiersGUI extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         liste_items = new javax.swing.JList<>();
 
-        setTitle("Test lister fichiers d'un dossier");
+        setTitle("Choisissez une partie à charger");
         setAlwaysOnTop(true);
         setMinimumSize(new java.awt.Dimension(350, 250));
         setResizable(false);
