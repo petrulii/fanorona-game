@@ -113,7 +113,7 @@ public class AutomateControleur {
 	 */
 	protected void changerJoueur(int j) {
 		aire_jeu.setJoueur(j);
-		fenetre.majAffichageJoueurActif();
+		fenetre.majAffichageJoueurActif(false);
 	}
 
 	/**
@@ -245,16 +245,16 @@ public class AutomateControleur {
 
 	public void annulerCoup() {
 		majApresChangementHistorique(aire_jeu.annulerCoup());
+		fenetre.majAffichageJoueurActif(false);
 	}
 
 	public void refaireCoup() {
 		majApresChangementHistorique(aire_jeu.refaireCoup());
+		fenetre.majAffichageJoueurActif(false);
 	}
 
 	public void majApresChangementHistorique(Coup coup_restaure) {
 		if(coup_restaure != null) {
-			fenetre.majAffichageJoueurActif();
-
 			int nb_coups_effectues = aire_jeu.listeHistoriquePosTourCourant(getJoueurActif()).size();
 			premier_coup_est_effectue = nb_coups_effectues >= 1;
 			premier_coup_a_effectue_capture =

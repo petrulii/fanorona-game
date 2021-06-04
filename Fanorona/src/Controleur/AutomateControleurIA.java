@@ -58,7 +58,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 	protected void changerJoueur(int j) {
 		aire_jeu.setJoueur(j);
 		miseAjourJoueurIA();
-		fenetre.majAffichageJoueurActif();
+		fenetre.majAffichageJoueurActif(ia_courante != null);
 	}
 
 	protected void miseAjourJoueurIA() {
@@ -88,6 +88,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 				break;
 		}
     	majApresChangementHistorique(coup_restaure);
+		fenetre.majAffichageJoueurActif(ia_courante != null);
 		faireJouerIa();
 	}
 
@@ -100,6 +101,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 			if(!iaCourantePeutJouer())
 				break;
 		}
+		fenetre.majAffichageJoueurActif(ia_courante != null);
     	majApresChangementHistorique(coup_restaure);
 		faireJouerIa();
 	}
