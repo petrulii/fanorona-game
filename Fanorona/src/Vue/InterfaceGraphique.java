@@ -4,8 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.InputStream;
-/*import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;*/
+//import com.formdev.flatlaf.FlatLightLaf;
 
 /**
  * Classe créant la fenêtre de jeu
@@ -24,7 +23,6 @@ public class InterfaceGraphique implements Runnable {
 			System.out.println("Erreur au chargement de la font  : " + "Fonts/" + nom + ".ttf");
 			System.exit(1);
 		}
-		//fenetre_jeu.ajouterFont(chargerFont("nokiafc22").deriveFont(20f));
 
 		return font;
 	}
@@ -36,16 +34,11 @@ public class InterfaceGraphique implements Runnable {
 	@Override
 	public void run() {
 
-		/*try {
-			UIManager.setLookAndFeel(new FlatLightLaf());
-		} catch (UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}*/
+		//try { UIManager.setLookAndFeel(new FlatLightLaf()); } catch (UnsupportedLookAndFeelException e) { e.printStackTrace(); }
 
-		MainGUI fenetre = new MainGUI();
-
-		//fenetre.appliquerFont(chargerFont("FredokaOne-Regular").deriveFont(16f));
+		MainGUI fenetre = new MainGUI(chargerFont("unicode.arialr").deriveFont(18f));
 		fenetre.setVisible(true);
+		fenetre.setLocationRelativeTo(null);
 
 	}
 

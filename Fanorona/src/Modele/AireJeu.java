@@ -808,10 +808,10 @@ public class AireJeu {
 	/*--------------*/
 	
 	/**
-	 * Ecrit la liste des coups dans un fichier.
+	 * Ecrit la liste des coups dans un fichier et retourne le nom du fichier obtenu
 	 */
-	public void sauvegarderHistoriqueCoups() {
-		historique.exporter();
+	public String sauvegarderHistoriqueCoups() {
+		return historique.exporter();
 	}
 	
 	/**

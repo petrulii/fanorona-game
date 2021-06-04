@@ -106,18 +106,18 @@ public class HistoriqueCoups {
 	}
 	
     /**
-     * Prend une liste des coups et l'ecrit dans un fichier
-     * TODO : indiquer le nom sous lequel la partie a été sauvegardée pour que la Vue l'affiche (voir MainGUI.menu_sauvegarderActionPerformed)
+     * Prend une liste des coups et l'ecrit dans un fichier et retourne le nom du fichier obtenu
      */
-    public void exporter() {
+    public String exporter() {
+    	String nom_fichier = "";
     	// Debut: ( 3, 2 ), fin: ( 2, 2 ) , aspiration: false , joueur: 1, pions captures: [ ( 1, 2 ) ( 0, 2 ) ].
     	try {
     		String pattern = "-MM_dd_yyyy-HH_mm_ss";
     		DateFormat df = new SimpleDateFormat(pattern);
     		java.util.Date today = Calendar.getInstance().getTime();
     		String todayAsString = df.format(today);
-    		String nom_fichier = System.getProperty("user.home")+File.separator+DOSSIER_SAUVEGARDE+File.separator+"historique"+todayAsString+".txt";
-    		File file = new File(nom_fichier);
+    		nom_fichier = "historique"+todayAsString+".txt";
+    		File file = new File(System.getProperty("user.home")+File.separator+DOSSIER_SAUVEGARDE+File.separator+nom_fichier);
             BufferedWriter f = new BufferedWriter(new FileWriter(file));
             if (coups.isEmpty()) {
             	System.out.println("Liste des coups est vide");
@@ -130,6 +130,7 @@ public class HistoriqueCoups {
         } catch (IOException e) {
         	System.out.println("Impossible de creer le fichier d'historique d'un jeu.");
         }
+    	return nom_fichier;
     }
     
     /**

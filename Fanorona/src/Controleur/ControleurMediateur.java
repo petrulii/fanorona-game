@@ -26,6 +26,8 @@ public class ControleurMediateur {
 		this.aire_graphique = aire_graphique;
 		this.fenetre = fenetre;
 
+
+		System.out.println(niveau_IA2);
 		// si aucun des joueurs n'est une IA
 		if(niveau_IA1 == HUMAIN && niveau_IA2 == HUMAIN)
 			this.automate_joueur = new AutomateControleur(aire_jeu, aire_graphique, fenetre, joueur_commence);
@@ -107,7 +109,8 @@ public class ControleurMediateur {
 				automate_joueur.refaireCoup();
 				break;
 			case "Exporter":
-				aire_jeu.sauvegarderHistoriqueCoups();
+				String nom_fichier_exporte = aire_jeu.sauvegarderHistoriqueCoups();
+				fenetre.afficherInformationNomFichierExport(nom_fichier_exporte);
 				break;
 			default:
 				System.out.println("Le controleur ne connait pas cette instruction.");

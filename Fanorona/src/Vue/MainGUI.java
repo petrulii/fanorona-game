@@ -46,7 +46,7 @@ public class MainGUI extends javax.swing.JFrame {
     /**
      * Creates new form MainGUI
      */
-    public MainGUI() {
+    public MainGUI(Font f) {
         initComponents();
 
         icone_blanc = new javax.swing.ImageIcon(Objects.requireNonNull(getClass().getResource("/Images/icone_blanc.png")));
@@ -57,6 +57,45 @@ public class MainGUI extends javax.swing.JFrame {
         fenetre_chargement.initListe();
 
         changerPanneau("panneau_menu");
+
+        appliquerFont(f);
+    }
+
+    /**
+     * Applique la font donnée en paramètre à tous les éléments textuel de la fenêtres
+     * @param f la font à appliquer
+     */
+    public void appliquerFont(Font f) {
+        this.setFont(f);
+        fenetre_chargement.setFont(f);
+        bouton_annuler.setFont(f);
+        bouton_commencer.setFont(f);
+        bouton_retablir.setFont(f);
+        bouton_terminer.setFont(f);
+        checkbox_debutant.setFont(f);
+        jLabel1.setFont(f);
+        label_debut.setFont(f);
+        label_joueur1.setFont(f);
+        label_joueur2.setFont(f);
+        label_joueur_actif.setFont(f);
+        menu_afficher_les_aides.setFont(f);
+        menu_bouton.setFont(f);
+        menu_charger.setFont(f);
+        menu_quitter.setFont(f);
+        menu_sauvegarder.setFont(f);
+        menu_terminer.setFont(f);
+        radio_debut_blanc.setFont(f);
+        radio_debut_noir.setFont(f);
+        radio_niveau_ia_difficile_j1.setFont(f);
+        radio_niveau_ia_difficile_j2.setFont(f);
+        radio_niveau_ia_facile_j1.setFont(f);
+        radio_niveau_ia_facile_j2.setFont(f);
+        radio_niveau_ia_moyen_j1.setFont(f);
+        radio_niveau_ia_moyen_j2.setFont(f);
+        radio_type_humain_j1.setFont(f);
+        radio_type_humain_j2.setFont(f);
+        radio_type_ia_j1.setFont(f);
+        radio_type_ia_j2.setFont(f);
     }
 
 
@@ -212,8 +251,6 @@ public class MainGUI extends javax.swing.JFrame {
         checkbox_debutant = new javax.swing.JCheckBox();
         paneau_jeu = new javax.swing.JPanel();
         section_boutons_haut = new javax.swing.JPanel();
-        section_boutons_haut_panel1 = new javax.swing.JPanel();
-        bouton_suggestion = new javax.swing.JButton();
         section_boutons_haut_panel2 = new javax.swing.JPanel();
         label_joueur_actif = new javax.swing.JLabel();
         zone_de_jeu = new javax.swing.JPanel();
@@ -250,7 +287,7 @@ public class MainGUI extends javax.swing.JFrame {
         panneau_menu.setMinimumSize(new java.awt.Dimension(0, 0));
         panneau_menu.setLayout(new java.awt.GridBagLayout());
 
-        panel_flottant.setPreferredSize(new java.awt.Dimension(400, 240));
+        panel_flottant.setPreferredSize(new java.awt.Dimension(400, 260));
         panel_flottant.setRequestFocusEnabled(false);
 
         panel_joueur1.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
@@ -503,7 +540,7 @@ public class MainGUI extends javax.swing.JFrame {
                 .addComponent(radio_debut_noir)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(radio_debut_blanc)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(panel_debutLayout.createSequentialGroup()
                 .addGap(23, 23, 23)
                 .addComponent(label_debut)
@@ -595,34 +632,6 @@ public class MainGUI extends javax.swing.JFrame {
 
         section_boutons_haut.setOpaque(false);
         section_boutons_haut.setLayout(new javax.swing.OverlayLayout(section_boutons_haut));
-
-        section_boutons_haut_panel1.setOpaque(false);
-
-        bouton_suggestion.setText("Suggestion");
-        bouton_suggestion.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bouton_suggestionActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout section_boutons_haut_panel1Layout = new javax.swing.GroupLayout(section_boutons_haut_panel1);
-        section_boutons_haut_panel1.setLayout(section_boutons_haut_panel1Layout);
-        section_boutons_haut_panel1Layout.setHorizontalGroup(
-            section_boutons_haut_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, section_boutons_haut_panel1Layout.createSequentialGroup()
-                .addContainerGap(829, Short.MAX_VALUE)
-                .addComponent(bouton_suggestion)
-                .addContainerGap())
-        );
-        section_boutons_haut_panel1Layout.setVerticalGroup(
-            section_boutons_haut_panel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, section_boutons_haut_panel1Layout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
-                .addComponent(bouton_suggestion)
-                .addContainerGap())
-        );
-
-        section_boutons_haut.add(section_boutons_haut_panel1);
 
         section_boutons_haut_panel2.setOpaque(false);
         section_boutons_haut_panel2.setLayout(new java.awt.GridBagLayout());
@@ -725,7 +734,7 @@ public class MainGUI extends javax.swing.JFrame {
                 .addGap(0, 0, 0)
                 .addComponent(section_boutons_haut, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(zone_de_jeu, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                .addComponent(zone_de_jeu, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(section_boutons_bas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -796,7 +805,7 @@ public class MainGUI extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(conteneur_principal, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
+            .addComponent(conteneur_principal, javax.swing.GroupLayout.DEFAULT_SIZE, 587, Short.MAX_VALUE)
         );
 
         pack();
@@ -816,7 +825,7 @@ public class MainGUI extends javax.swing.JFrame {
                         : ControleurMediateur.DIFFICILE;
 
         int niveau_type_j2 = radio_type_humain_j2.isSelected() ? ControleurMediateur.HUMAIN
-                        : radio_niveau_ia_facile_j1.isSelected() ? ControleurMediateur.FACILE
+                        : radio_niveau_ia_facile_j2.isSelected() ? ControleurMediateur.FACILE
                         : radio_niveau_ia_moyen_j2.isSelected() ? ControleurMediateur.MOYEN
                         : ControleurMediateur.DIFFICILE;
 
@@ -846,7 +855,6 @@ public class MainGUI extends javax.swing.JFrame {
      */
     private void bouton_terminerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_terminerActionPerformed
         controleur_mediateur.instruction("Finir tour");
-        bouton_suggestion.setEnabled(true); // TODO désactiver ce bouton si le joueur est IA
     }//GEN-LAST:event_bouton_terminerActionPerformed
 
     /**
@@ -936,10 +944,16 @@ public class MainGUI extends javax.swing.JFrame {
      */
     private void menu_sauvegarderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_sauvegarderActionPerformed
         controleur_mediateur.instruction("Exporter");
-        
+    }//GEN-LAST:event_menu_sauvegarderActionPerformed
+
+    /**
+     * Affiche une fenêtre de dialogue pour indiquer que le fichier a été supprimé
+     * @param nom_fichier le nom du fichier qui a été exporté
+     */
+    public void afficherInformationNomFichierExport(String nom_fichier) {
         Object[] options = {"OK"};
         JOptionPane.showOptionDialog(this,
-            "La partie a été sauvegardé sous le nom TODO", // TODO : afficher le nom du fichier sauvegardé
+            "<html>La partie a été sauvegardé sous le nom <em>" + nom_fichier + "</em>.</html>",
             "Partie sauvegardée",
             JOptionPane.DEFAULT_OPTION,
             JOptionPane.PLAIN_MESSAGE,
@@ -947,8 +961,7 @@ public class MainGUI extends javax.swing.JFrame {
             options,
             options[0]
         );
-        
-    }//GEN-LAST:event_menu_sauvegarderActionPerformed
+    }
 
     /**
      * Méthode appelée lorsque l'on clique sur le bouton Arrêter la partie dans le menu
@@ -1034,38 +1047,6 @@ public class MainGUI extends javax.swing.JFrame {
             aire_graphique.repaint();
     }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
 
-    public void appliquerFont(Font f) {
-        bouton_annuler.setFont(f);
-        bouton_commencer.setFont(f);
-        bouton_retablir.setFont(f);
-        bouton_suggestion.setFont(f);
-        bouton_terminer.setFont(f);
-        checkbox_debutant.setFont(f);
-        jLabel1.setFont(f);
-        label_debut.setFont(f);
-        label_joueur1.setFont(f);
-        label_joueur2.setFont(f);
-        label_joueur_actif.setFont(f);
-        menu_afficher_les_aides.setFont(f);
-        menu_bouton.setFont(f);
-        menu_charger.setFont(f);
-        menu_quitter.setFont(f);
-        menu_sauvegarder.setFont(f);
-        menu_terminer.setFont(f);
-        radio_debut_blanc.setFont(f);
-        radio_debut_noir.setFont(f);
-        radio_niveau_ia_difficile_j1.setFont(f);
-        radio_niveau_ia_difficile_j2.setFont(f);
-        radio_niveau_ia_facile_j1.setFont(f);
-        radio_niveau_ia_facile_j2.setFont(f);
-        radio_niveau_ia_moyen_j1.setFont(f);
-        radio_niveau_ia_moyen_j2.setFont(f);
-        radio_type_humain_j1.setFont(f);
-        radio_type_humain_j2.setFont(f);
-        radio_type_ia_j1.setFont(f);
-        radio_type_ia_j2.setFont(f);
-    }
-
     /**
      * Met à jour le menu pour rester cohérent avec l'état actuel des aides
      * @param evt ignored
@@ -1074,21 +1055,11 @@ public class MainGUI extends javax.swing.JFrame {
         menu_afficher_les_aidesActionPerformed(evt);
     }//GEN-LAST:event_checkbox_debutantActionPerformed
 
-    /**
-     * Affiche une suggestion pour le tour courant
-     * @param evt ignored
-     */
-    private void bouton_suggestionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bouton_suggestionActionPerformed
-        bouton_suggestion.setEnabled(false);
-        // TODO afficher suggestion pour ce tour
-    }//GEN-LAST:event_bouton_suggestionActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuBar barre_menu;
     private javax.swing.JButton bouton_annuler;
     private javax.swing.JButton bouton_commencer;
     private javax.swing.JButton bouton_retablir;
-    private javax.swing.JButton bouton_suggestion;
     private javax.swing.JButton bouton_terminer;
     private javax.swing.JCheckBox checkbox_debutant;
     private javax.swing.JPanel conteneur_principal;
@@ -1138,7 +1109,6 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton radio_type_ia_j2;
     private javax.swing.JPanel section_boutons_bas;
     private javax.swing.JPanel section_boutons_haut;
-    private javax.swing.JPanel section_boutons_haut_panel1;
     private javax.swing.JPanel section_boutons_haut_panel2;
     private javax.swing.JPanel zone_de_jeu;
     // End of variables declaration//GEN-END:variables
