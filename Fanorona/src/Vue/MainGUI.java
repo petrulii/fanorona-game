@@ -1027,6 +1027,38 @@ public class MainGUI extends javax.swing.JFrame {
             aire_graphique.repaint();
     }//GEN-LAST:event_menu_afficher_les_aidesActionPerformed
 
+    public void appliquerFont(Font f) {
+        bouton_annuler.setFont(f);
+        bouton_commencer.setFont(f);
+        bouton_retablir.setFont(f);
+        bouton_suggestion.setFont(f);
+        bouton_terminer.setFont(f);
+        checkbox_debutant.setFont(f);
+        jLabel1.setFont(f);
+        label_debut.setFont(f);
+        label_joueur1.setFont(f);
+        label_joueur2.setFont(f);
+        label_joueur_actif.setFont(f);
+        menu_afficher_les_aides.setFont(f);
+        menu_bouton.setFont(f);
+        menu_charger.setFont(f);
+        menu_quitter.setFont(f);
+        menu_sauvegarder.setFont(f);
+        menu_terminer.setFont(f);
+        radio_debut_blanc.setFont(f);
+        radio_debut_noir.setFont(f);
+        radio_niveau_ia_difficile_j1.setFont(f);
+        radio_niveau_ia_difficile_j2.setFont(f);
+        radio_niveau_ia_facile_j1.setFont(f);
+        radio_niveau_ia_facile_j2.setFont(f);
+        radio_niveau_ia_moyen_j1.setFont(f);
+        radio_niveau_ia_moyen_j2.setFont(f);
+        radio_type_humain_j1.setFont(f);
+        radio_type_humain_j2.setFont(f);
+        radio_type_ia_j1.setFont(f);
+        radio_type_ia_j2.setFont(f);
+    }
+
     /**
      * Met à jour le menu pour rester cohérent avec l'état actuel des aides
      * @param evt ignored
