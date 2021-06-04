@@ -56,8 +56,6 @@ public class MainGUI extends javax.swing.JFrame {
         fenetre_chargement = new ChoixFichiersGUI(this);
         fenetre_chargement.initListe();
 
-        this.setVisible(true);
-
         changerPanneau("panneau_menu");
     }
 

@@ -35,7 +35,7 @@ public class InterfaceGraphique implements Runnable {
 			e.printStackTrace();
 		}*/
 
-		new MainGUI();
+		new MainGUI().setVisible(true);
 
 	}
 
