@@ -111,10 +111,12 @@ public class MainGUI extends javax.swing.JFrame {
 
     /**
      * Indique à qui c'est le tour
+     * @param b true si le joueur actif est une IA, false sinon
      */
-    public void majAffichageJoueurActif() {
-        label_joueur_actif.setText("C'est au tour de");
-
+    public void majAffichageJoueurActif(boolean b) {
+        
+        label_joueur_actif.setText(b ? "L'IA réfléchit..." : "C'est au tour de");
+        
         label_joueur_actif.setIcon(
                 aire_jeu.getJoueur() == AireJeu.BLANC ?
                         icone_blanc
@@ -518,6 +520,7 @@ public class MainGUI extends javax.swing.JFrame {
         panel_debutant.setBorder(javax.swing.BorderFactory.createTitledBorder(""));
 
         checkbox_debutant.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        checkbox_debutant.setSelected(true);
         checkbox_debutant.setText("Afficher les aides");
         checkbox_debutant.setFocusable(false);
         checkbox_debutant.addActionListener(new java.awt.event.ActionListener() {
@@ -720,7 +723,7 @@ public class MainGUI extends javax.swing.JFrame {
                 .addGap(0, 0, 0)
                 .addComponent(section_boutons_haut, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(zone_de_jeu, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                .addComponent(zone_de_jeu, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(section_boutons_bas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -751,7 +754,7 @@ public class MainGUI extends javax.swing.JFrame {
         menu_bouton.add(menu_sauvegarder);
         menu_bouton.add(menu_separator_1);
 
-        menu_afficher_les_aides.setText("Afficher les aides");
+        menu_afficher_les_aides.setText("Cacher les aides");
         menu_afficher_les_aides.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 menu_afficher_les_aidesActionPerformed(evt);
@@ -1015,10 +1018,12 @@ public class MainGUI extends javax.swing.JFrame {
 
         if(menu_afficher_les_aides.getText().equals(etat_actif)) {
             menu_afficher_les_aides.setText(etat_inactif);
+            checkbox_debutant.setSelected(false);
             if (aire_graphique != null)
                 aire_graphique.afficherAides(false);
         } else {
             menu_afficher_les_aides.setText(etat_actif);
+            checkbox_debutant.setSelected(true);
             if (aire_graphique != null)
                 aire_graphique.afficherAides(true);
         }
