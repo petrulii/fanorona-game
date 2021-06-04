@@ -518,7 +518,7 @@ public class MainGUI extends javax.swing.JFrame {
         radio_debut_blanc.setFocusable(false);
 
         label_debut.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        label_debut.setText("Qui commence ?");
+        label_debut.setText("Qui commence ?");
 
         javax.swing.GroupLayout panel_debutLayout = new javax.swing.GroupLayout(panel_debut);
         panel_debut.setLayout(panel_debutLayout);
