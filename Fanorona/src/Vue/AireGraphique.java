@@ -70,7 +70,7 @@ public class AireGraphique extends JPanel {
         aire = a;
 
         // textures utiles
-        plateau = chargerTexture("plateau");
+        plateau = chargerImage("plateau");
 
 		// dimensions relatives entre les éléments
         taille_cellule = 32;
@@ -104,6 +104,26 @@ public class AireGraphique extends JPanel {
     	pions_supprimes = null;
     	pions_supprimables = null;
     	pions_supprimables_choix_type_coup = null;
+    }
+
+    /**
+     * @param nom nom de l'image à charger, sans chemin ni extension
+     * @return une Image chargée à partir d'un fichier PNG du dossier Images
+     */
+    public Image chargerImage(String nom) {
+		Image img = null;
+		InputStream in = getClass().getClassLoader().getResourceAsStream("Images/" + nom + ".png");
+
+		try {
+			assert in != null;
+			img = ImageIO.read(in);
+		} catch (IOException e) {
+            System.err.println("Erreur au chargement de l'image : " + "Images" + File.separator + nom + ".png");
+            System.err.println(e);
+            System.exit(1);
+        }
+
+        return img;
     }
 
     /**
@@ -217,25 +237,7 @@ public class AireGraphique extends JPanel {
     	pions_supprimables_choix_type_coup = p;
 	}
 
-    /**
-     * @param nom nom de l'image à charger, sans chemin ni extension
-     * @return une Image chargée à partir d'un fichier PNG du dossier Images
-     */
-    private Image chargerTexture(String nom) {
-		Image img = null;
-		InputStream in = getClass().getClassLoader().getResourceAsStream("Images/" + nom + ".png");
 
-		try {
-			assert in != null;
-			img = ImageIO.read(in);
-		} catch (IOException e) {
-            System.err.println("Erreur au chargement de l'image : " + "Images" + File.separator + nom + ".png");
-            System.err.println(e);
-            System.exit(1);
-        }
-
-        return img;
-    }
 
     /**
      * Permet d'actualiser les dimensions de l'affichage en cas de redimensionnement de la fenêtre principale

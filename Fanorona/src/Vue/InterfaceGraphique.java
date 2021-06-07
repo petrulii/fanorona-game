@@ -1,14 +1,38 @@
 package Vue;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 /**
  * Classe créant la fenêtre de jeu
  * @author Titouan et Marin
  */
 public class InterfaceGraphique implements Runnable {
+
+	/**
+     * @param nom nom de l'image à charger, sans chemin ni extension
+     * @return une Image chargée à partir d'un fichier PNG du dossier Images
+     */
+    private Image chargerImage(String nom) {
+		Image img = null;
+		InputStream in = getClass().getClassLoader().getResourceAsStream("Images/" + nom + ".png");
+
+		try {
+			assert in != null;
+			img = ImageIO.read(in);
+		} catch (IOException e) {
+            System.err.println("Erreur au chargement de l'image : " + "Images" + File.separator + nom + ".png");
+            System.err.println(e);
+            System.exit(1);
+        }
+
+        return img;
+    }
 
 	private Font chargerFont(String nom) {
 		Font font = null;
@@ -32,12 +56,13 @@ public class InterfaceGraphique implements Runnable {
 	@Override
 	public void run() {
 
-		//try { UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf()); } catch (UnsupportedLookAndFeelException e) { e.printStackTrace(); }
+		try { UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf()); } catch (UnsupportedLookAndFeelException e) { e.printStackTrace(); }
 
 		System.setProperty("awt.useSystemAAFontSettings", "on");
 		System.setProperty("swing.aatext", "true");
 
 		MainGUI fenetre = new MainGUI(chargerFont("unicode.arialr").deriveFont(18f));
+		fenetre.setIconImage(chargerImage("icone_jeu"));
 		fenetre.setVisible(true);
 		fenetre.setLocationRelativeTo(null);
 
