@@ -159,6 +159,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 						!premier_coup_est_effectue
 						|| (premier_coup_a_effectue_capture && aire_jeu.joueurPeutContinuerTour(coup_ia.getFin()))
 				) {
+					aire_jeu.setChoixAspirationPercusion(null);
 					coup_ia = ia_courante.donneCoup(premier_coup_est_effectue ? coup_ia.getFin() : null);
 
 					Point coordonnees_debut = aire_graphique.positionVersCoordonnees(coup_ia.getDebut());
