@@ -69,9 +69,9 @@ public class AlphaBetaIA extends IA {
 		   		// On trouve un des meilleurs coups.
 				// Si profondeur est 0, factoriser avec joueur B (qui minimize).
 				// Pas d'attribut meilleure_valeur, au place comparer avec valeur.
-	   	   		/*if ((coups_initials != null) && valeur_neoud == meilleur_valeur) {
+	   	   		if ((coups_initials != null) && valeur_neoud == meilleur_valeur) {
 	   	   			meilleurs_coups.add(tour_ia.get(0));
-		   		}*/
+		   		}
 	   	   		// On trouve le meilleur coup.
 	   	   		if ((coups_initials != null) && valeur_neoud > meilleur_valeur) {
 		   	   		//afficheGrille(configuration.getGrille());
