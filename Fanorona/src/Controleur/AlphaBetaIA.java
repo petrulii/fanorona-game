@@ -58,10 +58,10 @@ public class AlphaBetaIA extends IA {
    			// Fin calcul tours jouables.
 			for (ArrayList<Coup> tour_ia : tours_jouables) {
 				// On affiche le tour initial.
-	   	   		/*if ((coups_initials != null)) {
+	   	   		if ((coups_initials != null)) {
 	   	   			System.out.println("###### tour A prof 0 ######");
 		   	   		afficheTour(tour_ia);
-		   		}*/
+		   		}
 	   	   		//System.out.println("###### A ######");
 				// Debut calcul recursif.
 				jouerTour(configuration, tour_ia);
@@ -87,7 +87,7 @@ public class AlphaBetaIA extends IA {
 	   			alpha = Math.max(alpha, valeur);
 				annulerTour(configuration, tour_ia);
 				if (alpha >= beta) {
-					break;
+					//break;
 				}
 			}
 			return valeur;
@@ -111,7 +111,7 @@ public class AlphaBetaIA extends IA {
 				beta = Math.min(beta, valeur);
 				annulerTour(configuration, tour_ia);
 				if (beta <= alpha) {
-					break;
+					//break;
 				}
 			}
 	   		return valeur;
@@ -324,7 +324,7 @@ public class AlphaBetaIA extends IA {
         // Calcul des meilleurs coups.
     	donneCoupRec(aire, profondeur_max, coups_jouables, Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, true);
         // Choisir un coup aleatoirement dans les meilleurs coups.
-    	Random r = new Random(1);
+    	Random r = new Random();
 		int index = (int)(r.nextFloat() * meilleurs_coups.size());
 		//System.out.println("MC: "+stringCoups(meilleurs_coups));
 		return meilleurs_coups.get(index);
