@@ -72,6 +72,7 @@ public class AutomateControleurIA extends AutomateControleur implements ActionLi
 				!iaCourantePeutJouer()
 				&& premier_coup_est_effectue
 				&& etat_courant != E.ATTENTE_CHOIX_TYPE_COUP
+				&& etat_courant != E.ATTENTE_CHOIX_TYPE_COUP_POSSIBLE
 		);
 		fenetre.majBoutonHistorique(
 				etat_courant != E.ATTENTE_CHOIX_TYPE_COUP && etat_courant != E.ATTENTE_CHOIX_TYPE_COUP_POSSIBLE
